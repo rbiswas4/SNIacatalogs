@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import lsst.sims.catUtils.baseCatalogModels as bcm
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
-from lsst.sims.catalogs.generation.db import DBObject
+#from lsst.sims.catalogs.generation.db import DBObject
+from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.generation.db import ObservationMetaData
 import sncosmo
 from astropy.cosmology import Planck13 as cosmo 
@@ -26,15 +27,13 @@ class SNIaCatalog (InstanceCatalog):
     column_outputs=['snid','z','snra', 'sndec', 'mass_stellar']
 
     def get_galseed(self) :
-        return self.id
+        return self.column_by_name('id')
     
 
 
     def get_snid(self):
         # Not necessarily unique if the same galaxy hosts two SN
         # rethink
-
-        print type(self.column_by_name('id'))
         print self.column_by_name('id')
 
     
@@ -52,11 +51,11 @@ class SNIaCatalog (InstanceCatalog):
         numobj = len(self.column_by_name('id'))
         print numobj
 
-        return self.column_by_name('ra') 
+        return self.column_by_name('raJ2000') 
         #return np.zeros(numobj)
 
     def get_sndec(self):
-        return self.column_by_name('dec')
+        return self.column_by_name('decJ2000')
 
 
 
@@ -69,20 +68,16 @@ class SNIaCatalog (InstanceCatalog):
 if __name__=="__main__":
 
     import lsst.sims.catUtils.baseCatalogModels as bcm
-    print bcm.__file__
     from lsst.sims.catalogs.generation.db import ObservationMetaData
-    #print ObservationMetaData.__file__
-    #circ_bounds = {'ra':5.0, 'dec':15.0,'radius':1.0}
-    #print sncosmo.__file__
-    #print sncosmo.__version__
-    galDB = DBObject.from_objid( 'galaxyBase' )
+
+    galDB = CatalogDBObject.from_objid( 'galaxyTiled' )
     #myObsMD = ObservationMetaData(circ_bounds=circ_bounds)
-#    myObsMD = ObservationMetaData(boundType='box',
-#                                  unrefractedRA=5.0,
-#                                  unrefractedDec=15.0,
-#                                  boundLength=5.0)
-    catalog = SNIaCatalog( db_obj=galDB)
-#    catalog = SNIaCatalog( db_obj=galDB, obs_metadata=myObsMD)
+    myObsMD = ObservationMetaData(boundType='box',
+                                  unrefractedRA=5.0,
+                                  unrefractedDec=15.0,
+                                  boundLength=0.1)
+#    catalog = SNIaCatalog( db_obj=galDB)
+    catalog = SNIaCatalog( db_obj=galDB, obs_metadata=myObsMD)
     catalog.write_catalog("SNIaCat.txt")
 
     #catIterator = catalog.query_columns(colnames = ['redshift'])
