@@ -45,9 +45,9 @@ class SNIa (object) :
 
     model.set(z=z)
     model.set_source_peakabsmag(mabs, 'bessellb', 'ab')
-            x0 = model.get('x0')
-                p = {'z':z, 't0':uniform(tmin, tmax), 'x0':x0, 'x1': normal(0., 1.), 'c': normal(0., 0.1)}
-                    params.append(p)
+    x0 = model.get('x0')
+    p = {'z':z, 't0':uniform(tmin, tmax), 'x0':x0, 'x1': normal(0., 1.), 'c': normal(0., 0.1)}
+    params.append(p)
 
 
     def dictifySALTparams():

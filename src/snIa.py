@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import lsst.sims.catUtils.baseCatalogModels as bcm
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
-#from lsst.sims.catalogs.generation.db import DBObject
 from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.generation.db import ObservationMetaData
 import sncosmo
@@ -24,43 +23,52 @@ class SNIaCatalog (InstanceCatalog):
     and parameters of the supernova model that predict the SED.
     """
 
-    column_outputs=['snid','z','snra', 'sndec', 'mass_stellar']
-
-    def get_galseed(self) :
-        return self.column_by_name('id')
-    
-
+    column_outputs=['raJ2000','decJ2000','snid','z','snra', 'sndec', 'mass_stellar', 'c', 'x1']
 
     def get_snid(self):
         # Not necessarily unique if the same galaxy hosts two SN
         # rethink
-        print self.column_by_name('id')
 
+        #print type(self.column_by_name('id'))
+        return self.column_by_name('id')
     
-    #@property
-    def numobjs(self) :
+    @property
+    def numobjs(self):
+        #return _numobjs
         return len(self.column_by_name('id'))
-
+    
+    
     def get_z(self) :
         return self.column_by_name('redshift')
 
-    #dl = cosmo.luminosity_distance(redshift) 
-    #da = dl/(1. + redshift**2.0)
 
     def get_snra(self) :
-        numobj = len(self.column_by_name('id'))
-        print numobj
+        _snra = self.column_by_name('raJ2000')
+        _snra +=  np.zeros(self.numobjs) 
+        return _snra
 
-        return self.column_by_name('raJ2000') 
-        #return np.zeros(numobj)
+        
 
-    def get_sndec(self):
-        return self.column_by_name('decJ2000')
-
+    def get_sndec(self) :
+        _sndec = self.column_by_name('decJ2000')
+        _sndec += np.zeros(self.numobjs) 
+        return _sndec
 
 
     
-
+    def get_c(self):
+        c = np.zeros(self.numobjs, dtype= 'float')
+        for i, id in enumerate(self.column_by_name('id')):
+            np.random.seed(id)
+            c[i] = np.random.normal(0.,0.1)
+        return c
+                
+    def get_x1(self):
+        x1 = np.zeros(self.numobjs, dtype= 'float')
+        for i, id in enumerate(self.column_by_name('id')):
+            np.random.seed(id)
+            x1[i] = np.random.normal(0.,1.0)
+        return x1 
 
 
 
@@ -68,8 +76,12 @@ class SNIaCatalog (InstanceCatalog):
 if __name__=="__main__":
 
     import lsst.sims.catUtils.baseCatalogModels as bcm
+    print bcm.__file__
     from lsst.sims.catalogs.generation.db import ObservationMetaData
-
+    #print ObservationMetaData.__file__
+    #circ_bounds = {'ra':5.0, 'dec':15.0,'radius':1.0}
+    #print sncosmo.__file__
+    #print sncosmo.__version__
     galDB = CatalogDBObject.from_objid( 'galaxyTiled' )
     #myObsMD = ObservationMetaData(circ_bounds=circ_bounds)
     myObsMD = ObservationMetaData(boundType='box',
