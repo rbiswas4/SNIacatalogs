@@ -16,6 +16,8 @@ class SNIa (object) :
         self._z = z  
         self.mass = mass
         self.modelname = modelname
+        _snid = self.id
+        np.random.seed(_snid)
         
     @property 
     def snid(self) :
@@ -33,16 +35,16 @@ class SNIa (object) :
     @property 
     def z (self) :
         return self._z 
-
-    np.random.seed(snid)
+    
 
 
     mabs = np.random.normal(-19.3, 0.3)
     if self.modelname == "SALT2exact":
-        model = sncosmo.Model(source = "salt2")
+        model = sncosmo.Model(source = 'salt2')
     else:
         raise ValueError("Don't know how to treat this supernova modelname")
 
+    #model = sncosmo.model(source='SALT2')
     model.set(z=z)
     model.set_source_peakabsmag(mabs, 'bessellb', 'ab')
     x0 = model.get('x0')
