@@ -23,8 +23,8 @@ class SNIaCatalog (InstanceCatalog):
     and parameters of the supernova model that predict the SED.
     """
 
-    column_outputs=['snid','snra','sndec']
-    override_formats={"snra":'%8e',"sndec":'%8e'}
+    column_outputs=['snid','snra','sndec','c','x1','t0','x0']
+    override_formats={'snra':'%8e','sndec':'%8e','c':'%8e','x0':'%8e'}
 
     def get_snid(self):
         # Not necessarily unique if the same galaxy hosts two SN
@@ -57,45 +57,45 @@ class SNIaCatalog (InstanceCatalog):
 
 
     
-#    def get_c(self):
-#        c = np.zeros(self.numobjs, dtype= 'float')
-#        for i, id in enumerate(self.column_by_name('id')):
-#            np.random.seed(id)
-#            c[i] = np.random.normal(0.,0.1)
-#        return c
-#                
-#    def get_x1(self):
-#        x1 = np.zeros(self.numobjs, dtype= 'float')
-#        for i, id in enumerate(self.column_by_name('id')):
-#            np.random.seed(id)
-#            x1[i] = np.random.normal(0.,1.0)
-#        return x1 
-#
-#    def get_t0(self) :
-#        hundredyear = 100*365.0
-#        t0 = np.zeros(self.numobjs, dtype= 'float')
-#        for i, id in enumerate(self.column_by_name('id')):
-#            np.random.seed(id)
-#            t0[i] = np.random.uniform(-hundredyear/2.0, hundredyear/2.0)
-#        return t0 
-#
-#    @property
-#    def model(self):
-#        return sncosmo.Model(source="SALT2")
-#
-#    def get_x0(self) :
-#        x0 = np.zeros(self.numobjs)
-#        for i, id in enumerate(self.column_by_name('id')):
-#            np.random.seed(id)
-#            mabs = np.random.normal(19.3,0.3) 
-#            z = self.column_by_name('z')[i]
-#            c = self.column_by_name('c')[i]
-#            x1 = self.column_by_name('x1')[i]
-#            model = self.model
-#            model.set(z=z, c=c, x1=x1)
-#            model.set_source_peakabsmag(mabs, 'bessellb', 'ab')
-#            x0[i] = -2.5*np.log10(model.get('x0'))
-#        return x0
+    def get_c(self):
+        c = np.zeros(self.numobjs, dtype= 'float')
+        for i, id in enumerate(self.column_by_name('id')):
+            np.random.seed(id)
+            c[i] = np.random.normal(0.,0.1)
+        return c
+                
+    def get_x1(self):
+        x1 = np.zeros(self.numobjs, dtype= 'float')
+        for i, id in enumerate(self.column_by_name('id')):
+            np.random.seed(id)
+            x1[i] = np.random.normal(0.,1.0)
+        return x1 
+
+    def get_t0(self) :
+        hundredyear = 100*365.0
+        t0 = np.zeros(self.numobjs, dtype= 'float')
+        for i, id in enumerate(self.column_by_name('id')):
+            np.random.seed(id)
+            t0[i] = np.random.uniform(-hundredyear/2.0, hundredyear/2.0)
+        return t0 
+
+    @property
+    def model(self):
+        return sncosmo.Model(source="SALT2")
+
+    def get_x0(self) :
+        x0 = np.zeros(self.numobjs)
+        for i, id in enumerate(self.column_by_name('id')):
+            np.random.seed(id)
+            mabs = np.random.normal(19.3,0.3) 
+            zz = self.column_by_name('z')[i]
+            c = self.column_by_name('c')[i]
+            x1 = self.column_by_name('x1')[i]
+            model = self.model
+            model.set(z=0.5, c=0., x1=0.0)
+            model.set_source_peakabsmag(mabs, 'bessellb', 'ab')
+            x0[i] = -2.5*np.log10(model.get('x0'))
+        return x0
 #
 
 
