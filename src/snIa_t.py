@@ -23,8 +23,8 @@ class SNIaCatalog (InstanceCatalog):
     and parameters of the supernova model that predict the SED.
     """
 
-    column_outputs=['raJ2000','decJ2000','snid']
-    override_formats={"raJ2000":'%8e',"decJ2000":'%8e'}
+    column_outputs=['snid','snra','sndec']
+    override_formats={"snra":'%8e',"sndec":'%8e'}
 
     def get_snid(self):
         # Not necessarily unique if the same galaxy hosts two SN
@@ -43,20 +43,20 @@ class SNIaCatalog (InstanceCatalog):
         return self.column_by_name('redshift')
 
 
-#    def get_snra(self) :
-#        _snra = self.column_by_name('raJ2000')
-#        _snra +=  np.zeros(self.numobjs) 
-#        return _snra
-#
-#        
-#
-#    def get_sndec(self) :
-#        _sndec = self.column_by_name('decJ2000')
-#        _sndec += np.zeros(self.numobjs) 
-#        return _sndec
-#
-#
-#    
+    def get_snra(self) :
+        _snra = self.column_by_name('raJ2000')
+        _snra +=  np.zeros(self.numobjs) 
+        return _snra
+
+        
+
+    def get_sndec(self) :
+        _sndec = self.column_by_name('decJ2000')
+        _sndec += np.zeros(self.numobjs) 
+        return _sndec
+
+
+    
 #    def get_c(self):
 #        c = np.zeros(self.numobjs, dtype= 'float')
 #        for i, id in enumerate(self.column_by_name('id')):
