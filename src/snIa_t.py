@@ -23,7 +23,7 @@ class SNIaCatalog (InstanceCatalog):
     and parameters of the supernova model that predict the SED.
     """
 
-    column_outputs=['snid','snra','sndec','c','x1','t0','x0']
+    column_outputs=['snid','snra','sndec', 'z','t0']
     override_formats={'snra':'%8e','sndec':'%8e','c':'%8e','x0':'%8e'}
 
     def get_snid(self):
@@ -88,8 +88,8 @@ class SNIaCatalog (InstanceCatalog):
         for i, id in enumerate(self.column_by_name('id')):
             np.random.seed(id)
             mabs = np.random.normal(19.3,0.3) 
-            zz = self.column_by_name('z')[i]
-            c = self.column_by_name('c')[i]
+            #zz = self.column_by_name('redshift')[i]
+            #c = self.column_by_name('c')[i]
             x1 = self.column_by_name('x1')[i]
             model = self.model
             model.set(z=0.5, c=0., x1=0.0)

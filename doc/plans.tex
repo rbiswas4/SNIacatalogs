@@ -1,0 +1,135 @@
+\documentclass{article}[12pt]
+\title{Informal Description of Plan for incorporating SNIa into LSST simulations}
+%\input{preamble}
+\begin{document}
+\maketitle
+\section{Objectives}
+We would like to incorporate supernovae in the LSST catalogs which currently have galaxies. This means that we would like to add information to the existing catalogs, so that at any point, we can query the catalog for the additional light 
+from a SN within a particular patch of sky at a particular instant of time. 
+This means we have to encode :
+\begin{itemize}
+\item position: RA, DEC, z of the Supernova. If the SN is associated with a host galaxy, this can be a displacement vector from the host
+\item velocity: This can be relative to the host which presumably has its own peculiar velocity 
+\item MJD of peak of supernova 
+\item rest frame spectral energy distributions (SEDS) of SN
+\end{itemize}
+with as few variables as possible. 
+\section{Possible Science Projects using SNIa in LSST catalogs:} 
+Adding SN to the LSST catalogs will enable us to put images of SN 
+on the sky observed by LSST, by propagating through the atmosphere and optics 
+system. Some studies that this task would enable are:
+\begin{enumerate}
+\item Obtaining errors on fluxes in light curves from simulations directly 
+including effects of difference subtraction. In the language used in DES, this
+would be enabling a 'FAKES' only study. Current simulations use survey/observation  characteristics to estimate the errors on measured fluxes and fudge the values to match data from the survey. This clearly requires being able to obtain 
+images and do difference imaging.
+\item In comparison to current (SNANA like simulations place all SN in a field 
+at the center of the field) simulations, this catalog will have more realistic 
+large scale structure clustering efffects on SN. This could enable 
+studies on the effect of LSST observing strategies and would be a good resource
+to use in following up studies like~\cite{Carroll:2014oja}. This could be 
+done without processing images, by using error estmates similar to those used in
+ SNANA.
+\item Further, due to the clustering effect, this tool would be useful in 
+trying to study the signature of clustering from SNIa data, using probes
+like BAO or the peculiar velocity of SNIa. Clearly, both of these tasks can 
+be accomplished much more precisely using (far more numerous) galaxies, and 
+therefore it probably is not a useful project. However, a potential advantage 
+of using SNIa is that it could provide a distance scale as well. If a good
+subset of SNIa host spectra can be obtained, the simultaneous determination of an angular diameter distance from the host sample and the luminosity distance,
+ which have to match to a factor of $(1 + z)^2$ could potentially be used to 
+study systematic effects.  
+\item Being able to study classification of transients, such as separating 
+SNIa from AGNs. While SNIa light curves differ sufficiently from AGNo over
+long time scales that they are easy to classify, it may be possible to do so 
+even on short time scales, enabling better follow-up by relevant groups of interest. Such studies would also require AGN/other transients to be added to the 
+simulations.   
+\item Being able to study lensing effects of SN studies from simulations,
+leading to estimates of how many supernovae are lensed enough for delay times to
+be measurable.
+\end{enumerate}
+
+\section{Current SN simulations}
+Current SN simulations for LSST, DES, SDSS have been done with SNANA. snCOSMO
+is another tool that is being built up with such capability, but it currently 
+lacks many of the features of SNANA. 
+
+The basic procedure is explained below:
+\begin{itemize}
+\item Volume at each redshift shell for an observational field is calculated.
+\item The number of SN expected to go off during the survey period within that
+volume is calculated from an estimate of the SN rate, usually parametrized 
+as a power law in redshift of the form 
+$\alpha (1 + z )^\beta $ with parameters $\alpha$ and $\beta$ from a suitable 
+dataset. These observed rates are supposed to have been corrected for 
+incompleteness. 
+\item A ``simlib" file is created with entries for each field, with the peak MJD 
+distributed uniformly across the survey time, and the position placed at the center of the field. These simulations are not used for any spatial information, 
+hence this is mostly OK. A couple of small deficiencies due to this are that 
+weather conditions used pertain to the center of the field, rather than the 
+actual location of the SN. This also does not have the ability to model overlaps
+ in pointings. Of course, these deficiencies are bad if any spatial correlations/lensing properties are to be calculated from the data.
+\item SN are simulated on the basis of the simlib file described above, using 
+an emperical SN model such as SALT2. In this case, SN SEDS are described 
+by 4 parameters a peak MJD parameter, an amplitude, a 'color' parameter $c$, 
+and a 'stretch' parameter $x_1$
+parameters, so that the distribution approximates the observed distribution 
+after selection cuts. The procedure involves trial and error. Once these 
+parameters are known, one can use the SALT2 model to obtain a SN SED. 
+Finally, a 'color-smearing' term is added according to a prescription. This is a
+ random noise term essentially necessary because the SALT2 SED does not describe  the full diversity of SN SEDs. Thus, generation of the SN requires 
+a random draw for peak MJD, amplitude, color, x1, and error terms. This neglects
+correlations in the properties of SN parameters and the host galaxy parameters,
+which are known to exist, but is OK as no host properties are used.
+\end{itemize}
+\section{Adding SN to LSST catalogs}
+In order to add SN to LSST catalogs, we need to be able to do the following :
+\subsection{Change Description from Volumetric rate to Galactic Rate}
+As described above, current simulations rely on a volumetric rate of SNIa, 
+which are then uniformly deposited at the center of a field of view, with the 
+number of SNIa determined by the volume based on assumptions of homogeneity. 
+We need to associate SN with galaxies. In 
+principle, this requires drawing random numbers from the propability 
+distribution $P( \theta_{SN} \vert \theta_{gal}).$
+For example, we may consider $\theta_{SN} = \{MJD(peak), M_b(peak), x_1, c\}$ and \\
+$\theta_{gal}$ = \{morphology, Stellar Mass, Color, star formation rate \}.\\
+So,
+$$
+P(\theta_{SN} \vert \theta_{gal}) = P(\theta_{SN}\vert \theta_{gal}, SN) P(SN \vert \theta_{gal})$$
+The first term describes how the properties of SN correlate with the host properties (and is something Eve Kovacs wants to work on too), the second term describes the probability of a galaxy to host a supernova. Now, in order to make contact to the previous simulations described above,
+we need (in appropriate units) 
+\begin{equation}
+\int P(SN \vert \theta_{gal} ) n (\theta_{gal}) d \theta_{gal} = n_SN(z) 
+\label{eqn:rate}
+\end {equation}
+where $n_{SN}(z) $ is the rate of SN, and $n(\theta_{gal})$ is the density of galaxies as a function of their properties in the catalogs. My initial proposal is to go to each redshift bin, use only one galaxy property (stellar mass) 
+ and make the term $P(SN\vert \theta_{gal})\propto M$, normalized such that 
+the rate is reproduced through Eqn.~\ref{eqn:rate}. 
+
+\subsection{Properties of SNe in catalog:}
+
+For each galaxy, we draw a set of random numbers representing the following 
+parameters:
+\begin{itemize}
+\item SN properties with galaxy type. For SALT2 SNIa these are $\{c, x_1, M_b\}$ 
+and the distributions would ultimately depend on the galaxy properties. Right now,
+we will not use this. Eve Kovacs (ANL) is planning to study the appropriate 
+functions to plug into this. 
+\item Peak MJD drawn from a uniform distribution in time, but the normalization 
+will be different for different types of galaxies. This is one parameter that 
+should probably be the easiest to access. 
+\item velocity of the SN with respect to the galaxy, for which we will need three numbers, probably from an isotropic normal distribtion of the same width for all gaalaxies to start with.  This could have something to do with the relative position
+of the SN, and also would be useful to use for a transformation of the SED which 
+would be interesting for low z (though LSST may not have very low z SN. 
+\item position of SN wrt to galaxy position (Probably Center of Mass, or however 
+this is recorded in the LSST catalog). This requires three random numbers which 
+we can draw from a probability distribution (maybe start with a normal distribution, or if the stellar mass distribution is available, we could leverage that?). This
+could also perhaps depend on the velocity of the SN.
+\end{itemize} 
+%\bibliographystyle{natbib}
+\bibliography{plans.bib}
+\end{document}
+
+\begin{itemize}
+\item obtain SEDs for the simulated supernovae 
+SN simulations 
