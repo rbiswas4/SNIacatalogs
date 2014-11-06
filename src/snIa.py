@@ -44,6 +44,7 @@ class SNIaCatalog (InstanceCatalog):
     @property
     def model(self):
         return sncosmo.Model(source='salt2')
+
     
     #def get_z(self) :
     #    return self.column_by_name('redshift')
@@ -74,15 +75,16 @@ class SNIaCatalog (InstanceCatalog):
         vals  = np.zeros(shape= (self.numobjs,4))
         _z, _id = self.column_by_name('redshift'), self.column_by_name('snid')
         #print _z.min()
+        print self.model
         for i,v  in enumerate(vals) :
             np.random.seed(_id[i])
             v[-1 ] = np.random.uniform(-hundredyear/2.0, hundredyear/2.0)
             v[ 0 ] = np.random.normal(0., 0.3 )
             v[ 1 ] = np.random.normal(0., 3.0 ) 
             mabs = np.random.normal( -19.3, 0.3)
+            print "setting model from z values", _z[i], v[0], v[1]
             self.model.set(z=_z[i], c=v[0], x1=v[1])
-            print 'z val', _z[i]
-            self.model.set(z = _z[i])
+            #self.model.set(z = _z[i])
             print 'from model' , self.model.get('z')
             self.model.set_source_peakabsmag(mabs, 'bessellb', 'ab')
             v[2 ] = v[1]
