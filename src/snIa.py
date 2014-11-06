@@ -81,9 +81,12 @@ class SNIaCatalog (InstanceCatalog):
             v[ 1 ] = np.random.normal(0., 3.0 ) 
             mabs = np.random.normal( -19.3, 0.3)
             self.model.set(z=_z[i], c=v[0], x1=v[1])
-            #self.model.set_source_peakabsmag(mabs, 'bessellb', 'ab')
+            print 'z val', _z[i]
+            self.model.set(z = _z[i])
+            print 'from model' , self.model.get('z')
+            self.model.set_source_peakabsmag(mabs, 'bessellb', 'ab')
             v[2 ] = v[1]
-            #v[2 ] = self.model.get('x0')
+            v[2 ] = self.model.get('x0')
 
 
         return  ([vals[:, 0 ], vals[:, 1], vals[:, 2], vals[:, 3]])
