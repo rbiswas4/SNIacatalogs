@@ -74,10 +74,11 @@ class SNIaCatalog (InstanceCatalog):
 if __name__=="__main__":
 
     import lsst.sims.catUtils.baseCatalogModels as bcm
+    #import timeit
     print bcm.__file__
     from lsst.sims.catalogs.generation.db import ObservationMetaData
     galDB = CatalogDBObject.from_objid( 'galaxyTiled' )
-    myObsMD = ObservationMetaData(boundType='box',
+    myObsMD = ObservationMetaData(boundType='circle',
                                   unrefractedRA=5.0,
                                   unrefractedDec=15.0,
                                   boundLength=0.1)
