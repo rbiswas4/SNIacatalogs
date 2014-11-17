@@ -11,9 +11,13 @@ from lsst.sims.catalogs.measures.instance import InstanceCatalog
 from lsst.sims.catalogs.measures.instance import compound
 from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.generation.db import ObservationMetaData
+from lsst.sims.photUtils import Sed
 import sncosmo
 from astropy.cosmology import Planck13 as cosmo
 
+def get_mags():
+
+    return 0
 
 # class SNIaCatalog (object):
 class SNIaCatalog (InstanceCatalog):
@@ -32,8 +36,6 @@ class SNIaCatalog (InstanceCatalog):
 # 'mass_stellar', 'c', 'x1', 't0', "x0"]
     surveyoffset = 570000.0
     SN_thresh  = 100.0
-    def get_mags():
-        return 0
     def get_snid(self):
         # Not necessarily unique if the same galaxy hosts two SN
         # rethink
