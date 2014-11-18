@@ -1,6 +1,7 @@
 """
-Class describing implementation of a SN universe specified by the following
-attributes and methods:
+Class describing implementation of a SN universe describing the types of SN in the universe, the abundances of each type of SN, and the distribution of subtypes/parameters of each type of SN. To allow for convenient usage in multiple application situations (eg. where the population of galaxies is known or where it is not), it should be possible to describe such a universe in terms of the galaxies present (giving environmental properties) or on the average, with no knowledge of galaxies but through a rate. 
+
+In practice the class is specified by the following attributes and methods:
 
     atrributes:
         SNModel: Physically this is a phenomenological model of SN such as\
