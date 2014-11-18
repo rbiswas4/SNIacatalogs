@@ -1,7 +1,7 @@
 #!\usr/bin/env python
 
 from cStringIO import StringIO
-import sys
+import sys, os
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
@@ -12,12 +12,11 @@ from lsst.sims.catalogs.measures.instance import compound
 from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.generation.db import ObservationMetaData
 from lsst.sims.photUtils import Sed
+import lsst.sims.photUtils.Bandpass as Bandpass
 import sncosmo
 from astropy.cosmology import Planck13 as cosmo
 
-def get_mags():
 
-    return 0
 
 # class SNIaCatalog (object):
 class SNIaCatalog (InstanceCatalog):
@@ -36,6 +35,37 @@ class SNIaCatalog (InstanceCatalog):
 # 'mass_stellar', 'c', 'x1', 't0', "x0"]
     surveyoffset = 570000.0
     SN_thresh  = 100.0
+
+    uband = Bandpass()
+    gband = Bandpass()
+    rband = Bandpass()
+    iband = Bandpass()
+    zband = Bandpass()
+
+    lsstbands = [uband, gband, rband, iband, zband]
+    banddir = os.path.join(os.getenv('THROUGHPUTS_DIR'), 'baseline')
+
+    bandnames = ['u', 'g', 'r', 'i', 'z']
+
+    def get_mags(self,source):
+        phase = 0.
+        sourceflux = source.flux(phase=phase, wave=self.rband.wavelen*10.)
+
+        sed = Sed()
+        sed.setSED(wavelen=self.rband.wavelen, flambda=sourceflux/10.)
+        #sed.redshiftSED(redshift=_z[i], dimming=True)
+        return [sed.calcMag(bandpass=self.uband),
+                sed.calcMag(bandpass=self.gband),
+                sed.calcMag(bandpass=self.rband),
+                sed.calcMag(bandpass=self.iband),
+                sed.calcMag(bandpass=self.zband)]
+        # [self.uband, self.gband, self.rband,
+        #                 self.iband, self.zband])
+
+    for i, band in enumerate(lsstbands):
+        filename = os.path.join(banddir, "total_" + bandnames[i] +".dat")
+        band.readThroughput(filename)
+
     def get_snid(self):
         # Not necessarily unique if the same galaxy hosts two SN
         # rethink
@@ -59,9 +89,9 @@ class SNIaCatalog (InstanceCatalog):
 
     @compound('c', 'x1', 'x0', 't0')
     def get_snparams(self):
-        SNmodel = sncosmo.Model(source="salt2")
+        SNmodel = sncosmo.Model(source="salt2-extended")
         hundredyear = 100*365.0
-        vals = np.zeros(shape=(self.numobjs, 4))
+        vals = np.zeros(shape=(self.numobjs, 9))
         _z, _id = self.column_by_name('redshift'), self.column_by_name('snid')
         bad = np.nan
         for i, v in enumerate(vals):
@@ -81,10 +111,13 @@ class SNIaCatalog (InstanceCatalog):
             SNmodel.set_source_peakabsmag(mabs, 'bessellb', 'ab')
             v[2] = SNmodel.get('x0')
             phase =  (self.obs_metadata.mjd - v[-1])/(1.0 + _z[i])
-        print self.obs_metadata.mjd
-        print self.obs_metadata.bandpass
+            source = SNmodel.source
+            v[4:] =  self.get_mags(source)
+            # print self.obs_metadata.mjd
+        #print self.obs_metadata.bandpass
 
-        return ([vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3]])
+        return ([vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3],
+            vals[:, 4], vals[:,5], vals[:,6], vals[:,7], vals[:,8]])
   
 if __name__ == "__main__":
 
