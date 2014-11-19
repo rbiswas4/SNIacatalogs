@@ -57,7 +57,6 @@ class SNIaCatalog (InstanceCatalog):
             sourceflux = source.flux(phase=phase, wave=self.rband.wavelen*10.)
             sed.setSED(wavelen=self.rband.wavelen, flambda=sourceflux/10.)
         else:
-            flambda = np.ones(len(self.rband.wavelen))*10.**(-299.)
             sed.setSED(wavelen=self.rband.wavelen, flambda=flambda)
         #sed.redshiftSED(redshift=_z[i], dimming=True)
         return [sed.calcMag(bandpass=self.uband),

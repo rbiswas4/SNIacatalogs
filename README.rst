@@ -9,3 +9,4 @@ Usage:
 - Setup LSST using the src/setup.sh provided after modification for your setup. This is different from the usual case,  because we will use a later version of anaconda. The main requirement is due to SNCosmo which uses a later version of astropy for some work. 
 - Setup sncosmo: (You only need to do this once). I do this by writing the line: /astro/users/rbiswas/src/sncosmo/build/lib.linux-x86_64-2.7/ to $HOME/.local/lib/python2.7/site-packages/mypaths.pth
 
+ 
