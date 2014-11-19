@@ -47,12 +47,18 @@ class SNIaCatalog (InstanceCatalog):
 
     bandnames = ['u', 'g', 'r', 'i', 'z']
 
-    def get_mags(self,source):
-        phase = 0.
-        sourceflux = source.flux(phase=phase, wave=self.rband.wavelen*10.)
-
+    def get_mags(self,source, phase ):
+        
         sed = Sed()
-        sed.setSED(wavelen=self.rband.wavelen, flambda=sourceflux/10.)
+        print "==========================================="
+        print phase
+        print "==========================================="
+        if phase > -20 and phase < 50 :
+            sourceflux = source.flux(phase=phase, wave=self.rband.wavelen*10.)
+            sed.setSED(wavelen=self.rband.wavelen, flambda=sourceflux/10.)
+        else:
+            flambda = np.ones(len(self.rband.wavelen))*10.**(-299.)
+            sed.setSED(wavelen=self.rband.wavelen, flambda=flambda)
         #sed.redshiftSED(redshift=_z[i], dimming=True)
         return [sed.calcMag(bandpass=self.uband),
                 sed.calcMag(bandpass=self.gband),
@@ -112,7 +118,7 @@ class SNIaCatalog (InstanceCatalog):
             v[2] = SNmodel.get('x0')
             phase =  (self.obs_metadata.mjd - v[-1])/(1.0 + _z[i])
             source = SNmodel.source
-            v[4:] =  self.get_mags(source)
+            v[4:] =  self.get_mags(source, phase = phase)
             # print self.obs_metadata.mjd
         #print self.obs_metadata.bandpass
 
@@ -126,14 +132,16 @@ if __name__ == "__main__":
     print bcm.__file__
     from lsst.sims.catalogs.generation.db import ObservationMetaData
     galDB = CatalogDBObject.from_objid('galaxyTiled')
-    myMJD  = 570123.15
+    myMJDS  = [570123.15 + i for i in range(10)]
     
-    myObsMD = ObservationMetaData(boundType='circle',
+    for i,myMJD in enumerate(myMJDS):
+        myObsMD = ObservationMetaData(boundType='circle',
                                   unrefractedRA=5.0,
                                   unrefractedDec=15.0,
                                   boundLength=0.15,
                                   #boundLength=3.5,
                                   bandpassName=['u','g'],
                                   mjd=myMJD)
-    catalog = SNIaCatalog(db_obj=galDB, obs_metadata=myObsMD)
-    catalog.write_catalog("SNIaCat.txt")
+        catalog = SNIaCatalog(db_obj=galDB,
+                obs_metadata=myObsMD)
+        catalog.write_catalog("SNIaCat_" + str(i) + ".txt")
