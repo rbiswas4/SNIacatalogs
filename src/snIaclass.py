@@ -35,8 +35,6 @@ class SNIa (object) :
     @property 
     def z (self) :
         return self._z 
-    
-
 
     mabs = np.random.normal(-19.3, 0.3)
     if self.modelname == "SALT2exact":
