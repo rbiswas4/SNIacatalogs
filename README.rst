@@ -1,6 +1,10 @@
 Code to add SNIa to LSST galaxy catalogs:
 ----------------------------------------
+Current:
+src/sncat.py : Instance catalog
+src/snObject.py : SN Object which has a few more attributes, and methods
 
+older:
 src/snIa.py is an instance catalog class to interact with the lsst database
 src/snIacLass_t.py is an independent class which interacts with the lsst database
 
