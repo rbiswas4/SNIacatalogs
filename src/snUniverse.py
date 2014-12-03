@@ -19,7 +19,8 @@ import numpy as np
 class SNUniverse (object):
 
     def __init__(self):
-        self.snIaModel = sncosmo.Model(source="salt2")
+        self.snIaModel = sncosmo.Model(source="salt2-extended", effects=[sncosmo.CCM89Dust()], effect_names=['mw'],
+                effect_frames=['obs'])
         self._seed = None
         self._z = None
 
@@ -38,6 +39,9 @@ class SNUniverse (object):
     def set_z(self,z ):
         self._z = z
         self.snIaModel.set(z=z)
+    @property
+    def ra(self):
+        return self._ra 
 
     def get_SNparams(self):
 
