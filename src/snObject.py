@@ -9,6 +9,7 @@ It also has additional methods :
 import sncosmo
 import numpy as np
 import os
+import matplotlib.pyplot as plt
 
 from astropy.units import Unit
 from astropy.coordinates import SkyCoord
@@ -20,6 +21,7 @@ dustmaproot = os.getenv('SIMS_DUSTMAPS_DIR')
 map_dir = os.path.join(dustmaproot, 'DustMaps')
 
 wavelenstep = 0.1
+plot=True
 
 
 def getlsstbandpassobjs(loadsncosmo=True, loadcatsim=True):
@@ -43,6 +45,15 @@ def getlsstbandpassobjs(loadsncosmo=True, loadcatsim=True):
             lsstbp[band] = Bandpass()
             lsstbp[band].readThroughput(bandfname, wavelen_step=wavelenstep)
             lsstbands.append(lsstbp[band])
+    fifilterfigs, filterax = plt.subplots()
+    if plot:
+        for band in bandPassList:
+            b = sncosmo.get_bandpass('LSST' + band)
+            filterax.plot (b.wave, b.trans, '-k', lw=2.0)
+            filterax.set_xlabel(r'$\lambda$, ($\AA$)')
+            filterax.set_ylabel(r'transmission')
+        plt.show()
+
     if loadcatsim:
         return lsstbands 
     else:
@@ -107,6 +118,10 @@ class SNObject (Model):
 
 
 if __name__ == "__main__":
+    """ 
+    Example code for writing a light curve in multiple bands
+
+    """
 
     import numpy as np
 
@@ -115,6 +130,8 @@ if __name__ == "__main__":
     SN = SNObject(ra, dec)
     SN.set(x0=1.847e-6, x1=0., c=0., z =1.0)
     print SN
+    SNCosmoSN = SNObject(ra, dec)
+    SNCosmoSN.set(x0=1.847e-6, x1=0., z=1.0, mwebv=SN._mwebv)
     lsstbands = getlsstbandpassobjs()
     sncosmobands = ['LSSTu', 'LSSTg', 'LSSTr', 'LSSTi', 'LSSTz']
     l = [] 
@@ -122,7 +139,7 @@ if __name__ == "__main__":
         t = time*np.ones(len(sncosmobands))
         t.tolist()
         x = SN.lsstbandmags(lsstbands, time=time)
-        y = SN.bandmag(band=sncosmobands, time=t, magsys='ab')
+        y = SNCosmoSN.bandmag(band=sncosmobands, time=t, magsys='ab')
         e =  [time ]
         e += x.tolist() 
         e += y.tolist()
