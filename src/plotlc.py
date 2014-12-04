@@ -1,0 +1,22 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+data = np.loadtxt('lc.dat')
+fig, ax = plt.subplots()
+ax.plot(data[:,0], data[:,1], 'k+', label='u')
+ax.plot(data[:,0], data[:,7], 'k-')
+ax.plot(data[:,0], data[:,2], 'b+', label='g')
+ax.plot(data[:,0], data[:,8], 'b-')
+ax.plot(data[:,0], data[:,3], 'g+', label='r')
+ax.plot(data[:,0], data[:,9], 'g-')
+ax.plot(data[:,0], data[:,4], 'y+', label='i')
+ax.plot(data[:,0], data[:,10], 'y-')
+ax.plot(data[:,0], data[:,5], 'm+', label='z')
+ax.plot(data[:,0], data[:,11], 'm-')
+ax.plot(data[:,0], data[:,6], 'r+', label='y')
+ax.plot(data[:,0], data[:,12], 'r-')
+ax.invert_yaxis()
+plt.legend(loc='best', numpoints=1)
+ax.set_xlabel('time (days)')
+ax.set_ylabel('magnitude')
+plt.show()

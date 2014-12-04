@@ -37,12 +37,16 @@ def getlsstbandpassobjs(loadsncosmo=True, loadcatsim=True):
         # setup sncosmo bandpasses
         bandfname = banddir + "/total_" + band  + '.dat'
         if loadsncosmo:
-            # Usually the next two lines can be merged, but there is an astropy bug currently.
+            # register the LSST bands to the SNCosmo registry
+            # Not needed for LSST, but useful to compare independent codes
+            # Usually the next two lines can be merged, 
+            # but there is an astropy bug currently which affects only OSX.
             numpyband = np.loadtxt(bandfname)
-            sncosmoband = sncosmo.Bandpass(wave=numpyband[:,0], trans=numpyband[:,1], wave_unit=Unit('nm'), 
-                                           name='LSST'+band)
+            sncosmoband = sncosmo.Bandpass(wave=numpyband[:,0],
+                    trans=numpyband[:,1], wave_unit=Unit('nm'),
+                    name='LSST' + band)
             sncosmo.registry.register(sncosmoband, force=True)
-        if loadcatsim:                     
+        if loadcatsim:
             # Now load LSST bandpasses for catsim
             lsstbp[band] = Bandpass()
             lsstbp[band].readThroughput(bandfname, wavelen_step=wavelenstep)
@@ -63,74 +67,74 @@ def getlsstbandpassobjs(loadsncosmo=True, loadcatsim=True):
 
 
 class SNObject (Model):
+    """
+    Extension of the SNCosmo TimeSeries Model to include more parameters and
+    use methods in the catsim stack. We constrain ourselves to the use of a
+    specific SALT model for the Supernova (Salt2-Extended), and set its MW
+    extinction to be 0. 
 
-    # def __init__(self, ra , dec):
+    new attributes:
+    ---------------
+    ra:
+    dec:
+
+    new methods:
+    ------------
+    setmwebvfrommaps: Uses the LSST stack to obtain MW extinction according to
+        CCM 89, the ra and dec of the supernova, and the SFD dustmaps to apply
+        appropriate extinction to the SN sed.
+    lsstbandmags: Uses the LSST stack functionality to obtain LSST band
+        magnitudes using the bandpass filters.  
+
+    Notes:
+    -----
+
+    """
     def __init__(self, ra=None, dec=None):
-        Model.__init__(self, source="salt2-extended", effects=[sncosmo.CCM89Dust()], effect_names=['mw'],
+        Model.__init__(self, source="salt2-extended", 
+                effects=[sncosmo.CCM89Dust()], effect_names=['mw'],
                 effect_frames=['obs'])
-        # default value of mwebv = 0. ie. no extinction 
+        # Current implementation of Model has a default value of mwebv = 0. 
+        # ie. no extinction, but this is not part of the API, so should not 
+        # depend on it, set explicitly.
         self.set(mwebv=0.)
-        self._ra = ra
-        self._dec = dec
+        #If we know ra, dec in degree
+        self.ra = ra
+        self.dec = dec
         if ra is None or dec is None:
             pass
         else:
-            self.setmwebv()
-        #skycoords = SkyCoord(ra, dec, unit='deg')
-        #self._mwebv = sncosmo.get_ebv_from_map(skycoords, mapdir=map_dir, interpolate=False)
-        #self.snIaModel.set(**params)
+            self.mwebvfrommaps()
         self._seed = None
-        #    self._z = None
         return
 
 
+    # Comment to self: Don't see why having the seed is of any help here
+    # will probably remove
     @property
     def seed(self):
         return self._seed
 
+    def mwebvfrommaps(self):
 
-    @property
-    def ra(self):
-        #self._ra = ra
-        return self._ra 
-
-    @property
-    def dec(self):
-        #dec = self._dec
-        return self._dec
-
-    def setmwebv(self):
-        ra = self._ra
-        dec = self._dec
+        ra = self.ra
+        dec = self.dec
         skycoords = SkyCoord(ra, dec, unit='deg')
-        self._mwebv = sncosmo.get_ebv_from_map(skycoords, mapdir=map_dir, interpolate=False)
+        self._mwebv = sncosmo.get_ebv_from_map(skycoords, 
+                mapdir=map_dir,
+                interpolate=False)
         return
-
-    def get_SNparams(self):
-
-        hundredyear = 100*365.0
-        np.random.seed(self.seed)
-        t0 = np.random.uniform(-hundredyear/2.0, hundredyear/2.0)
-        c = np.random.normal(0., 0.3)
-        x1 = np.random.normal(0., 1.0)
-        mabs = np.random.normal(-19.3, 0.3)
-        self.snIaModel.set(z=self.z, c=c, x1=x1)
-        self.snIaModel.set_source_peakabsmag(mabs, 'bessellb', 'ab')
-        x0 = self.snIaModel.get('x0')
-
-        return np.array([t0, x0, x1, c])
 
     def lsstbandmags(self, lsstbands, time):
 
         filterwav = lsstbands[0].wavelen
-        print "within lsstbandmags", len(filterwav)
-        #print 'lsstbandmags: ', time, filterwav
-        SEDfromSNcosmo = Sed(wavelen=filterwav, flambda=self.flux(time=time, wave=filterwav*10.)*10.)
-        SEDfromSNcosmo.synchronizeSED(wavelen_min=filterwav[0], wavelen_max=filterwav[-2], wavelen_step=wavelenstep)
-        print "SED :", len(SEDfromSNcosmo.wavelen)
+        SEDfromSNcosmo = Sed(wavelen=filterwav,
+                flambda=self.flux(time=time, wave=filterwav*10.)*10.)
+        # Check if I need this sync
+        SEDfromSNcosmo.synchronizeSED(wavelen_min=filterwav[0],
+                wavelen_max=filterwav[-2], wavelen_step=wavelenstep)
+        # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
-        print len(ax), len(bx), len(SEDfromSNcosmo.flambda), len(SEDfromSNcosmo.fnu)
-        print "********************", self._mwebv
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self._mwebv)
         phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(lsstbands)
         SEDfromSNcosmo.synchronizeSED(wavelen_min=filterwav[0], wavelen_max=filterwav[-2], wavelen_step=wavelenstep)
@@ -152,11 +156,11 @@ if __name__ == "__main__":
     dec = -30.
     SN = SNObject(ra, dec)
     SN.set(x0=1.847e-6, x1=0.1, c=0., z =0.2)
-    #print SN
+    print SN
     SNCosmoSN = SNObject(ra, dec)
     SNCosmoSN.set(x0=1.847e-6, x1=0.1, z=0.2, mwebv=SN._mwebv)
     lsstbands = getlsstbandpassobjs()
-    sncosmobands = ['LSSTu', 'LSSTg', 'LSSTr', 'LSSTi', 'LSSTz']
+    sncosmobands = ['LSSTu', 'LSSTg', 'LSSTr', 'LSSTi', 'LSSTz','LSSTy']
     w  = sncosmo.get_bandpass(sncosmobands[0]).wave
     l = [] 
     for time in np.arange(-20.,50.,1.0):
@@ -166,20 +170,11 @@ if __name__ == "__main__":
             #plt.show()
         t = time*np.ones(len(sncosmobands))
         t.tolist()
-        #print time
-        #print SN.flux(time=time, wave = [3000., 5000., 12000.])#, SN.flux(time=time, wave=12000.)
-        #try:
-        #    x = SN.lsstbandmags(lsstbands, time=time)
-        #except:
-        #    print "Something wierd"
-        #    print time
-        #    SN.flux(wave=sncosmobands.get_bandpass().wave, time=time, zpsys='ab')
-        #print "passed ?"
-        y = SNCosmoSN.bandmag(band=['LSSTg','LSSTr'], time=[time,time], magsys='ab')
-        #print "yes !"
+        x = SN.lsstbandmags(lsstbands, time=time)
+        y = SNCosmoSN.bandmag(band=sncosmobands, time=t, magsys='ab')
         e =  [time ]
         e += x.tolist() 
         e += y.tolist()
         l.append(e)
 
-    np.savetxt('lc.dat', np.array(l))
+    np.savetxt('lc.dat', np.array(l), fmt='%10.6f')
