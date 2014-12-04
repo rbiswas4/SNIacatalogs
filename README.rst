@@ -4,6 +4,7 @@ Current:
 -------
 - src/sncat.py : Instance catalog 
 - src/snObject.py : SN Object which has a few more attributes beyond model, and methods to use catsim framework to obtain magnitudes after extinction. 
+
     >>> python snObject.py 
    # should run and produce output light curves for a  SN at z = 1.0 (Look at   
    # time, u g r i z y su sg sr si sz sy 
