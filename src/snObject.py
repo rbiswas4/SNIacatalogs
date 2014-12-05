@@ -177,4 +177,4 @@ if __name__ == "__main__":
         e += y.tolist()
         l.append(e)
     header="time(mjd) u g r i z y su sg sr si sz sy"
-    np.savetxt('lc.dat', np.array(l), fmt='%10.6f', header=header)
+    np.savetxt('../out/lc.dat', np.array(l), fmt='%10.6f', header=header)

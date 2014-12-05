@@ -156,4 +156,4 @@ if __name__ == "__main__":
         catalog = SNIaCatalog(db_obj=galDB,
                 obs_metadata=myObsMD)
         print i, type(catalog.usedlsstbands())
-        catalog.write_catalog("SNIaCat_" + str(i) + ".txt")
+        catalog.write_catalog("../out/SNIaCat_" + str(i) + ".txt")
