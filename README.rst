@@ -2,15 +2,20 @@ Code to add SNIa to LSST galaxy catalogs:
 ----------------------------------------
 Current:
 -------
-- src/sncat.py : Instance catalog 
 - src/snObject.py : SN Object which has a few more attributes beyond model, and methods to use catsim framework to obtain magnitudes after extinction. 
 
-    >>> python snObject.py 
-   # should run and produce output light curves for a  SN at z = 1.0 (Look at   
+>>> python snObject.py 
+   # should run and produce output light curves for a  SN at z = 0.3 in a file
+   # lc.dat.    
    # time, u g r i z y su sg sr si sz sy 
    # u g r i z are calculated using catsim
    # su sg sr si sz sy are calculated using SNCosmo
 
+- src/plotlc.py: plots the light curve output lc.dat comparing them between SNCosmo and the photutils mags. 
+- src/sncat.py : Instance catalog of SN instantiated using the SNObject class in snObject.py drawing galaxy information from a galaxy catalog. 
+
+>>> python sncat.py 
+# produces instance catalogs for 10 days at an interval of a single day and writes them to disk in files called SNIaCat_i.txt. Each file has the properties of SN observed, and their magnitudes calculated using photUtils. This inlcudes MW extinction through CCM dust relations calculated at the ra, dec positions of the SN.
 
 Usage: 
 -----

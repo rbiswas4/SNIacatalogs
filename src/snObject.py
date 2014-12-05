@@ -80,7 +80,7 @@ class SNObject (Model):
 
     new methods:
     ------------
-    setmwebvfrommaps: Uses the LSST stack to obtain MW extinction according to
+    mwebvfrommaps: Uses the LSST stack to obtain MW extinction according to
         CCM 89, the ra and dec of the supernova, and the SFD dustmaps to apply
         appropriate extinction to the SN sed.
     lsstbandmags: Uses the LSST stack functionality to obtain LSST band
@@ -176,5 +176,5 @@ if __name__ == "__main__":
         e += x.tolist() 
         e += y.tolist()
         l.append(e)
-
-    np.savetxt('lc.dat', np.array(l), fmt='%10.6f')
+    header="time(mjd) u g r i z y su sg sr si sz sy"
+    np.savetxt('lc.dat', np.array(l), fmt='%10.6f', header=header)

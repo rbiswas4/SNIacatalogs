@@ -1,4 +1,4 @@
-#!\usr/bin/env python
+#!/usr/bin/env python
 
 from cStringIO import StringIO
 import sys, os
@@ -30,7 +30,7 @@ class SNIaCatalog (InstanceCatalog):
     the supernova model (eg. SALT2)
     and parameters of the supernova model that predict the SED.
     """
-    column_outputs = ['snid', 'snra', 'sndec', 'z', 't0', 'c', 'x1', 'x0']
+    column_outputs = ['snid', 'snra', 'sndec', 'z', 't0', 'c', 'x1', 'x0','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y']
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e', 'x0': '%8e'}
     cannot_be_null = ['x0']
 # column_outputs=['raJ2000','decJ2000','snid','z','snra', 'sndec',\
@@ -59,7 +59,7 @@ class SNIaCatalog (InstanceCatalog):
                 lsstbp[band] = Bandpass()
                 lsstbp[band].readThroughput(bandfname, wavelen_step=wavelenstep)
                 lsstbands.append(lsstbp[band])
-        plot = True
+        plot = False
         fifilterfigs, filterax = plt.subplots()
         if plot:
             for band in bandPassList:
@@ -96,7 +96,7 @@ class SNIaCatalog (InstanceCatalog):
         _vr = np.zeros(self.numobjs)
         return ([_snra, _sndec, _z, _vra, _vdec, _vr])
 
-    @compound('c', 'x1', 'x0', 't0')
+    @compound('c', 'x1', 'x0', 't0', 'mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
     def get_snparams(self):
         lsstbands = self.usedlsstbands()
         ra, dec = self.column_by_name('raJ2000'), \
@@ -119,12 +119,13 @@ class SNIaCatalog (InstanceCatalog):
             v[0] = np.random.normal(0., 0.3)
             v[1] = np.random.normal(0., 3.0)
             mabs = np.random.normal(-19.3, 0.3)
-            SNmodel._ra = ra[i]
-            SNmodel._dec = dec[i]
-            SNmodel.setmwebv()
+            SNmodel.ra = ra[i]
+            SNmodel.dec = dec[i]
+            SNmodel.mwebvfrommaps()
             SNmodel.set(z=_z[i], c=v[0], x1=v[1])
             SNmodel.set_source_peakabsmag(mabs, 'bessellb', 'ab')
             v[2] = SNmodel.get('x0')
+            v[3] = v[-1]
             #phase =  (self.obs_metadata.mjd - v[-1])/(1.0 + _z[i])
             #source = SNmodel.source
             #print len(lsstbands[0].wavelen)
@@ -133,7 +134,7 @@ class SNIaCatalog (InstanceCatalog):
         #print self.obs_metadata.bandpass
 
         return ([vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3],
-            vals[:, 4], vals[:,5], vals[:,6], vals[:,7], vals[:,8]])
+            vals[:, 4], vals[:,5], vals[:,6], vals[:,7], vals[:,8], vals[:,9]])
   
 if __name__ == "__main__":
 
