@@ -25,14 +25,32 @@ map_dir = os.path.join(dustmaproot, 'DustMaps')
 wavelenstep = 0.1
 plot=False
 
-
 def getlsstbandpassobjs(loadsncosmo=True, loadcatsim=True):
+    """
+    General utility to return a list of the baseline LSST bandpasses loaded
+    as catsim bandpass objects, and register them as SNCosmo bandpasses
+    accessible through strings like 'LSSTu'. 
+    args:
+        loadsncosmo: Bool, optional, defaults to True
+            variable to decide whether to register the LSST bandpasses as
+            SNCosmo registered bandpass objects accessible through strings
+            like 'LSSTu'
+        loadcatsim : Bool, optional, defaults to True
+            variable to decide whether to set up catsim bandpass objects
+            are return the list of u,g,r,i,z,y bandpasses
+    returns:
+        if loadcatsim is true, list of catsim bandpass objects corresponding
+        to LSST baseline u, g, r, i, z, y filters. 
+        if loadcatsim is False, return is None
+
+    Examples:
+
+    """
     bandPassList = ['u', 'g', 'r', 'i', 'z', 'y']
     banddir = os.path.join(os.getenv('THROUGHPUTS_DIR'), 'baseline')
     lsstbands = []
     lsstbp = {}
 
-    #wavelenstep = 0.1
     for band in bandPassList:
         # setup sncosmo bandpasses
         bandfname = banddir + "/total_" + band  + '.dat'
@@ -76,15 +94,21 @@ class SNObject (Model):
     new attributes:
     ---------------
     ra:
+        ra of the SN in degrees 
     dec:
+        dec of the SN in degrees
 
     new methods:
     ------------
     mwebvfrommaps: Uses the LSST stack to obtain MW extinction according to
         CCM 89, the ra and dec of the supernova, and the SFD dustmaps to apply
         appropriate extinction to the SN sed.
+        args:
+        returns:
     lsstbandmags: Uses the LSST stack functionality to obtain LSST band
         magnitudes using the bandpass filters.  
+        args:
+        returns:
 
     Notes:
     -----
@@ -101,10 +125,7 @@ class SNObject (Model):
         #If we know ra, dec in degree
         self.ra = ra
         self.dec = dec
-        if ra is None or dec is None:
-            pass
-        else:
-            self.mwebvfrommaps()
+        self.mwebvfrommaps()
         self._seed = None
         return
 
@@ -116,9 +137,24 @@ class SNObject (Model):
         return self._seed
 
     def mwebvfrommaps(self):
+        """
+        set the attribute _mwebv of the class from the ra and dec 
+        of the SN. If the ra or dec attribute of the class is None, 
+        set this attribute to None.
+        args: None
+        returns: None
+        Notes:
+            This function must be run after the class has attributes ra and
+            dec specified. In case it is run before this, the mwebv value will
+            be set to None.
+
+        """
 
         ra = self.ra
         dec = self.dec
+        if ra is None or dec is None:
+            self._mwebv = None
+            return
         skycoords = SkyCoord(ra, dec, unit='deg')
         self._mwebv = sncosmo.get_ebv_from_map(skycoords, 
                 mapdir=map_dir,
@@ -126,7 +162,18 @@ class SNObject (Model):
         return
 
     def lsstbandmags(self, lsstbands, time):
-
+        """
+        return a numpy array of magnitudes of the SN spectrum in the ab
+        magnitude system.
+        args:
+            lsstbands: mandatory, list of bandpass objects
+                a list of LSST catsim bandpass objects
+            time: mandatory, float 
+                MJD at which this is evaluated
+        returns:
+            `np.ndarray` of mag values for each band in lsstbandpass.
+            Unphysical values of the flux density are reported as np.nan
+        """
         filterwav = lsstbands[0].wavelen
         SEDfromSNcosmo = Sed(wavelen=filterwav,
                 flambda=self.flux(time=time, wave=filterwav*10.)*10.)
@@ -145,7 +192,7 @@ class SNObject (Model):
 
 if __name__ == "__main__":
     """ 
-    Example code for writing a light curve in multiple bands
+    Example code for writing a light curve in multiple bands. 
 
     """
 
