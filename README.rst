@@ -6,7 +6,7 @@ Current:
 
 >>> python snObject.py 
    # should run and produce output light curves for a  SN at z = 0.3 in a file
-   # lc.dat.    
+   # ../out/lc.dat.    
    # time, u g r i z y su sg sr si sz sy 
    # u g r i z are calculated using catsim
    # su sg sr si sz sy are calculated using SNCosmo
@@ -15,7 +15,11 @@ Current:
 - src/sncat.py : Instance catalog of SN instantiated using the SNObject class in snObject.py drawing galaxy information from a galaxy catalog. 
 
 >>> python sncat.py 
-# produces instance catalogs for 10 days at an interval of a single day and writes them to disk in files called SNIaCat_i.txt. Each file has the properties of SN observed, and their magnitudes calculated using photUtils. This inlcudes MW extinction through CCM dust relations calculated at the ra, dec positions of the SN.
+    # produces instance catalogs for 10 days at an interval of a single day
+    # and writes them to disk in files called SNIaCat_i.txt. Each file has 
+    # the properties of SN observed, and their magnitudes calculated using 
+    # photUtils. This inlcudes MW extinction through CCM dust relations 
+    # calculated at the ra, dec positions of the SN.
 
 Usage: 
 -----
