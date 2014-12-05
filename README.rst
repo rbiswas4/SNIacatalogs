@@ -29,8 +29,9 @@ Usage:
 TODO: (Major things to be added)
 ----
 1. Add uncertainties (at some approximation, easy)
-2. Add intrinsic scatter (will take time) 
-3. Add zero point fluctuations 
+2. Add intrinsic scatter (will take time)
+3. Add zero point fluctuations
+
 older: (outdated)
 -----
 src/snIa.py is an instance catalog class to interact with the lsst database
