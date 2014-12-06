@@ -18,6 +18,7 @@ from astropy.coordinates import SkyCoord
 from sncosmo import Model
 
 from lsst.sims.photUtils.Photometry import PhotometryStars, Sed, Bandpass
+from lsst.sims.photUtils.EBV import EBVbase
 
 dustmaproot = os.getenv('SIMS_DUSTMAPS_DIR')
 map_dir = os.path.join(dustmaproot, 'DustMaps')
@@ -104,17 +105,18 @@ class SNObject (Model):
     ------------
     mwebvfrommaps: Uses the LSST stack to obtain MW extinction according to
         CCM 89, the ra and dec of the supernova, and the SFD dustmaps to apply
-        appropriate extinction to the SN sed.
+        appropriate extinction to the SN sed. must be run after the ra, dec
+        parameters are set.
         args:
         returns:
+    set_mwebv(values): Set the value of attribute _mwebv to a particular
+        value
     lsstbandmags: Uses the LSST stack functionality to obtain LSST band
         magnitudes using the bandpass filters.
         args:
         returns:
-
     Notes:
-    -----
-
+    ------
     """
     def __init__(self, ra=None, dec=None):
         Model.__init__(self, source="salt2-extended",
@@ -122,11 +124,13 @@ class SNObject (Model):
                        effect_frames=['obs'])
         # Current implementation of Model has a default value of mwebv = 0.
         # ie. no extinction, but this is not part of the API, so should not
-        # depend on it, set explicitly.
+        # depend on it, set explicitly in order to unextincted SED from 
+        # SNCosmo. We will use catsim extinction from photUtils.
         self.set(mwebv=0.)
         # If we know ra, dec in degree
         self.ra = ra
         self.dec = dec
+        self.lsstmwebv = EBVbase()
         self.mwebvfrommaps()
         self._seed = None
         return
@@ -136,6 +140,24 @@ class SNObject (Model):
     @property
     def seed(self):
         return self._seed
+
+    def set_mwebv(self, value):
+        """
+        if mwebv value is known, this can be used to set the attribute
+        _mwebv of the SNObject class to the value (float).
+        args:
+            value: float, mandatory
+                value of mw extinction parameter E(B-V) in mags to be used in
+                applying extinction to the SNObject spectrum
+        returns:
+            None
+        Notes:
+            For a large set of SN, one may use fast `np.ndarray` valued 
+            functions to obtain an array of such values, and then set the
+            values from such an array.
+        """
+        self._mwebv = value 
+        return
 
     def mwebvfrommaps(self):
         """
@@ -150,16 +172,20 @@ class SNObject (Model):
             be set to None.
 
         """
-
+        
         ra = self.ra
         dec = self.dec
         if ra is None or dec is None:
             self._mwebv = None
             return
-        skycoords = SkyCoord(ra, dec, unit='deg')
-        self._mwebv = sncosmo.get_ebv_from_map(skycoords,
-                                               mapdir=map_dir,
-                                               interpolate=False)
+        skycoord = np.array([[ra], [dec]]) * np.pi / 180.
+        # skycoords = SkyCoord(ra, dec, unit='deg')
+        # t_mwebv = sncosmo.get_ebv_from_map(skycoords,
+        #                                       mapdir=map_dir,
+        #                                       interpolate=False)
+        self._mwebv = self.lsstmwebv.calculateEbv(equatorialCoordinates=
+                                                  skycoord)
+        # print "compare vals :", t_mwebv , self._mwebv
         return
 
     def lsstbandmags(self, lsstbands, time):
