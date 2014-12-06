@@ -124,7 +124,7 @@ class SNObject (Model):
                        effect_frames=['obs'])
         # Current implementation of Model has a default value of mwebv = 0.
         # ie. no extinction, but this is not part of the API, so should not
-        # depend on it, set explicitly in order to unextincted SED from 
+        # depend on it, set explicitly in order to unextincted SED from
         # SNCosmo. We will use catsim extinction from photUtils.
         self.set(mwebv=0.)
         # If we know ra, dec in degree
@@ -152,11 +152,11 @@ class SNObject (Model):
         returns:
             None
         Notes:
-            For a large set of SN, one may use fast `np.ndarray` valued 
+            For a large set of SN, one may use fast `np.ndarray` valued
             functions to obtain an array of such values, and then set the
             values from such an array.
         """
-        self._mwebv = value 
+        self._mwebv = value
         return
 
     def mwebvfrommaps(self):
@@ -172,7 +172,6 @@ class SNObject (Model):
             be set to None.
 
         """
-        
         ra = self.ra
         dec = self.dec
         if ra is None or dec is None:
@@ -181,11 +180,11 @@ class SNObject (Model):
         skycoord = np.array([[ra], [dec]]) * np.pi / 180.
         # skycoords = SkyCoord(ra, dec, unit='deg')
         # t_mwebv = sncosmo.get_ebv_from_map(skycoords,
-        #                                       mapdir=map_dir,
-        #                                       interpolate=False)
+        #                                    mapdir=map_dir,
+        #                                    interpolate=False)
         self._mwebv = self.lsstmwebv.calculateEbv(equatorialCoordinates=
-                                                  skycoord)
-        # print "compare vals :", t_mwebv , self._mwebv
+                                                  skycoord)[0]
+        # print "compare vals :", t_mwebv, self._mwebv
         return
 
     def lsstbandmags(self, lsstbands, time):
