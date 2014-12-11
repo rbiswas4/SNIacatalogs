@@ -16,8 +16,10 @@ from lsst.sims.photUtils import Sed
 import lsst.sims.photUtils.Bandpass as Bandpass
 import sncosmo
 from astropy.units import Unit
-from astropy.cosmology import Planck13 as cosmo
+import astropy.cosmology as cosmology 
+#from astropy.cosmology import Planck13 as cosmo
 from snObject import SNObject
+from lsst.sims.photUtils import CosmologyWrapper 
 wavelenstep = 0.1
 
 
@@ -135,7 +137,11 @@ class SNIaCatalog (InstanceCatalog):
             SNmodel.dec = dec[i]
             SNmodel.mwebvfrommaps()
             SNmodel.set(z=_z[i], c=v[0], x1=v[1])
-            SNmodel.set_source_peakabsmag(mabs, 'bessellb', 'ab')
+            # rather than use the SNCosmo function below which uses astropy to calculate
+            # distanceModulus, we will use photUtils CosmologyWrapper for consistency
+            # SNmodel.set_source_peakabsmag(mabs, 'bessellb', 'ab', cosmo=cosmo)
+            mag = mabs + defcosmo.distanceModulus(_z[i])
+            SNmodel.source.set_peakmag(mag, band='bessellb', magsys='ab')
             v[2] = SNmodel.get('x0')
             v[3] = v[-1]
             v[4:] = SNmodel.lsstbandmags(lsstbands=lsstbands,
@@ -164,6 +170,9 @@ if __name__ == "__main__":
                                       bandpassName=['u', 'g', 'r', 'i',
                                                     'z', 'y'],
                                       mjd=myMJD)
+        defcosmo = CosmologyWrapper() 
+        cosmo = cosmology.Planck13 
+        defcosmo.setCurrent(cosmo)
         catalog = SNIaCatalog(db_obj=galDB,
                               obs_metadata=myObsMD)
         print i, type(catalog.usedlsstbands())
