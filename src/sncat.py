@@ -20,7 +20,10 @@ import astropy.cosmology as cosmology
 #from astropy.cosmology import Planck13 as cosmo
 from snObject import SNObject
 from lsst.sims.photUtils import CosmologyWrapper 
+import sqliteutils as sq
+import sqlite3
 wavelenstep = 0.1
+
 
 
 # class SNIaCatalog (object):
@@ -160,8 +163,22 @@ if __name__ == "__main__":
     print bcm.__file__
     from lsst.sims.catalogs.generation.db import ObservationMetaData
     galDB = CatalogDBObject.from_objid('galaxyTiled')
+    def file2lst(fname, i, mjd):
+        d = np.loadtxt(fname, delimiter=',')
+        l = list()
+        for i, row in enumerate(d):
+            obsid = 'obshist' + str(i)
+            lst = [obsid] + [mjd] + row.tolist()
+            l.append(lst)
+        return l
+
     myMJDS = [570123.15 + i for i in range(10)]
 
+    #prepare a new sncat table:
+    #delete catalog if it exists manually
+    connection = sqlite3.connect('../out/sncat.db')
+    curs = connection.cursor()
+    curs.execute('''CREATE TABLE mysncat (id TEXT, mjd FLOAT, snid INT, snra FLOAT, sndec FLOAT, z FLOAT, t0 FLOAT, c FLOAT, x1 FLOAT, x0 FLOAT, mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT, mag_z FLOAT, mag_y FLOAT)''')
     for i, myMJD in enumerate(myMJDS):
         myObsMD = ObservationMetaData(boundType='circle',
                                       unrefractedRA=5.0,
@@ -176,4 +193,11 @@ if __name__ == "__main__":
         catalog = SNIaCatalog(db_obj=galDB,
                               obs_metadata=myObsMD)
         print i, type(catalog.usedlsstbands())
-        catalog.write_catalog("../out/SNIaCat_" + str(i) + ".txt")
+        fname = "../out/SNIaCat_" + str(i) + ".txt"
+        catalog.write_catalog(fname)
+        l = file2lst(fname, i, mjd=myMJD)
+        recs = sq.array2records(l)
+        exec_str = sq.insertfromdata(tablename='mysncat', records=recs, multiple=True)
+        curs.executemany(exec_str, recs)
+
+
