@@ -46,7 +46,6 @@ class SNIaCatalog (InstanceCatalog):
 # 'mass_stellar', 'c', 'x1', 't0', "x0"]
     surveyoffset = 570000.0
     SN_thresh = 100.0
-
     def usedlsstbands(self, loadsncosmo=True, loadcatsim=True):
 
         bandPassList = self.obs_metadata.bandpass
@@ -139,7 +138,7 @@ class SNIaCatalog (InstanceCatalog):
             SNmodel.ra = ra[i]
             SNmodel.dec = dec[i]
             SNmodel.mwebvfrommaps()
-            SNmodel.set(z=_z[i], c=v[0], x1=v[1])
+            SNmodel.set(z=_z[i], c=v[0], x1=v[1], t0=v[-1])
             # rather than use the SNCosmo function below which uses astropy to calculate
             # distanceModulus, we will use photUtils CosmologyWrapper for consistency
             # SNmodel.set_source_peakabsmag(mabs, 'bessellb', 'ab', cosmo=cosmo)
@@ -171,33 +170,43 @@ if __name__ == "__main__":
             lst = [obsid] + [mjd] + row.tolist()
             l.append(lst)
         return l
+    # main example :  create all the 'observations' separated by a day, 
 
-    myMJDS = [570123.15 + i for i in range(10)]
+    myMJDS = [570123.15 + 3.*i for i in range(20)]
 
+    createcat = True
     #prepare a new sncat table:
     #delete catalog if it exists manually
     connection = sqlite3.connect('../out/sncat.db')
     curs = connection.cursor()
-    curs.execute('''CREATE TABLE mysncat (id TEXT, mjd FLOAT, snid INT, snra FLOAT, sndec FLOAT, z FLOAT, t0 FLOAT, c FLOAT, x1 FLOAT, x0 FLOAT, mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT, mag_z FLOAT, mag_y FLOAT)''')
+    curs.execute('CREATE TABLE if not exists mysncat (id TEXT, mjd FLOAT, snid INT, snra FLOAT, sndec FLOAT, z FLOAT, t0 FLOAT, c FLOAT, x1 FLOAT, x0 FLOAT, mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT, mag_z FLOAT, mag_y FLOAT)')
     for i, myMJD in enumerate(myMJDS):
-        myObsMD = ObservationMetaData(boundType='circle',
-                                      unrefractedRA=5.0,
-                                      unrefractedDec=15.0,
-                                      boundLength=0.15,
-                                      bandpassName=['u', 'g', 'r', 'i',
-                                                    'z', 'y'],
-                                      mjd=myMJD)
-        defcosmo = CosmologyWrapper() 
-        cosmo = cosmology.Planck13 
-        defcosmo.setCurrent(cosmo)
-        catalog = SNIaCatalog(db_obj=galDB,
-                              obs_metadata=myObsMD)
-        print i, type(catalog.usedlsstbands())
+        if createcat:
+            myObsMD = ObservationMetaData(boundType='circle',
+                                          unrefractedRA=5.0,
+                                          unrefractedDec=15.0,
+                                          boundLength=0.15,
+                                          bandpassName=['u', 'g', 'r', 'i',
+                                                        'z', 'y'],
+                                          mjd=myMJD)
+            defcosmo = CosmologyWrapper() 
+            cosmo = cosmology.Planck13 
+            defcosmo.setCurrent(cosmo)
+            catalog = SNIaCatalog(db_obj=galDB,
+                                  obs_metadata=myObsMD)
+            print "====================================="
+            print i, type(catalog.usedlsstbands()) , catalog.obs_metadata.mjd
+            print "====================================="
+            fname = "../out/SNIaCat_" + str(i) + ".txt"
+            catalog.write_catalog(fname)
         fname = "../out/SNIaCat_" + str(i) + ".txt"
-        catalog.write_catalog(fname)
         l = file2lst(fname, i, mjd=myMJD)
-        recs = sq.array2records(l)
+        recs = sq.array2dbrecords(l)
         exec_str = sq.insertfromdata(tablename='mysncat', records=recs, multiple=True)
         curs.executemany(exec_str, recs)
+    connection.commit()
+    curs.execute('SELECT * FROM mysncat')  
+    print 'In Database: ', curs.fetchall()
+    connection.close()
 
 
