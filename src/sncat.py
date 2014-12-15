@@ -181,7 +181,7 @@ if __name__ == "__main__":
         return l
     # main example :  create all the 'observations' separated by a day, 
 
-    myMJDS = [570123.15 + 3.*i for i in range(2)]
+    myMJDS = [570123.15 + 3.*i for i in range(20)]
 
     createcat = True
     #prepare a new sncat table:
