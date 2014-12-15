@@ -10,7 +10,7 @@ from lsst.sims.photUtils.Photometry import PhotometryStars, Sed, Bandpass
 from lsst.sims.photUtils.Photometry import PhotometryBase
 from snObject import SNObject
 
-import test_utils as tu
+import utils_for_test as tu
 # from unittest import assertAlmostEqual
 ra = 204.
 dec = -30.
