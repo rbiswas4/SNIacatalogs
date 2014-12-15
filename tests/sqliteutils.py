@@ -22,8 +22,9 @@ def insertfromdata(tablename, records, multiple=True):
     """
     construct string to insert multiple records into sqlite3 database 
     args:
-        tablename:
-        records:
+        tablename: str, mandatory
+            Name of table in the database. 
+        records: set of records
         multiple:
     returns:
     """
