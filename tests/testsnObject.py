@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from lsst.sims.photUtils.Photometry import PhotometryStars, Sed, Bandpass
 from lsst.sims.photUtils.Photometry import PhotometryBase
-from sniacatalogs.snObject import SNObject
+from snObject import SNObject
 
 import test_utils as tu
 # from unittest import assertAlmostEqual
