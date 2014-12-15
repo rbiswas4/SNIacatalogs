@@ -33,6 +33,7 @@ for time in np.arange(-20., 50., 1.0):
     l.append(e)
 header = "time(mjd) u g r i z y"
 lc = np.array(l)
+np.savetxt('test_data/lc.dat', lc, fmt='%10.6f', header=header)
 
 # The 'test_data/standard_lc.dat' file was written using the following command
 #     for a SN at ra  = 204., -30. , with x0 = 1.846e-6, x1=0.1, c=0., z=0.2
