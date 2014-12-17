@@ -22,7 +22,7 @@ from snObject import SNObject
 from sncat import SNIaCatalog
 from lsst.sims.photUtils.CosmologyObject import CosmologyWrapper 
 #import sqliteutils as sq
-import utils_for_test as sq
+import testUtilsSNe as sq
 import sqlite3
 wavelenstep = 0.1
 
