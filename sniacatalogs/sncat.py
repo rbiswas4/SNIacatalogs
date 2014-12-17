@@ -48,8 +48,11 @@ class SNIaCatalog (InstanceCatalog):
     SN_thresh = 100.0
     def usedlsstbands(self, loadsncosmo=True, loadcatsim=True):
 
+        import eups
         bandPassList = self.obs_metadata.bandpass
-        banddir = os.path.join(os.getenv('THROUGHPUTS_DIR'), 'baseline')
+        throughputsdir = eups.productDir('throughputs')
+        # banddir = os.path.join(os.getenv('THROUGHPUTS_DIR'), 'baseline')
+        banddir = os.path.join(throughputsdir, 'baseline')
         lsstbands = []
         lsstbp = {}
 
@@ -90,7 +93,7 @@ class SNIaCatalog (InstanceCatalog):
     def get_snid(self):
         # Not necessarily unique if the same galaxy hosts two SN
         # rethink
-        return self.column_by_name('id')
+        return self.column_by_name('uniqueid')
 
     @property
     def numobjs(self):
