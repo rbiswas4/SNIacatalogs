@@ -93,7 +93,7 @@ class SNIaCatalog (InstanceCatalog):
     def get_snid(self):
         # Not necessarily unique if the same galaxy hosts two SN
         # rethink
-        return self.column_by_name('uniqueid')
+        return self.column_by_name('id')
 
     @property
     def numobjs(self):
