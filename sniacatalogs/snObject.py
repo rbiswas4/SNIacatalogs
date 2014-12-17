@@ -200,7 +200,7 @@ class SNObject (Model):
             `np.ndarray` of mag values for each band in lsstbandpass.
             Unphysical values of the flux density are reported as np.nan
         """
-        filterwav = lsstbands[0].wavelen
+        filterwav = bandpassobjects[0].wavelen
         SEDfromSNcosmo = Sed(wavelen=filterwav,
                              flambda=self.flux(time=time,
                                                wave=filterwav*10.)*10.)
@@ -211,7 +211,7 @@ class SNObject (Model):
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self._mwebv)
-        phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(lsstbands)
+        phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobjects)
         SEDfromSNcosmo.synchronizeSED(wavelen_min=filterwav[0],
                                       wavelen_max=filterwav[-2],
                                       wavelen_step=wavelenstep)
