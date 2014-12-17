@@ -148,7 +148,7 @@ class SNIaCatalog (InstanceCatalog):
             SNmodel.source.set_peakmag(mag, band='bessellb', magsys='ab')
             v[2] = SNmodel.get('x0')
             v[3] = v[-1]
-            v[4:] = SNmodel.lsstbandmags(lsstbands=lsstbands,
+            v[4:] = SNmodel.bandmags(bandpassobjects=lsstbands,
                                          time=self.obs_metadata.mjd)
             # print self.obs_metadata.mjd
         # print self.obs_metadata.bandpass

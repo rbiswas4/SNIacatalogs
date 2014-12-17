@@ -27,64 +27,64 @@ wavelenstep = 0.1
 plot = False
 
 
-def getlsstbandpassobjs(loadsncosmo=True, loadcatsim=True):
-    """
-    General utility to return a list of the baseline LSST bandpasses loaded
-    as catsim bandpass objects, and register them as SNCosmo bandpasses
-    accessible through strings like 'LSSTu'.
-    args:
-        loadsncosmo: Bool, optional, defaults to True
-            variable to decide whether to register the LSST bandpasses as
-            SNCosmo registered bandpass objects accessible through strings
-            like 'LSSTu'
-        loadcatsim : Bool, optional, defaults to True
-            variable to decide whether to set up catsim bandpass objects
-            are return the list of u,g,r,i,z,y bandpasses
-    returns:
-        if loadcatsim is true, list of catsim bandpass objects corresponding
-        to LSST baseline u, g, r, i, z, y filters.
-        if loadcatsim is False, return is None
-
-    Examples:
-
-    """
-    bandPassList = ['u', 'g', 'r', 'i', 'z', 'y']
-    banddir = os.path.join(os.getenv('THROUGHPUTS_DIR'), 'baseline')
-    lsstbands = []
-    lsstbp = {}
-
-    for band in bandPassList:
-        # setup sncosmo bandpasses
-        bandfname = banddir + "/total_" + band + '.dat'
-        if loadsncosmo:
-            # register the LSST bands to the SNCosmo registry
-            # Not needed for LSST, but useful to compare independent codes
-            # Usually the next two lines can be merged,
-            # but there is an astropy bug currently which affects only OSX.
-            numpyband = np.loadtxt(bandfname)
-            sncosmoband = sncosmo.Bandpass(wave=numpyband[:, 0],
-                                           trans=numpyband[:, 1],
-                                           wave_unit=Unit('nm'),
-                                           name='LSST' + band)
-            sncosmo.registry.register(sncosmoband, force=True)
-        if loadcatsim:
-            # Now load LSST bandpasses for catsim
-            lsstbp[band] = Bandpass()
-            lsstbp[band].readThroughput(bandfname, wavelen_step=wavelenstep)
-            lsstbands.append(lsstbp[band])
-    fifilterfigs, filterax = plt.subplots()
-    if plot:
-        for band in bandPassList:
-            b = sncosmo.get_bandpass('LSST' + band)
-            filterax.plot(b.wave, b.trans, '-k', lw=2.0)
-            filterax.set_xlabel(r'$\lambda$, ($\AA$)')
-            filterax.set_ylabel(r'transmission')
-        plt.show()
-
-    if loadcatsim:
-        return lsstbands
-    else:
-        return None
+# def getlsstbandpassobjs(loadsncosmo=True, loadcatsim=True):
+#     """
+#     General utility to return a list of the baseline LSST bandpasses loaded
+#     as catsim bandpass objects, and register them as SNCosmo bandpasses
+#     accessible through strings like 'LSSTu'.
+#     args:
+#         loadsncosmo: Bool, optional, defaults to True
+#             variable to decide whether to register the LSST bandpasses as
+#             SNCosmo registered bandpass objects accessible through strings
+#             like 'LSSTu'
+#         loadcatsim : Bool, optional, defaults to True
+#             variable to decide whether to set up catsim bandpass objects
+#             are return the list of u,g,r,i,z,y bandpasses
+#     returns:
+#         if loadcatsim is true, list of catsim bandpass objects corresponding
+#         to LSST baseline u, g, r, i, z, y filters.
+#         if loadcatsim is False, return is None
+# 
+#     Examples:
+# 
+#     """
+#     bandPassList = ['u', 'g', 'r', 'i', 'z', 'y']
+#     banddir = os.path.join(os.getenv('THROUGHPUTS_DIR'), 'baseline')
+#     lsstbands = []
+#     lsstbp = {}
+# 
+#     for band in bandPassList:
+#         # setup sncosmo bandpasses
+#         bandfname = banddir + "/total_" + band + '.dat'
+#         if loadsncosmo:
+#             # register the LSST bands to the SNCosmo registry
+#             # Not needed for LSST, but useful to compare independent codes
+#             # Usually the next two lines can be merged,
+#             # but there is an astropy bug currently which affects only OSX.
+#             numpyband = np.loadtxt(bandfname)
+#             sncosmoband = sncosmo.Bandpass(wave=numpyband[:, 0],
+#                                            trans=numpyband[:, 1],
+#                                            wave_unit=Unit('nm'),
+#                                            name='LSST' + band)
+#             sncosmo.registry.register(sncosmoband, force=True)
+#         if loadcatsim:
+#             # Now load LSST bandpasses for catsim
+#             lsstbp[band] = Bandpass()
+#             lsstbp[band].readThroughput(bandfname, wavelen_step=wavelenstep)
+#             lsstbands.append(lsstbp[band])
+#     fifilterfigs, filterax = plt.subplots()
+#     if plot:
+#         for band in bandPassList:
+#             b = sncosmo.get_bandpass('LSST' + band)
+#             filterax.plot(b.wave, b.trans, '-k', lw=2.0)
+#             filterax.set_xlabel(r'$\lambda$, ($\AA$)')
+#             filterax.set_ylabel(r'transmission')
+#         plt.show()
+# 
+#     if loadcatsim:
+#         return lsstbands
+#     else:
+#         return None
 
 
 class SNObject (Model):
@@ -111,7 +111,7 @@ class SNObject (Model):
         returns:
     set_mwebv(values): Set the value of attribute _mwebv to a particular
         value
-    lsstbandmags: Uses the LSST stack functionality to obtain LSST band
+    bandmags: Uses the LSST stack functionality to obtain LSST band
         magnitudes using the bandpass filters.
         args:
         returns:
@@ -187,12 +187,12 @@ class SNObject (Model):
         # print "compare vals :", t_mwebv, self._mwebv
         return
 
-    def lsstbandmags(self, lsstbands, time):
+    def bandmags(self, bandpassobjects, time):
         """
         return a numpy array of magnitudes of the SN spectrum in the ab
         magnitude system.
         args:
-            lsstbands: mandatory, list of bandpass objects
+            bandpassobjects: mandatory, list of bandpass objects
                 a list of LSST catsim bandpass objects
             time: mandatory, float
                 MJD at which this is evaluated
@@ -217,42 +217,3 @@ class SNObject (Model):
                                       wavelen_step=wavelenstep)
 
         return SEDfromSNcosmo.manyMagCalc(phiarray, wavelen_step=wavelenstep)
-
-
-if __name__ == "__main__":
-    """
-    Example code for writing a light curve in multiple bands.
-    """
-
-    import numpy as np
-    import matplotlib.pyplot as plt
-    from lsst.sims.photUtils.Photometry import PhotometryBase
-
-    ra = 204.
-    dec = -30.
-    SN = SNObject(ra, dec)
-    SN.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
-    print SN
-    SNCosmoSN = SNObject(ra, dec)
-    SNCosmoSN.set(x0=1.847e-6, x1=0.1, z=0.2, mwebv=SN._mwebv)
-    #lsstbands = getlsstbandpassobjs()
-    thisshouldbeNone = getlsstbandpassobjs(loadcatsim=False)
-    bandPassList = ['u', 'g', 'r', 'i', 'z', 'y']
-    sncosmobands = ['LSSTu', 'LSSTg', 'LSSTr', 'LSSTi', 'LSSTz', 'LSSTy']
-    photometry = PhotometryBase()
-    photometry.loadBandPassesFromFiles(bandPassList)
-    lsstbands = photometry.bandPassList
-    print type(lsstbands)
-    w = sncosmo.get_bandpass(sncosmobands[0]).wave
-    l = []
-    for time in np.arange(-20., 50., 1.0):
-        t = time*np.ones(len(sncosmobands))
-        t.tolist()
-        x = SN.lsstbandmags(lsstbands, time=time)
-        y = SNCosmoSN.bandmag(band=sncosmobands, time=t, magsys='ab')
-        e = [time]
-        e += x.tolist()
-        e += y.tolist()
-        l.append(e)
-    header = "time(mjd) u g r i z y su sg sr si sz sy"
-    np.savetxt('../out/lc.dat', np.array(l), fmt='%10.6f', header=header)
