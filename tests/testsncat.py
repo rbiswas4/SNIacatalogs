@@ -24,6 +24,7 @@ from lsst.sims.photUtils.CosmologyObject import CosmologyWrapper
 #import sqliteutils as sq
 import testUtilsSNe as sq
 import sqlite3
+import pandas as pd
 wavelenstep = 0.1
 
 import lsst.sims.catUtils.baseCatalogModels as bcm
@@ -62,7 +63,7 @@ for i, myMJD in enumerate(myMJDS):
         myObsMD = ObservationMetaData(boundType='circle',
                                       unrefractedRA=5.0,
                                       unrefractedDec=15.0,
-                                      boundLength=0.15,
+                                      boundLength=0.01,
                                       bandpassName=['u', 'g', 'r', 'i',
                                                     'z', 'y'],
                                       mjd=myMJD)
@@ -82,5 +83,21 @@ connection.commit()
 curs.execute('SELECT * FROM mysncat')  
 print 'In Database: ', curs.fetchall()
 connection.close()
+
+# stddata = np.loadtxt('testData/SNIaCat_0_std.txt', delimiter=',')
+# newdata = np.loadtxt('testData/SNIaCat_0.txt', delimiter=',')
+import pandas as pd
+stddata = pd.DataFrame.from_csv('testData/SNIaCat_0_std.txt')
+newdata = pd.DataFrame.from_csv('testData/SNIaCat_0.txt')
+std = stddata.sort()
+new = newdata.sort()
+# np.testing.assert_allclose(stddata, newdata)
+def test() :
+    if new.equals(std):
+        print 'pass'
+    else:
+        print 'Fail'
+test()
+
 
 

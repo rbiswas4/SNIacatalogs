@@ -37,7 +37,7 @@ class SNIaCatalog (InstanceCatalog):
     and parameters of the supernova model that predict the SED.
     """
     column_outputs = ['snid', 'snra', 'sndec', 'z', 't0', 'c', 'x1',
-                      'x0', 'mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z',
+                      'x0','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z',
                       'mag_y']
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e',
                         'x0': '%8e'}
@@ -141,7 +141,7 @@ class SNIaCatalog (InstanceCatalog):
             mabs = np.random.normal(-19.3, 0.3)
             SNmodel.ra = ra[i]
             SNmodel.dec = dec[i]
-            SNmodel.mwebvfrommaps()
+            SNmodel.mwEBVfromMaps()
             SNmodel.set(z=_z[i], c=v[0], x1=v[1], t0=v[-1])
             # rather than use the SNCosmo function below which uses astropy to calculate
             # distanceModulus, we will use photUtils CosmologyWrapper for consistency
@@ -156,9 +156,8 @@ class SNIaCatalog (InstanceCatalog):
             # print self.obs_metadata.mjd
         # print self.obs_metadata.bandpass
 
-        return ([vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3],
-                vals[:, 4], vals[:, 5], vals[:, 6], vals[:, 7],
-                vals[:, 8], vals[:, 9]])
+        return ([vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4],
+                vals[:, 5], vals[:, 6], vals[:, 7], vals[:, 8], vals[:, 9]])
 
 # if __name__ == "__main__":
 # 

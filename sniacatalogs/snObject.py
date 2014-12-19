@@ -17,6 +17,7 @@ from astropy.units import Unit
 from astropy.coordinates import SkyCoord
 from sncosmo import Model
 
+import eups
 from lsst.sims.photUtils.Photometry import PhotometryStars, Sed, Bandpass
 from lsst.sims.photUtils.EBV import EBVbase
 
@@ -103,13 +104,13 @@ class SNObject (Model):
 
     new methods:
     ------------
-    mwebvfrommaps: Uses the LSST stack to obtain MW extinction according to
+    mwEBVfromMaps: Uses the LSST stack to obtain MW extinction according to
         CCM 89, the ra and dec of the supernova, and the SFD dustmaps to apply
         appropriate extinction to the SN sed. must be run after the ra, dec
         parameters are set.
         args:
         returns:
-    set_mwebv(values): Set the value of attribute _mwebv to a particular
+    set_MWebv(values): Set the value of attribute _mwebv to a particular
         value
     bandmags: Uses the LSST stack functionality to obtain LSST band
         magnitudes using the bandpass filters.
@@ -131,7 +132,7 @@ class SNObject (Model):
         self.ra = ra
         self.dec = dec
         self.lsstmwebv = EBVbase()
-        self.mwebvfrommaps()
+        self.mwEBVfromMaps()
         self._seed = None
         return
 
@@ -141,7 +142,7 @@ class SNObject (Model):
     def seed(self):
         return self._seed
 
-    def set_mwebv(self, value):
+    def set_MWebv(self, value):
         """
         if mwebv value is known, this can be used to set the attribute
         _mwebv of the SNObject class to the value (float).
@@ -159,7 +160,7 @@ class SNObject (Model):
         self._mwebv = value
         return
 
-    def mwebvfrommaps(self):
+    def mwEBVfromMaps(self):
         """
         set the attribute _mwebv of the class from the ra and dec
         of the SN. If the ra or dec attribute of the class is None,
