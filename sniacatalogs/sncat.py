@@ -118,7 +118,7 @@ class SNIaCatalog (InstanceCatalog):
             self.column_by_name('decJ2000')
         SNmodel = SNObject()
         hundredyear = 100*365.0
-        vals = np.zeros(shape=(self.numobjs, 10))
+        vals = np.zeros(shape=(self.numobjs, 4))
         _z, _id = self.column_by_name('redshift'), self.column_by_name('snid')
         #distmods = cosmo.get_cosmologicalDistanceModulus()
         bad = np.nan
@@ -150,8 +150,8 @@ class SNIaCatalog (InstanceCatalog):
             SNmodel.source.set_peakmag(mag, band='bessellb', magsys='ab')
             v[2] = SNmodel.get('x0')
             v[3] = v[-1]
-            v[4:] = SNmodel.bandmags(bandpassobjects=lsstbands,
-                                         time=self.obs_metadata.mjd)
+            # v[4:] = SNmodel.bandmags(bandpassobjects=lsstbands,
+            #                             time=self.obs_metadata.mjd)
             # print self.obs_metadata.mjd
         # print self.obs_metadata.bandpass
 
@@ -160,48 +160,69 @@ class SNIaCatalog (InstanceCatalog):
     @compound('mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
     def get_snmags(self):
         lsstbands = self.usedlsstbands()
-        ra, dec = self.column_by_name('raJ2000'),\
-            self.column_by_name('decJ2000')
+        c, x1, x0, t0, _z , _id, ra, dec = self.column_by_name('c'),\
+                                 self.column_by_name('x1'),\
+                                 self.column_by_name('x0'),\
+                                 self.column_by_name('t0'),\
+                                 self.column_by_name('redshift'),\
+                                 self.column_by_name('snid'),\
+                                 self.column_by_name('raJ2000'),\
+                                 self.column_by_name('decJ2000')
         SNmodel = SNObject()
-        hundredyear = 100*365.0
-        vals = np.zeros(shape=(self.numobjs, 10))
-        _z, _id = self.column_by_name('redshift'), self.column_by_name('snid')
+        # hundredyear = 100*365.0
+        vals = np.zeros(shape=(self.numobjs, 6))
+        #_z, _id = self.column_by_name('redshift'), self.column_by_name('snid')
         #distmods = cosmo.get_cosmologicalDistanceModulus()
         bad = np.nan
         for i, v in enumerate(vals):
-            np.random.seed(_id[i])
-            v[-1] = np.random.uniform(-hundredyear / 2.0 +
-                                      self.surveyoffset,
-                                      hundredyear / 2.0 +
-                                      self.surveyoffset)
-            if np.abs(v[-1] - self.obs_metadata.mjd) > self.SN_thresh:
-                # v = np.array([np.nan, np.nan, np.nan, np.nan])
-                v[-1] = bad
-                v[0] = bad
-                v[1] = bad
-                v[2] = bad
+            if t0[i] is np.nan:
+                v = np.array([np.nan, np.nan, np.nan, np.nan, np.nan, np.nan])
                 continue
-            v[0] = np.random.normal(0., 0.3)
-            v[1] = np.random.normal(0., 3.0)
-            mabs = np.random.normal(-19.3, 0.3)
+            #print i, t0[i]
+            SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i])
             SNmodel.ra = ra[i]
             SNmodel.dec = dec[i]
             SNmodel.mwEBVfromMaps()
-            SNmodel.set(z=_z[i], c=v[0], x1=v[1], t0=v[-1])
+            x = SNmodel.bandmags(bandpassobjects=lsstbands,
+                                         time=self.obs_metadata.mjd)
+            v = np.array(x)
+            # print v, vals[i,0]
+            # np.random.seed(_id[i])
+            # v[-1] = np.random.uniform(-hundredyear / 2.0 +
+            #                         self.surveyoffset,
+            #                         hundredyear / 2.0 +
+            #                         self.surveyoffset)
+            # if np.abs(t0[i] - self.obs_metadata.mjd) > self.SN_thresh:
+            #    v = np.array([np.nan, np.nan, np.nan, np.nan, np.nan, np.nan])
+                # v[-1] = bad
+                # v[0] = bad
+                # v[1] = bad
+                # v[2] = bad
+                # continue
+            # v[0] = np.random.normal(0., 0.3)
+            # v[1] = np.random.normal(0., 3.0)
+            # mabs = np.random.normal(-19.3, 0.3)
+            # SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i])
+            # SNmodel.ra = ra[i]
+            # SNmodel.dec = dec[i]
+            # SNmodel.mwEBVfromMaps()
             # rather than use the SNCosmo function below which uses astropy to calculate
             # distanceModulus, we will use photUtils CosmologyWrapper for consistency
             # SNmodel.set_source_peakabsmag(mabs, 'bessellb', 'ab', cosmo=cosmo)
-            mag = mabs + cosmo.cosmology.distanceModulus(_z[i])
+            #mag = mabs + cosmo.cosmology.distanceModulus(_z[i])
             #cosmo.get_cosmologicalDistanceModulus(_z[i])
-            SNmodel.source.set_peakmag(mag, band='bessellb', magsys='ab')
-            v[2] = SNmodel.get('x0')
-            v[3] = v[-1]
-            v[4:] = SNmodel.bandmags(bandpassobjects=lsstbands,
-                                         time=self.obs_metadata.mjd)
+            #SNmodel.source.set_peakmag(mag, band='bessellb', magsys='ab')
+            #v[2] = SNmodel.get('x0')
+            #v[3] = v[-1]
+            # x = SNmodel.bandmags(bandpassobjects=lsstbands,
+                                         # time=self.obs_metadata.mjd)
+            # v = x
+            # print v, vals[i,0]
             # print self.obs_metadata.mjd
         # print self.obs_metadata.bandpass
+        # print vals
 
-        return (vals[:, 4], vals[:, 5], vals[:, 6], vals[:, 7], vals[:, 8], vals[:, 9])
+        return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5])
 # if __name__ == "__main__":
 # 
 #     import lsst.sims.catUtils.baseCatalogModels as bcm
