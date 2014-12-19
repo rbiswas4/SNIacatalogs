@@ -63,7 +63,7 @@ for i, myMJD in enumerate(myMJDS):
         myObsMD = ObservationMetaData(boundType='circle',
                                       unrefractedRA=5.0,
                                       unrefractedDec=15.0,
-                                      boundLength=0.01,
+                                      boundLength=0.15,
                                       bandpassName=['u', 'g', 'r', 'i',
                                                     'z', 'y'],
                                       mjd=myMJD)
