@@ -91,6 +91,7 @@ stddata = pd.DataFrame.from_csv('testData/SNIaCat_0_std.txt')
 newdata = pd.DataFrame.from_csv('testData/SNIaCat_0.txt')
 std = stddata.sort()
 new = newdata.sort()
+# Need to understand how to match nans
 # np.testing.assert_allclose(stddata, newdata)
 def test() :
     if new.equals(std):
