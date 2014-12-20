@@ -40,7 +40,7 @@ class SNIaCatalog (InstanceCatalog):
                       'x0','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z',
                       'mag_y']
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e',
-                        'x0': '%8e'}
+                      'x0': '%8e', 'mag_u':'%8e'}
     cannot_be_null = ['x0']
 # column_outputs=['raJ2000','decJ2000','snid','z','snra', 'sndec',\
 # 'mass_stellar', 'c', 'x1', 't0', "x0"]
@@ -138,9 +138,9 @@ class SNIaCatalog (InstanceCatalog):
             v[0] = np.random.normal(0., 0.3)
             v[1] = np.random.normal(0., 3.0)
             mabs = np.random.normal(-19.3, 0.3)
-            SNmodel.ra = ra[i]
-            SNmodel.dec = dec[i]
-            SNmodel.mwEBVfromMaps()
+            # SNmodel.ra = ra[i]
+            # SNmodel.dec = dec[i]
+            # SNmodel.mwEBVfromMaps()
             SNmodel.set(z=_z[i], c=v[0], x1=v[1], t0=v[-1])
             # rather than use the SNCosmo function below which uses astropy to calculate
             # distanceModulus, we will use photUtils CosmologyWrapper for consistency
@@ -160,6 +160,8 @@ class SNIaCatalog (InstanceCatalog):
     @compound('mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
     def get_snmags(self):
         lsstbands = self.usedlsstbands()
+        SNmodel = SNObject()
+        vals = np.zeros(shape=(self.numobjs, 6))
         c, x1, x0, t0, _z , _id, ra, dec = self.column_by_name('c'),\
                                  self.column_by_name('x1'),\
                                  self.column_by_name('x0'),\
@@ -168,24 +170,44 @@ class SNIaCatalog (InstanceCatalog):
                                  self.column_by_name('snid'),\
                                  self.column_by_name('raJ2000'),\
                                  self.column_by_name('decJ2000')
-        SNmodel = SNObject()
+        for i, v in enumerate(vals):
+            if x0[i] is np.nan or x0[i] == 'nan':
+                print ' Got nan'
+            else:
+                SNmodel.set(z=_z[i]) 
+                SNmodel.set(c=c[i]) 
+                SNmodel.set(x1=x1[i])
+                SNmodel.set(t0=t0[i]) 
+                SNmodel.set(x0=x0[i])
+                SNmodel.ra = ra[i]
+                SNmodel.dec = dec[i]
+                SNmodel.mwEBVfromMaps()
+                print '=== ', c[i], SNmodel.get('c') , x0[i], SNmodel.get('x0')
+                x = SNmodel.bandmags(bandpassobjects=lsstbands,
+                                     time=self.obs_metadata.mjd)
+                #print c[i], x1[i], x0[i], t0[i], _z[i], _id[i], ra[i], dec
+                # print c[i], type(c[i])
+
+                vals[i, 0] = SNmodel.get('x0')
+                vals[i, 1] = SNmodel.get('c')
+                vals[i, 2] = SNmodel.get('x1')
+                # vals[:, 2] = x[2] 
+                vals[i, 3] = SNmodel.get('t0')
+                # vals[:, 3] = x[3] 
+                vals[i, 4] = SNmodel.get('z')
+                vals[i, 5] = SNmodel.ra
+
+        return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5]) 
         # hundredyear = 100*365.0
-        vals = np.zeros(shape=(self.numobjs, 6))
         #_z, _id = self.column_by_name('redshift'), self.column_by_name('snid')
         #distmods = cosmo.get_cosmologicalDistanceModulus()
-        bad = np.nan
-        for i, v in enumerate(vals):
-            if t0[i] is np.nan:
-                v = np.array([np.nan, np.nan, np.nan, np.nan, np.nan, np.nan])
-                continue
+        # bad = np.nan
+        # for i, v in enumerate(vals):
+        #   if t0[i] is np.nan:
+        #       v = np.array([np.nan, np.nan, np.nan, np.nan, np.nan, np.nan])
+        #       continue
             #print i, t0[i]
-            SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i])
-            SNmodel.ra = ra[i]
-            SNmodel.dec = dec[i]
-            SNmodel.mwEBVfromMaps()
-            x = SNmodel.bandmags(bandpassobjects=lsstbands,
-                                         time=self.obs_metadata.mjd)
-            v = np.array(x)
+        #   v = np.array(x)
             # print v, vals[i,0]
             # np.random.seed(_id[i])
             # v[-1] = np.random.uniform(-hundredyear / 2.0 +
@@ -222,7 +244,7 @@ class SNIaCatalog (InstanceCatalog):
         # print self.obs_metadata.bandpass
         # print vals
 
-        return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5])
+        # return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5])
 # if __name__ == "__main__":
 # 
 #     import lsst.sims.catUtils.baseCatalogModels as bcm
