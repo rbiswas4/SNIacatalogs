@@ -120,7 +120,6 @@ class SNIaCatalog (InstanceCatalog):
         hundredyear = 100*365.0
         vals = np.zeros(shape=(self.numobjs, 4))
         _z, _id = self.column_by_name('redshift'), self.column_by_name('snid')
-        #distmods = cosmo.get_cosmologicalDistanceModulus()
         bad = np.nan
         for i, v in enumerate(vals):
             np.random.seed(_id[i])
@@ -138,9 +137,6 @@ class SNIaCatalog (InstanceCatalog):
             v[0] = np.random.normal(0., 0.3)
             v[1] = np.random.normal(0., 3.0)
             mabs = np.random.normal(-19.3, 0.3)
-            # SNmodel.ra = ra[i]
-            # SNmodel.dec = dec[i]
-            # SNmodel.mwEBVfromMaps()
             SNmodel.set(z=_z[i], c=v[0], x1=v[1], t0=v[-1])
             # rather than use the SNCosmo function below which uses astropy to calculate
             # distanceModulus, we will use photUtils CosmologyWrapper for consistency
@@ -150,10 +146,6 @@ class SNIaCatalog (InstanceCatalog):
             SNmodel.source.set_peakmag(mag, band='bessellb', magsys='ab')
             v[2] = SNmodel.get('x0')
             v[3] = v[-1]
-            # v[4:] = SNmodel.bandmags(bandpassobjects=lsstbands,
-            #                             time=self.obs_metadata.mjd)
-            # print self.obs_metadata.mjd
-        # print self.obs_metadata.bandpass
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3]) 
 
@@ -174,13 +166,16 @@ class SNIaCatalog (InstanceCatalog):
             if x0[i] is np.nan or x0[i] == 'nan':
                 print ' Got nan'
             else:
-                SNmodel.set(z=_z[i]) 
-                SNmodel.set(c=c[i]) 
-                SNmodel.set(x1=x1[i])
-                SNmodel.set(t0=t0[i]) 
-                SNmodel.set(x0=x0[i])
-                SNmodel.ra = ra[i]
-                SNmodel.dec = dec[i]
+                SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
+                SNmodel.ra=ra[i]
+                SNmodel.dec=dec[i]
+                #SNmodel.set(z=_z[i]) 
+                #SNmodel.set(c=c[i]) 
+                #SNmodel.set(x1=x1[i])
+                #SNmodel.set(t0=t0[i]) 
+                #SNmodel.set(x0=x0[i])
+                #SNmodel.ra = ra[i]
+                #SNmodel.dec = dec[i]
                 SNmodel.mwEBVfromMaps()
                 # print '=== ', c[i], SNmodel.get('c') , x0[i], SNmodel.get('x0')
                 x = SNmodel.bandmags(bandpassobjects=lsstbands,
