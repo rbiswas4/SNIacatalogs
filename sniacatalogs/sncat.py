@@ -163,10 +163,6 @@ class SNIaCatalog (InstanceCatalog):
                                  self.column_by_name('raJ2000'),\
                                  self.column_by_name('decJ2000')
         for i, v in enumerate(vals):
-        #   if x0[i] is np.nan or x0[i] == 'nan':
-        #        continue
-        #        print ' Got nan'
-        #    else:
             SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
             SNmodel.ra=ra[i]
             SNmodel.dec=dec[i]
