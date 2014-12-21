@@ -163,15 +163,15 @@ class SNIaCatalog (InstanceCatalog):
                                  self.column_by_name('raJ2000'),\
                                  self.column_by_name('decJ2000')
         for i, v in enumerate(vals):
-            if x0[i] is np.nan or x0[i] == 'nan':
-                print ' Got nan'
-            else:
-                SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
-                SNmodel.ra=ra[i]
-                SNmodel.dec=dec[i]
-                SNmodel.mwEBVfromMaps()
-                vals[i, :] = SNmodel.bandmags(bandpassobjects=lsstbands,
-                                     time=self.obs_metadata.mjd)
+        #    if x0[i] is np.nan or x0[i] == 'nan':
+        #        print ' Got nan'
+        #    else:
+            SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
+            SNmodel.ra=ra[i]
+            SNmodel.dec=dec[i]
+            SNmodel.mwEBVfromMaps()
+            vals[i, :] = SNmodel.bandmags(bandpassobjects=lsstbands,
+                                          time=self.obs_metadata.mjd)
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5]) 
         # hundredyear = 100*365.0
