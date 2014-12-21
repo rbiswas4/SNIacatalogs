@@ -40,7 +40,7 @@ class SNIaCatalog (InstanceCatalog):
                       'x0','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z',
                       'mag_y']
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e',
-                      'x0': '%8e', 'mag_u':'%8e'}
+                      'x0': '%8e'}
     cannot_be_null = ['x0']
 # column_outputs=['raJ2000','decJ2000','snid','z','snra', 'sndec',\
 # 'mass_stellar', 'c', 'x1', 't0', "x0"]
