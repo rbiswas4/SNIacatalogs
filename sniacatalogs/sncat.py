@@ -169,32 +169,9 @@ class SNIaCatalog (InstanceCatalog):
                 SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
                 SNmodel.ra=ra[i]
                 SNmodel.dec=dec[i]
-                #SNmodel.set(z=_z[i]) 
-                #SNmodel.set(c=c[i]) 
-                #SNmodel.set(x1=x1[i])
-                #SNmodel.set(t0=t0[i]) 
-                #SNmodel.set(x0=x0[i])
-                #SNmodel.ra = ra[i]
-                #SNmodel.dec = dec[i]
                 SNmodel.mwEBVfromMaps()
-                # print '=== ', c[i], SNmodel.get('c') , x0[i], SNmodel.get('x0')
-                x = SNmodel.bandmags(bandpassobjects=lsstbands,
+                vals[i, :] = SNmodel.bandmags(bandpassobjects=lsstbands,
                                      time=self.obs_metadata.mjd)
-                #print c[i], x1[i], x0[i], t0[i], _z[i], _id[i], ra[i], dec
-                # print c[i], type(c[i])
-
-                # vals[i, 0] = SNmodel.get('x0')
-                # vals[i, 1] = SNmodel.get('c')
-                # vals[i, 2] = SNmodel.get('x1')
-                # vals[i, 3] = SNmodel.get('t0')
-                # vals[i, 4] = SNmodel.get('z')
-                # vals[i, 5] = SNmodel.ra
-                vals[i, 0] = x[0]
-                vals[i, 1] = x[1]
-                vals[i, 2] = x[2]
-                vals[i, 3] = x[3]
-                vals[i, 4] = x[4]
-                vals[i, 5] = x[5]
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5]) 
         # hundredyear = 100*365.0
