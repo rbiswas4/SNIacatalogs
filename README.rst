@@ -36,6 +36,7 @@ Usage and Setup:
 TODO: (Major things to be added)
 ----
 These are really part of updates to SNCosmo simulation capabilities
+
 1. Add uncertainties (at some approximation, easy)
 2. Add intrinsic scatter (will take time)
 3. Add zero point fluctuations
