@@ -27,7 +27,7 @@ wavelenstep = 0.1
 
 cosmo = CosmologyWrapper()
 # class SNIaCatalog (object):
-class SNIaCatalog (InstanceCatalog):
+class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     """
     Supernova Type Ia in the catalog are characterized by the  following
     attributes
@@ -119,7 +119,8 @@ class SNIaCatalog (InstanceCatalog):
         SNmodel = SNObject()
         hundredyear = 100*365.0
         vals = np.zeros(shape=(self.numobjs, 4))
-        _z, _id = self.column_by_name('redshift'), self.column_by_name('snid')
+        _z, _id, mu  = self.column_by_name('redshift'), self.column_by_name('snid'),\
+                self.column_by_name('cosmologicalDistanceModulus')
         bad = np.nan
         for i, v in enumerate(vals):
             np.random.seed(_id[i])
@@ -141,7 +142,8 @@ class SNIaCatalog (InstanceCatalog):
             # rather than use the SNCosmo function below which uses astropy to calculate
             # distanceModulus, we will use photUtils CosmologyWrapper for consistency
             # SNmodel.set_source_peakabsmag(mabs, 'bessellb', 'ab', cosmo=cosmo)
-            mag = mabs + cosmo.cosmology.distanceModulus(_z[i])
+            mag = mabs + mu[i]
+            # mag = mabs + cosmo.cosmology.distanceModulus(_z[i])
             #cosmo.get_cosmologicalDistanceModulus(_z[i])
             SNmodel.source.set_peakmag(mag, band='bessellb', magsys='ab')
             v[2] = SNmodel.get('x0')
