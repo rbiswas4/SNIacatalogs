@@ -25,7 +25,7 @@ l = []
 for time in np.arange(-20., 50., 1.0):
     t = time*np.ones(len(bandPassList))
     t.tolist()
-    x = SN.bandmags(lsstbands, time=time)
+    x = SN.bandMags(lsstbands, time=time)
     # y = SNCosmoSN.bandmag(band=sncosmobands, time=t, magsys='ab')
     e = [time]
     e += x.tolist()

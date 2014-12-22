@@ -168,7 +168,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
             SNmodel.ra=ra[i]
             SNmodel.dec=dec[i]
             SNmodel.mwEBVfromMaps()
-            vals[i, :] = SNmodel.bandmags(bandpassobjects=lsstbands,
+            vals[i, :] = SNmodel.bandMags(bandpassobjects=lsstbands,
                                           time=self.obs_metadata.mjd)
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5]) 

@@ -112,7 +112,7 @@ class SNObject (Model):
         returns:
     set_MWebv(values): Set the value of attribute _mwebv to a particular
         value
-    bandmags: Uses the LSST stack functionality to obtain LSST band
+    bandMags: Uses the LSST stack functionality to obtain LSST band
         magnitudes using the bandpass filters.
         args:
         returns:
@@ -188,7 +188,7 @@ class SNObject (Model):
         # print "compare vals :", t_mwebv, self._mwebv
         return
 
-    def bandmags(self, bandpassobjects, time, phiarray=None):
+    def bandMags(self, bandpassobjects, time, phiarray=None):
         """
         return a numpy array of magnitudes of the SN spectrum in the ab
         magnitude system.
