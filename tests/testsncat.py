@@ -84,21 +84,27 @@ curs.execute('SELECT * FROM mysncat')
 print 'In Database: ', curs.fetchall()
 connection.close()
 
-# stddata = np.loadtxt('testData/SNIaCat_0_std.txt', delimiter=',')
-# newdata = np.loadtxt('testData/SNIaCat_0.txt', delimiter=',')
-import pandas as pd
-stddata = pd.DataFrame.from_csv('testData/SNIaCat_0_std.txt')
-newdata = pd.DataFrame.from_csv('testData/SNIaCat_0.txt')
-std = stddata.sort()
-new = newdata.sort()
+stddata = np.loadtxt('testData/SNIaCat_0_std.txt', delimiter=',')
+newdata = np.loadtxt('testData/SNIaCat_0.txt', delimiter=',')
+# import pandas as pd
+# stddata = pd.DataFrame.from_csv('testData/SNIaCat_0_std.txt')
+# newdata = pd.DataFrame.from_csv('testData/SNIaCat_0.txt')
+std = stddata.sort(axis=0)
+new = newdata.sort(axis=0)
 # Need to understand how to match nans
-# np.testing.assert_allclose(stddata, newdata)
+def nptest():
+    try:
+        np.testing.assert_allclose(stddata, newdata)
+        print "test passed"
+    except:
+        print 'test failed' 
+    return
 def test() :
     if new.equals(std):
         print 'pass'
     else:
         print 'Fail'
-test()
+nptest()
 
 
 
