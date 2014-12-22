@@ -188,7 +188,7 @@ class SNObject (Model):
         # print "compare vals :", t_mwebv, self._mwebv
         return
 
-    def bandmags(self, bandpassobjects, time):
+    def bandmags(self, bandpassobjects, time, phiarray=None):
         """
         return a numpy array of magnitudes of the SN spectrum in the ab
         magnitude system.
@@ -201,7 +201,11 @@ class SNObject (Model):
             `np.ndarray` of mag values for each band in lsstbandpass.
             Unphysical values of the flux density are reported as np.nan
         """
-        filterwav = bandpassobjects[0].wavelen
+        if phiarray is None:
+            filterwav = bandpassobjects[0].wavelen
+        else: 
+            filterwav = phiarray[0].wavelen
+        
         SEDfromSNcosmo = Sed(wavelen=filterwav,
                              flambda=self.flux(time=time,
                                                wave=filterwav*10.)*10.)
