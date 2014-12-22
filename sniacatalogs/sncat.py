@@ -114,8 +114,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     @compound('c', 'x1', 'x0', 't0')
     def get_snparams(self):
         lsstbands = self.usedlsstbands()
-        ra, dec = self.column_by_name('raJ2000'),\
-            self.column_by_name('decJ2000')
+        # ra, dec = self.column_by_name('raJ2000'),\
+        #    self.column_by_name('decJ2000')
         SNmodel = SNObject()
         hundredyear = 100*365.0
         vals = np.zeros(shape=(self.numobjs, 4))
@@ -139,13 +139,12 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
             v[1] = np.random.normal(0., 3.0)
             mabs = np.random.normal(-19.3, 0.3)
             SNmodel.set(z=_z[i], c=v[0], x1=v[1], t0=v[-1])
-            # rather than use the SNCosmo function below which uses astropy to calculate
+            # rather than use the SNCosmo function below which uses astropy to obtain
             # distanceModulus, we will use photUtils CosmologyWrapper for consistency
             # SNmodel.set_source_peakabsmag(mabs, 'bessellb', 'ab', cosmo=cosmo)
             mag = mabs + mu[i]
-            # mag = mabs + cosmo.cosmology.distanceModulus(_z[i])
-            #cosmo.get_cosmologicalDistanceModulus(_z[i])
             SNmodel.source.set_peakmag(mag, band='bessellb', magsys='ab')
+            # We can now get x0
             v[2] = SNmodel.get('x0')
             v[3] = v[-1]
 
