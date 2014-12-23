@@ -23,7 +23,24 @@ dustmaproot = os.getenv('SIMS_DUSTMAPS_DIR')
 map_dir = os.path.join(dustmaproot, 'DustMaps')
 
 class testSNObject(unittest.TestCase):
+    """
+    Unit tests to test functionality of the SNObject module. The following tests are
+    proposed after the initial objects are setup:
+
+    1. testSNObjectnoMWmags_SNCosmo: Compare the lsst band magnitudes computed using \
+            SNCosmo and the LSST software stack.
+    2. testSNObjectMWmags_SNCosmo: Compare the lsst band magnitudes computed using \
+            SNCosmo and the LSST software stack after the SN Sed has been extincted \
+            in the MW, according to CCM89 and observed dustmaps. **** FAIL *** 
+    3. testSNObject_lc_againstprev: Compare the light curve output by SNObject for a \
+            certain number of days to an older version of the light curve stored on \
+            disk in a file 'testData/std_lc.dat'
+    """
     def setUp(self):
+        """
+        Setup the objects used in this test suite class
+
+        """
         ra = 204.
         dec = -30.
         # Setup SN object of different kinds we want to check
@@ -68,6 +85,13 @@ class testSNObject(unittest.TestCase):
         self.sncosmobands = ['LSST' + band for band in self.bandPassList]
 
     def testSNObjectnoMWmags_SNCosmo(self):
+        """
+        magnitude calculation for SNObject without extinction:
+        Compare the lsst band magnitudes computed using SNCosmo and the LSST software 
+        stack. This is done by using the SNObject method bandMags and compared with the
+        SNCosmo.Model method bandmags with an SNObject whose mwebv attribute is set to
+        zero.
+        """
         lsst = []
         sncosmo = []
         for time in self.times:
@@ -89,6 +113,16 @@ class testSNObject(unittest.TestCase):
 
     def testSNObjectMWmags_SNCosmo(self):
         """
+        ****************************************************************************
+        ************************                          **************************
+        ************************         FAILING          **************************
+        ************************                          **************************
+        ****************************************************************************
+        magnitude calculation for SNObject with extinction:
+        Compare the lsst band magnitudes computed using SNCosmo and the LSST software 
+        stack. This is done by using the SNObject method bandMags and compared with the
+        SNCosmo.Model method bandmags with an SNObject whose mwebv attribute is 
+        calculated in different ways.
         """
         return
         lsst = []
