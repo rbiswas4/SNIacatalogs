@@ -18,10 +18,39 @@ from astropy.units import Unit
 from astropy.coordinates import SkyCoord
 from sncosmo import Model
 import sncosmo
-# from unittest import assertAlmostEqual
+
+from lsst.sims.catalogs.measures.instance import InstanceCatalog
+from lsst.sims.catalogs.measures.instance import compound
+from lsst.sims.catalogs.generation.db import CatalogDBObject
+from lsst.sims.catalogs.generation.db import ObservationMetaData
+
+# Global Variables for calculating MWEBV through astropy/SNcosmo
 dustmaproot = os.getenv('SIMS_DUSTMAPS_DIR')
 map_dir = os.path.join(dustmaproot, 'DustMaps')
 
+class testSNIaCatalog(unittest.TestCase):
+    """
+    Unit tests to test the functionality of the SNIaCatalog class.
+    Requires: 
+    --------
+        connection to LSST database
+    Tests:
+    -----
+        testICatCreate: Find SNIa 'observed' according to obs_metadata associated\
+                with an LSST view, catalog in an instance catalog and write to ascii\
+                files testData/SNIaCat_i.txt as output.
+        testICatouput:
+        testWriteToSQLite:
+        testLCFromSQLite:
+    """
+    def setUp(self):
+        self.galDB = CatalogDBObject.from_objid('galaxyTiled')
+        self.mjds = [570123.15 + 3.*i for i in range(20)]
+
+    def testICatCreate(self):
+        """
+        """
+            return
 class testSNObject(unittest.TestCase):
     """
     Unit tests to test functionality of the SNObject module. The following tests are
@@ -176,6 +205,7 @@ def suite():
     utilsTests.init()
     suites = []
     suites += unittest.makeSuite(testSNObject)
+    suites += unittest.makeSuite(testSNCatalog)
     return unittest.TestSuite(suites)
 
 def run(shouldExit=False):
