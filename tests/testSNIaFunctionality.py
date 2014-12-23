@@ -12,6 +12,7 @@ from lsst.sims.photUtils.Photometry import PhotometryBase
 import lsst.utils.tests as utilsTests
 
 from snObject import SNObject
+from sncat import SNIaCatalog
 import utils_for_test as tu
 
 from astropy.units import Unit
@@ -20,7 +21,7 @@ from sncosmo import Model
 import sncosmo
 
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
-from lsst.sims.catalogs.measures.instance import compound
+# from lsst.sims.catalogs.measures.instance import compound
 from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.generation.db import ObservationMetaData
 
@@ -35,22 +36,52 @@ class testSNIaCatalog(unittest.TestCase):
     --------
         connection to LSST database
     Tests:
-    -----
-        testICatCreate: Find SNIa 'observed' according to obs_metadata associated\
-                with an LSST view, catalog in an instance catalog and write to ascii\
-                files testData/SNIaCat_i.txt as output.
-        testICatouput:
+    --------
+        Find SNIa 'observed' according to obs_metadata associated\
+        with an LSST view, catalog in an instance catalog and write to ascii\
+        files testData/SNIaCat_i.txt as output.
+        testICatOuput:
         testWriteToSQLite:
         testLCFromSQLite:
     """
-    def setUp(self):
-        self.galDB = CatalogDBObject.from_objid('galaxyTiled')
-        self.mjds = [570123.15 + 3.*i for i in range(20)]
+    mjds = [570123.15 + 3.*i for i in range(2)]
+    @classmethod
+    def setUpClass(cls):
+        # delete previous test db if present
+        if os.path.exists('testData/sncat.db'):
+            print 'deleting previous database'
+            os.unlink('testData/sncat.db')
 
-    def testICatCreate(self):
+        mjds = [570123.15 + 3.*i for i in range(20)]
+        galDB = CatalogDBObject.from_objid('galaxyTiled')
+        for i, myMJD in enumerate(mjds):
+            myObsMD = ObservationMetaData(boundType='circle', boundLength=0.015,
+                                          unrefractedRA=5.0, unrefractedDec=15.0,
+                                          bandpassName=['u', 'g', 'r', 'i', 'z', 'y'],
+                                          mjd=myMJD)
+            catalog = SNIaCatalog(db_obj=galDB, obs_metadata=myObsMD)
+            fname = "testData/SNIaCat_" + str(i) + ".txt"
+            catalog.write_catalog(fname)
+
+
+    @classmethod
+    def tearDownClass(cls):
+        # delete the test db
+        if os.path.exists('testData/sncat.db'):
+            print 'deleting previous database'
+            os.unlink('testData/sncat.db')
+        
+
+    def testICatOutput(self):
         """
+
         """
-            return
+        stddata = numpy.loadtxt('testData/SNIaCat_0_std.txt', delimiter=',')
+        newdata = numpy.loadtxt('testData/SNIaCat_0.txt', delimiter=',')
+        stddata.sort(axis=0)
+        newdata.sort(axis=0)
+        numpy.testing.assert_allclose(stddata, newdata)
+
 class testSNObject(unittest.TestCase):
     """
     Unit tests to test functionality of the SNObject module. The following tests are
@@ -205,7 +236,7 @@ def suite():
     utilsTests.init()
     suites = []
     suites += unittest.makeSuite(testSNObject)
-    suites += unittest.makeSuite(testSNCatalog)
+    suites += unittest.makeSuite(testSNIaCatalog)
     return unittest.TestSuite(suites)
 
 def run(shouldExit=False):
