@@ -52,7 +52,7 @@ class testSNIaCatalog(unittest.TestCase):
             print 'deleting previous database'
             os.unlink('testData/sncat.db')
 
-        mjds = [570123.15 + 3.*i for i in range(20)]
+        mjds = [570123.15 + 3.*i for i in range(2)]
         galDB = CatalogDBObject.from_objid('galaxyTiled')
         for i, myMJD in enumerate(mjds):
             myObsMD = ObservationMetaData(boundType='circle', boundLength=0.015,
