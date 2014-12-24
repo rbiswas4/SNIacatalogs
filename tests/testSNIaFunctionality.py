@@ -202,16 +202,16 @@ class testSNObject(unittest.TestCase):
 
     def testSNObjectMWmags_SNCosmo(self):
         """
-        ****************************************************************************
-        ************************                          **************************
-        ************************         FAILING          **************************
-        ************************                          **************************
-        ****************************************************************************
+        ************************************************************************
+        ************************                          **********************
+        ************************         FAILING          **********************
+        ************************                          **********************
+        ************************************************************************
         magnitude calculation for SNObject with extinction:
-        Compare the lsst band magnitudes computed using SNCosmo and the LSST software 
-        stack. This is done by using the SNObject method bandMags and compared with the
-        SNCosmo.Model method bandmags with an SNObject whose mwebv attribute is 
-        calculated in different ways.
+        Compare the lsst band magnitudes computed using SNCosmo and the LSST
+        software stack. This is done by using the SNObject method bandMags and
+        compared with the SNCosmo.Model method bandmags with an SNObject whose
+        mwebv attribute is calculated in different ways.
         """
         return
         lsst = []
@@ -219,29 +219,30 @@ class testSNObject(unittest.TestCase):
         for time in self.times:
 
             bandMagsfromLSST = self.SNmw.bandMags(self.lsstbands, time=time)
-            e  = [time] 
+            e = [time]
             # e  += bandMagsfromLSST.tolist()
             lsst.append(bandMagsfromLSST.tolist())
 
             t = time*numpy.ones(len(self.bandPassList))
             t.tolist()
             z = [time]
-            y = self.SNCosmo_mw.bandmag(band=self.sncosmobands, time=t, magsys='ab')
+            y = self.SNCosmo_mw.bandmag(band=self.sncosmobands, time=t,
+                                        magsys='ab')
             # z += y.tolist()
             sncosmo.append(y.tolist())
-            
-            numpy.testing.assert_allclose(numpy.array(sncosmo), numpy.array(lsst))
+            numpy.testing.assert_allclose(numpy.array(sncosmo),
+                                          numpy.array(lsst))
 
     def testSNObject_lc_againstprev(self):
         """
-        write out the light curve of a single SN represented as SNObject over a number
-        of days, and check that the results are the same as the results before stored
-        in testData/std_lc.dat 
+        write out the light curve of a single SN represented as SNObject over a
+        number of days, and check that the results are the same as the results
+        before stored in testData/std_lc.dat
         """
-    
+
         l = []
         for time in self.times:
-        # for time in numpy.arange(-20., 50., 1.0):
+            # for time in numpy.arange(-20., 50., 1.0):
             x = self.SNmw.bandMags(self.lsstbands, time=time)
             # y = SNCosmoSN.bandmag(band=sncosmobands, time=t, magsys='ab')
             e = [time]
@@ -251,11 +252,12 @@ class testSNObject(unittest.TestCase):
         header = "time(mjd) u g r i z y"
         lc = numpy.array(l)
         numpy.savetxt('testData/lc.dat', lc, fmt='%10.6f', header=header)
-    
-        # The 'testData/standard_lc.dat' file was written using the following 
-        # for a SN at ra  = 204., -30. , with x0 = 1.846e-6, x1=0.1, c=0., z=0.2
+
+        # The 'testData/standard_lc.dat' file was written using the following
+        # for a SN at ra  = 204., -30. ,
+        # with x0 = 1.846e-6, x1=0.1, c=0., z=0.2
         # using the SALT2-extended model
-        # numpy.savetxt('testData/standard_lc.dat', numpy.array(l), 
+        # numpy.savetxt('testData/standard_lc.dat', numpy.array(l),
         #               fmt='%10.6f', header=header)
         std_lc = numpy.loadtxt('testData/standard_lc.dat')
         numpy.testing.assert_allclose(std_lc, lc)
@@ -268,9 +270,9 @@ def suite():
     suites += unittest.makeSuite(testSNIaCatalog)
     return unittest.TestSuite(suites)
 
+
 def run(shouldExit=False):
     utilsTests.run(suite(), shouldExit)
 
 if __name__ == "__main__":
-     run(shouldExit=True)
-
+    run(shouldExit=True)
