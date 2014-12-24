@@ -25,9 +25,21 @@ from lsst.sims.catalogs.measures.instance import InstanceCatalog
 from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.generation.db import ObservationMetaData
 
+import testUtilsSNe as sq
+import sqlite3
 # Global Variables for calculating MWEBV through astropy/SNcosmo
 dustmaproot = os.getenv('SIMS_DUSTMAPS_DIR')
 map_dir = os.path.join(dustmaproot, 'DustMaps')
+
+
+def _file2lst(fname, i, mjd):
+    d = numpy.loadtxt(fname, delimiter=',')
+    l = list()
+    for i, row in enumerate(d):
+        obsid = 'obshist' + str(i)
+        lst = [obsid] + [mjd] + row.tolist()
+        l.append(lst)
+    return l
 
 class testSNIaCatalog(unittest.TestCase):
     """
@@ -82,6 +94,23 @@ class testSNIaCatalog(unittest.TestCase):
         newdata.sort(axis=0)
         numpy.testing.assert_allclose(stddata, newdata)
 
+    def testWriteToSQLite(self):
+        """
+        """
+        connection = sqlite3.connect('testData/sncat.db')
+        curs = connection.cursor()
+        curs.execute('CREATE TABLE if not exists mysncat (id TEXT, mjd FLOAT, snid INT, snra FLOAT, sndec FLOAT, z FLOAT, t0 FLOAT, c FLOAT, x1 FLOAT, x0 FLOAT, mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT, mag_z FLOAT, mag_y FLOAT)')
+
+        for i, myMJD in enumerate(self.mjds):
+            fname = "testData/SNIaCat_" + str(i) + ".txt"
+            l = _file2lst(fname, i, mjd=myMJD)
+            recs = sq.array2dbrecords(l)
+            exec_str = sq.insertfromdata(tablename='mysncat', records=recs, 
+                                         multiple=True)
+            curs.executemany(exec_str, recs)
+        connection.commit()
+        # curs.execute('SELECT * FROM mysncat')  
+        # print 'In Database: ', curs.fetchall()
 class testSNObject(unittest.TestCase):
     """
     Unit tests to test functionality of the SNObject module. The following tests are
