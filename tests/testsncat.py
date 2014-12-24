@@ -81,7 +81,8 @@ for i, myMJD in enumerate(myMJDS):
     curs.executemany(exec_str, recs)
 connection.commit()
 curs.execute('SELECT * FROM mysncat')  
-print 'In Database: ', curs.fetchall()
+dblcs = curs.fetchall()
+print 'In Database: ', type(dblcs)
 connection.close()
 
 stddata = np.loadtxt('testData/SNIaCat_0_std.txt', delimiter=',')

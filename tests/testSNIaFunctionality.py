@@ -109,8 +109,16 @@ class testSNIaCatalog(unittest.TestCase):
                                          multiple=True)
             curs.executemany(exec_str, recs)
         connection.commit()
-        # curs.execute('SELECT * FROM mysncat')  
-        # print 'In Database: ', curs.fetchall()
+        connection.close()
+    def testLCFromSQLite(self):
+        """
+        """
+        connection = sqlite3.connect('testData/sncat.db')
+        curs = connection.cursor()
+        curs.execute('SELECT * FROM mysncat')  
+        print 'LC In Database: ' 
+        lc = curs.fetchall()
+        print type(lc)
 class testSNObject(unittest.TestCase):
     """
     Unit tests to test functionality of the SNObject module. The following tests are
