@@ -49,6 +49,7 @@ class testSNIaCatalog(unittest.TestCase):
         connection to LSST database
     Tests:
     --------
+        Write out an instance catalog of SNIa 
         Find SNIa 'observed' according to obs_metadata associated\
         with an LSST view, catalog in an instance catalog and write to ascii\
         files testData/SNIaCat_i.txt as output.
@@ -78,14 +79,16 @@ class testSNIaCatalog(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        pass
         # delete the test db
-        if os.path.exists('testData/sncat.db'):
-            print 'deleting previous database'
-            os.unlink('testData/sncat.db')
+        # if os.path.exists('testData/sncat.db'):
+        #    print 'deleting previous database'
+        #    os.unlink('testData/sncat.db')
         
 
     def testICatOutput(self):
         """
+        Check that the output of the instance catalog SNIaCatalog 
 
         """
         stddata = numpy.loadtxt('testData/SNIaCat_0_std.txt', delimiter=',')
@@ -109,12 +112,12 @@ class testSNIaCatalog(unittest.TestCase):
                                          multiple=True)
             curs.executemany(exec_str, recs)
         connection.commit()
-        connection.close()
-    def testLCFromSQLite(self):
-        """
-        """
-        connection = sqlite3.connect('testData/sncat.db')
-        curs = connection.cursor()
+        # connection.close()
+        # def testLCFromSQLite(self):
+        #"""
+        #"""
+        #connection = sqlite3.connect('testData/sncat.db')
+        # curs = connection.cursor()
         curs.execute('SELECT * FROM mysncat')  
         print 'LC In Database: ' 
         lc = curs.fetchall()
