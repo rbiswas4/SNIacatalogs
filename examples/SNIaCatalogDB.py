@@ -50,29 +50,30 @@ def _file2lst(fname, i, mjd):
 
 myMJDS = [570123.15 + 3.*i for i in range(20)]
 
-
+createcat = False
 connection = sqlite3.connect('data/sncat.db')
-curs = connection.cursor()
-curs.execute('CREATE TABLE if not exists mysncat (id TEXT, mjd FLOAT, snid INT, snra FLOAT, sndec FLOAT, z FLOAT, t0 FLOAT, c FLOAT, x1 FLOAT, x0 FLOAT, mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT, mag_z FLOAT, mag_y FLOAT)')
-for i, myMJD in enumerate(myMJDS):
-    myObsMD = ObservationMetaData(boundType='circle',
-                                 unrefractedRA=5.0,
-                                 unrefractedDec=15.0,
-                                 boundLength=0.015,
-                                 bandpassName=['u', 'g', 'r', 'i','z', 'y'],
-                                 mjd=myMJD)
-    catalog = SNIaCatalog(db_obj=galDB,
-                          obs_metadata=myObsMD)
-    print "====================================="
-    print i, type(catalog.usedlsstbands()) , catalog.obs_metadata.mjd
-    print "====================================="
-    fname = "data/SNIaCat_" + str(i) + ".txt"
-    catalog.write_catalog(fname)
-    l = _file2lst(fname, i, mjd=myMJD)
-    recs = sq.array2dbrecords(l)
-    exec_str = sq.insertfromdata(tablename='mysncat', records=recs, multiple=True)
-    curs.executemany(exec_str, recs)
-connection.commit()
+if createcat:
+    curs = connection.cursor()
+    curs.execute('CREATE TABLE if not exists mysncat (id TEXT, mjd FLOAT, snid INT, snra FLOAT, sndec FLOAT, z FLOAT, t0 FLOAT, c FLOAT, x1 FLOAT, x0 FLOAT, mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT, mag_z FLOAT, mag_y FLOAT)')
+    for i, myMJD in enumerate(myMJDS):
+        myObsMD = ObservationMetaData(boundType='circle',
+                                     unrefractedRA=5.0,
+                                     unrefractedDec=15.0,
+                                     boundLength=0.015,
+                                     bandpassName=['u', 'g', 'r', 'i','z', 'y'],
+                                     mjd=myMJD)
+        catalog = SNIaCatalog(db_obj=galDB,
+                              obs_metadata=myObsMD)
+        print "====================================="
+        print i, type(catalog.usedlsstbands()) , catalog.obs_metadata.mjd
+        print "====================================="
+        fname = "data/SNIaCat_" + str(i) + ".txt"
+        catalog.write_catalog(fname)
+        l = _file2lst(fname, i, mjd=myMJD)
+        recs = sq.array2dbrecords(l)
+        exec_str = sq.insertfromdata(tablename='mysncat', records=recs, multiple=True)
+        curs.executemany(exec_str, recs)
+    connection.commit()
 df = pd.read_sql('SELECT * FROM mysncat', connection)
 connection.close()
 
@@ -82,7 +83,7 @@ def getLCsFromDF(df):
     for snid in snids:
         fname =  'data/LightCurves/SN' + str(snid) + '.dat'
         mylc = df.loc[grouped.groups[snid]]
-        mylc.to_csv(fname)
+        mylc.to_csv(fname, na_rep = "NaN")
 getLCsFromDF(df)
 
 
