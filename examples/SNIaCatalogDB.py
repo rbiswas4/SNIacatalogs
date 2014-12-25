@@ -56,7 +56,11 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root):
     not removed, and then these are read into the database. The ASCII files 
     are not removed. It is assumed that the directory in which these files 
     are written to exist.
-    '''
+    ''' 
+    # erase database if it already exists
+    if os.path.exists('testData/sncat.db'):
+        print 'deleting previous database'
+        os.unlink('testData/sncat.db')
     # Setup connection to write
     connection = sqlite3.connect(dbfile)
     curs = connection.cursor()
@@ -67,7 +71,7 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root):
             mag_z FLOAT, mag_y FLOAT)')
     # Catalog, and range over which it is written 
     galDB = CatalogDBObject.from_objid('galaxyTiled')
-    myMJDS = [570123.15 + 3.*i for i in range(2)]
+    myMJDS = [570123.15 + 3.*i for i in range(20)]
     for i, myMJD in enumerate(myMJDS):
         myObsMD = ObservationMetaData(boundType='circle',
                                      unrefractedRA=5.0,
