@@ -39,26 +39,15 @@ class SNObject (Model):
     ra : ra of the SN in degrees, float
     dec : dec of the SN in degrees, float 
 
-    Methods 
-    -------
-    mwEBVfromMaps: Uses the LSST stack to obtain MW extinction according to
-        CCM 89, the ra and dec of the supernova, and the SFD dustmaps to apply
-        appropriate extinction to the SN sed. must be run after the ra, dec
-        parameters are set.
-        args:
-        returns:
-    set_MWebv(values): Set the value of attribute _mwebv to a particular
-        value
-    bandMags: Uses the LSST stack functionality to obtain LSST band
-        magnitudes using the bandpass filters.
-        args:
-        returns:
-    Notes
+    .. note: 
     -----
     """
     def __init__(self, ra=None, dec=None):
         """
         Instantiate class
+
+        Parameters
+        ----------
         """
         Model.__init__(self, source="salt2-extended",
                        effects=[sncosmo.CCM89Dust()], effect_names=['mw'],
@@ -96,11 +85,9 @@ class SNObject (Model):
         -------
         None
 
-        ..notes::
-        --------
-            For a large set of SN, one may use fast `np.ndarray` valued
-            functions to obtain an array of such values, and then set the
-            values from such an array.
+        .. note: For a large set of SN, one may use fast `np.ndarray` valued
+         functions to obtain an array of such values, and then set the values 
+         from such an array.
         """
         self._mwebv = value
         return
