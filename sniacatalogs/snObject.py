@@ -1,17 +1,16 @@
 """
 Class describing the SN object itself. The SN object derives from
 SNCosmo.Model and has additional properties such as ra, dec.
-It also has additional methods :
--     calc_mags which use the magnitude calculations in LSST stack
--     extinction which use the extinction calculations in LSST stack
+It also has additional methods:
 
-- Usage:  (after setups described in the readme.rst) python snObject.py
+ -  calc_mags which use the magnitude calculations in LSST stack
+ -  extinction which use the extinction calculations in LSST stack
+ -  Usage:  (after setups described in the readme.rst) python snObject.py
 
 """
 import sncosmo
 import numpy as np
 import os
-import matplotlib.pyplot as plt
 
 from astropy.units import Unit
 from astropy.coordinates import SkyCoord
@@ -26,22 +25,22 @@ map_dir = os.path.join(dustmaproot, 'DustMaps')
 
 wavelenstep = 0.1
 
+
 class SNObject (Model):
     """
-    Extension of the SNCosmo TimeSeries Model to include more parameters and
+    Extension of the SNCosmo `TimeSeriesModel` to include more parameters and
     use methods in the catsim stack. We constrain ourselves to the use of a
     specific SALT model for the Supernova (Salt2-Extended), and set its MW
-    extinction to be 0.
+    extinction to be 0, since we will use the LSST software to calculate
+    extinction.
 
-    new attributes:
-    ---------------
-    ra:
-        ra of the SN in degrees
-    dec:
-        dec of the SN in degrees
+    Attributes 
+    ----------
+    ra : ra of the SN in degrees, float
+    dec : dec of the SN in degrees, float 
 
-    new methods:
-    ------------
+    Methods 
+    -------
     mwEBVfromMaps: Uses the LSST stack to obtain MW extinction according to
         CCM 89, the ra and dec of the supernova, and the SFD dustmaps to apply
         appropriate extinction to the SN sed. must be run after the ra, dec
@@ -54,10 +53,13 @@ class SNObject (Model):
         magnitudes using the bandpass filters.
         args:
         returns:
-    Notes:
-    ------
+    Notes
+    -----
     """
     def __init__(self, ra=None, dec=None):
+        """
+        Instantiate class
+        """
         Model.__init__(self, source="salt2-extended",
                        effects=[sncosmo.CCM89Dust()], effect_names=['mw'],
                        effect_frames=['obs'])
@@ -84,13 +86,18 @@ class SNObject (Model):
         """
         if mwebv value is known, this can be used to set the attribute
         _mwebv of the SNObject class to the value (float).
-        args:
-            value: float, mandatory
+        Parameters
+        -----------
+        value: float, mandatory
                 value of mw extinction parameter E(B-V) in mags to be used in
                 applying extinction to the SNObject spectrum
-        returns:
-            None
-        Notes:
+
+        Returns
+        -------
+        None
+
+        ..notes::
+        --------
             For a large set of SN, one may use fast `np.ndarray` valued
             functions to obtain an array of such values, and then set the
             values from such an array.
