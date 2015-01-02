@@ -36,11 +36,11 @@ class SNObject (Model):
 
     Attributes 
     ----------
-    ra : ra of the SN in degrees, float
-    dec : dec of the SN in degrees, float 
+    ra : float
+         ra of the SN in degrees
+    dec : float
+        dec of the SN in degrees
 
-    .. note: 
-    -----
     """
     def __init__(self, ra=None, dec=None):
         """
@@ -75,9 +75,11 @@ class SNObject (Model):
         """
         if mwebv value is known, this can be used to set the attribute
         _mwebv of the SNObject class to the value (float).
+
         Parameters
         -----------
-        value: float, mandatory
+
+        value : float, mandatory
                 value of mw extinction parameter E(B-V) in mags to be used in
                 applying extinction to the SNObject spectrum
 
@@ -85,9 +87,9 @@ class SNObject (Model):
         -------
         None
 
-        .. note: For a large set of SN, one may use fast `np.ndarray` valued
-         functions to obtain an array of such values, and then set the values 
-         from such an array.
+        .. note:: For a large set of SN, one may use fast `np.ndarray` valued 
+                  functions to obtain an array of such values, and then set 
+                  the values from such an array.
         """
         self._mwebv = value
         return
@@ -97,12 +99,18 @@ class SNObject (Model):
         set the attribute _mwebv of the class from the ra and dec
         of the SN. If the ra or dec attribute of the class is None,
         set this attribute to None.
-        args: None
-        returns: None
-        Notes:
-            This function must be run after the class has attributes ra and
-            dec specified. In case it is run before this, the mwebv value will
-            be set to None.
+
+        Parameters
+        ----------
+        None
+
+        Returns 
+        -------
+        None
+
+        .. note:: This function must be run after the class has attributes ra 
+                  and dec set. In case it is run before this, the mwebv value 
+                  will be set to None.
 
         """
         ra = self.ra
@@ -124,14 +132,20 @@ class SNObject (Model):
         """
         return a numpy array of magnitudes of the SN spectrum in the ab
         magnitude system.
-        args:
-            bandpassobjects: mandatory, list of bandpass objects
-                a list of LSST catsim bandpass objects
-            time: mandatory, float
-                MJD at which this is evaluated
-        returns:
-            `np.ndarray` of mag values for each band in lsstbandpass.
-            Unphysical values of the flux density are reported as np.nan
+
+        Parameters
+        ----------
+        bandpassobjects: mandatory, list of bandpass objects
+                         a list of LSST catsim bandpass objects
+        time: mandatory, float
+              MJD at which this is evaluated
+
+        Returns
+        -------
+        `np.ndarray` of mag values for each band in lsstbandpass. 
+
+        .. note::
+         Unphysical values of the flux density are reported as `np.nan`
         """
         if phiarray is None:
             filterwav = bandpassobjects[0].wavelen
