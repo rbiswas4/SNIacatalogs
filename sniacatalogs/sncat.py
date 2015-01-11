@@ -31,8 +31,13 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     """
     Supernova Type Ia in the catalog are characterized by the  following
     attributes
-    position (ra, dec, redshift),
-    velocity wrt host galaxy,
+
+    Attributes
+    ----------
+    position :  3-tuple of floats
+               (ra, dec, redshift),
+    velocity : 3 tuple of floats
+               velocity wrt host galaxy,
     the supernova model (eg. SALT2)
     and parameters of the supernova model that predict the SED.
     """
