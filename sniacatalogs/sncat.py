@@ -51,6 +51,20 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 # 'mass_stellar', 'c', 'x1', 't0', "x0"]
     surveyoffset = 570000.0
     SN_thresh = 100.0
+
+    @property
+    def lsstpbase(self):
+        import eups
+        bandPassList = self.obs_metadata.bandpass
+        throughputsdir = eups.productDir('throughputs')
+        # banddir = os.path.join(throughputsdir, 'baseline')
+
+        pbase = loadBandPassesFromFiles(bandPassList)
+        pbase.setupPhiArray_dict()
+
+        return pbase
+
+
     def usedlsstbands(self, loadsncosmo=True, loadcatsim=True):
 
         import eups
@@ -58,6 +72,10 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         throughputsdir = eups.productDir('throughputs')
         # banddir = os.path.join(os.getenv('THROUGHPUTS_DIR'), 'baseline')
         banddir = os.path.join(throughputsdir, 'baseline')
+
+        pbase = loadBandPassesFromFiles(bandPassList)
+        pbase.setupPhiArray_dict()
+
         lsstbands = []
         lsstbp = {}
 
@@ -174,6 +192,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
             SNmodel.dec=dec[i]
             SNmodel.mwEBVfromMaps()
             vals[i, :] = SNmodel.bandMags(bandpassobjects=lsstbands,
+                                          phiarray=self.pbase.phiArray,
                                           time=self.obs_metadata.mjd)
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5]) 
