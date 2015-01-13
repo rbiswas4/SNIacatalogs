@@ -17,6 +17,7 @@ from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.generation.db import ObservationMetaData
 from lsst.sims.photUtils import Sed
 import lsst.sims.photUtils.Bandpass as Bandpass
+from lsst.sims.photUtils.Photometry import PhotometryBase as PhotometryBase
 import sncosmo
 from astropy.units import Unit
 import astropy.cosmology as cosmology 
@@ -50,17 +51,23 @@ def _file2lst(fname, i, mjd):
 
 def writeCatalogtoDB(dbfile, dbtable, ascii_root):
     '''
-    Write a set of instance catalogs to a sqlite3 database file called db_fname,
+    Write a set of instance catalogs to a sqlite3 database file called dbfile,
     deleting the file if it already exists. This is done in two steps: first the
     write method of instance catalogs is used to write to ASCII files that are
     not removed, and then these are read into the database. The ASCII files 
     are not removed. It is assumed that the directory in which these files 
     are written to exist.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
     ''' 
     # erase database if it already exists
-    if os.path.exists('testData/sncat.db'):
+    if os.path.exists(dbfile):
         print 'deleting previous database'
-        os.unlink('testData/sncat.db')
+        os.unlink(dbfile)
     # Setup connection to write
     connection = sqlite3.connect(dbfile)
     curs = connection.cursor()
@@ -96,6 +103,32 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root):
     connection.close()
 
 def getLCsFromDB(dbfile, dbtable, lc_root):
+    """
+    Obtain light curves from a database table dbtable in a database file dbfile
+    and write them to light curve files with names given by lc_rootsnid.dat.
+
+    Parameters
+    ----------
+
+    dbfile : string
+        absolute path to the database file
+
+    dbtable : string
+        table name in the database file
+
+    lc_root : string
+        string prepended to the the SNID and .dat to create the file name of the
+        light curve. For example, lc_root = 'data/SN_' will write the light 
+        curve of SN with snid '1234' to 'data/SN_1234.dat'
+
+    Returns
+    -------
+
+    None
+
+    ..note:
+        This function writes to disk at lc_rootsnid.dat for each SN.
+    """
     connection = sqlite3.connect(dbfile)
     df = pd.read_sql('SELECT * FROM ' + dbtable, connection)
     grouped = df.groupby('snid')
@@ -105,6 +138,7 @@ def getLCsFromDB(dbfile, dbtable, lc_root):
         mylc = df.loc[grouped.groups[snid]]
         mylc.to_csv(fname, na_rep = "NaN", index=False)
     connection.close()
+
 if __name__=="__main__":
     writeCatalogtoDB(dbfile='data/sncat.db', dbtable='mysncat', ascii_root='data/SNIaCat_')
     getLCsFromDB(dbfile='data/sncat.db', dbtable='mysncat', lc_root='data/LightCurves/SN_')

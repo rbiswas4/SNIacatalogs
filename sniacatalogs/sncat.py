@@ -14,6 +14,7 @@ from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.generation.db import ObservationMetaData
 from lsst.sims.photUtils import Sed
 import lsst.sims.photUtils.Bandpass as Bandpass
+from lsst.sims.photUtils.Photometry import PhotometryBase as PhotometryBase
 import sncosmo
 from astropy.units import Unit
 import astropy.cosmology as cosmology 
@@ -59,7 +60,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         throughputsdir = eups.productDir('throughputs')
         # banddir = os.path.join(throughputsdir, 'baseline')
 
-        pbase = loadBandPassesFromFiles(bandPassList)
+        pbase  = PhotometryBase()
+        pbase.loadBandPassesFromFiles(bandPassList)
         pbase.setupPhiArray_dict()
 
         return pbase
@@ -73,7 +75,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         # banddir = os.path.join(os.getenv('THROUGHPUTS_DIR'), 'baseline')
         banddir = os.path.join(throughputsdir, 'baseline')
 
-        pbase = loadBandPassesFromFiles(bandPassList)
+        pbase = PhotometryBase()
+        pbase.loadBandPassesFromFiles(bandPassList)
         pbase.setupPhiArray_dict()
 
         lsstbands = []
@@ -192,7 +195,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
             SNmodel.dec=dec[i]
             SNmodel.mwEBVfromMaps()
             vals[i, :] = SNmodel.bandMags(bandpassobjects=lsstbands,
-                                          phiarray=self.pbase.phiArray,
+                                          phiarray=self.lsstpbase.phiArray,
                                           time=self.obs_metadata.mjd)
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5]) 

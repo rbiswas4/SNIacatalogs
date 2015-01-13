@@ -155,10 +155,10 @@ class SNObject (Model):
         .. note::
          Unphysical values of the flux density are reported as `np.nan`
         """
-        if phiarray is None:
-            filterwav = bandpassobjects[0].wavelen
-        else: 
-            filterwav = phiarray[0].wavelen
+        # if phiarray is None:
+        filterwav = bandpassobjects[0].wavelen
+        # else: 
+        #    filterwav = phiarray[0].wavelen
         
         SEDfromSNcosmo = Sed(wavelen=filterwav,
                              flambda=self.flux(time=time,
