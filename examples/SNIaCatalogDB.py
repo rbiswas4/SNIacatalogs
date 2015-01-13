@@ -39,6 +39,9 @@ from lsst.sims.catalogs.generation.db import ObservationMetaData
 
 
 def _file2lst(fname, i, mjd):
+    """
+    creates a lst of observations from a Catalog written out
+    """
     d = np.loadtxt(fname, delimiter=',')
     l = list()
     for i, row in enumerate(d):
@@ -56,13 +59,32 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root):
     write method of instance catalogs is used to write to ASCII files that are
     not removed, and then these are read into the database. The ASCII files 
     are not removed. It is assumed that the directory in which these files 
-    are written to exist.
+    are written to exists.
 
     Parameters
     ----------
 
+    dbfile : string
+        absolute path to the database file
+
+    dbtable : string
+        table name in the database file
+
+    ascii_root : str
+        Determines the set of filenames that the instance catalogs are written 
+        to. The Filenames are of the form ascii_root_i.txt where i is integer
+        (with no padding) the MJD in observations. For example, the instance 
+        catalog corresponding to the 3rd observation is written to a ASCII file 
+        of name 'data/SNIaCat_3.txt' relative to `pwd` if ascii_root is 
+        'data/SNIaCata_'
     Returns
     -------
+
+    None 
+
+    ..note: 
+
+        But output is written to disk
     ''' 
     # erase database if it already exists
     if os.path.exists(dbfile):

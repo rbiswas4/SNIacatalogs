@@ -35,10 +35,10 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 
     Attributes
     ----------
-    position :  3-tuple of floats
-               (ra, dec, redshift),
+    position : 3-tuple of floats
+              (ra, dec, redshift),
     velocity : 3 tuple of floats
-               velocity wrt host galaxy,
+              velocity wrt host galaxy,
     the supernova model (eg. SALT2)
     and parameters of the supernova model that predict the SED.
     """
@@ -72,7 +72,6 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         import eups
         bandPassList = self.obs_metadata.bandpass
         throughputsdir = eups.productDir('throughputs')
-        # banddir = os.path.join(os.getenv('THROUGHPUTS_DIR'), 'baseline')
         banddir = os.path.join(throughputsdir, 'baseline')
 
         pbase = PhotometryBase()
@@ -82,7 +81,6 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         lsstbands = []
         lsstbp = {}
 
-        # wavelenstep = 0.1
         for band in bandPassList:
             # setup sncosmo bandpasses
             bandfname = banddir + "/total_" + band + '.dat'
@@ -178,7 +176,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 
     @compound('mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
     def get_snmags(self):
-        lsstbands = self.usedlsstbands()
+
+        # lsstbands = self.usedlsstbands()
         SNmodel = SNObject()
         vals = np.zeros(shape=(self.numobjs, 6))
         c, x1, x0, t0, _z , _id, ra, dec = self.column_by_name('c'),\
@@ -189,12 +188,13 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                                  self.column_by_name('snid'),\
                                  self.column_by_name('raJ2000'),\
                                  self.column_by_name('decJ2000')
+
         for i, v in enumerate(vals):
             SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
             SNmodel.ra=ra[i]
             SNmodel.dec=dec[i]
             SNmodel.mwEBVfromMaps()
-            vals[i, :] = SNmodel.bandMags(bandpassobjects=lsstbands,
+            vals[i, :] = SNmodel.bandMags(bandpassobjects=self.lsstpbase.bandPassList,
                                           phiarray=self.lsstpbase.phiArray,
                                           time=self.obs_metadata.mjd)
 
