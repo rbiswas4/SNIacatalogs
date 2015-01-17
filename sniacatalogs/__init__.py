@@ -1,1 +1,2 @@
-# from . import snObject
+from . import snObject
+from . import sncat

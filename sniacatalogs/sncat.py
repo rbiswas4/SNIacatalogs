@@ -17,6 +17,7 @@ import lsst.sims.photUtils.Bandpass as Bandpass
 from lsst.sims.photUtils.Photometry import PhotometryBase as PhotometryBase
 import sncosmo
 from astropy.units import Unit
+from astropy.utils import lazyproperty
 import astropy.cosmology as cosmology 
 #from astropy.cosmology import Planck13 as cosmo
 from snObject import SNObject
@@ -53,7 +54,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     surveyoffset = 570000.0
     SN_thresh = 100.0
 
-    @property
+    @lazyproperty
     def lsstpbase(self):
         import eups
         bandPassList = self.obs_metadata.bandpass
