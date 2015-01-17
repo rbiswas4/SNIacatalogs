@@ -41,6 +41,8 @@ class SNObject (Model):
     dec : float
         dec of the SN in degrees
 
+    Methods
+    -------
     """
     def __init__(self, ra=None, dec=None):
         """
@@ -48,6 +50,12 @@ class SNObject (Model):
 
         Parameters
         ----------
+
+        ra : float
+            ra of the SN in degrees
+        dec : float
+            dec of the SN in degrees
+
         """
         Model.__init__(self, source="salt2-extended",
                        effects=[sncosmo.CCM89Dust()], effect_names=['mw'],
@@ -147,22 +155,23 @@ class SNObject (Model):
         .. note::
          Unphysical values of the flux density are reported as `np.nan`
         """
-        if phiarray is None:
-            filterwav = bandpassobjects[0].wavelen
-        else: 
-            filterwav = phiarray[0].wavelen
+        # if phiarray is None:
+        filterwav = bandpassobjects[0].wavelen
+        # else: 
+        #    filterwav = phiarray[0].wavelen
         
         SEDfromSNcosmo = Sed(wavelen=filterwav,
                              flambda=self.flux(time=time,
                                                wave=filterwav*10.)*10.)
         # Check if I need this sync
-        SEDfromSNcosmo.synchronizeSED(wavelen_min=filterwav[0],
-                                      wavelen_max=filterwav[-2],
-                                      wavelen_step=wavelenstep)
+        # SEDfromSNcosmo.synchronizeSED(wavelen_min=filterwav[0],
+        #                              wavelen_max=filterwav[-2],
+        #                              wavelen_step=wavelenstep)
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self._mwebv)
-        phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobjects)
+        if phiarray is None:
+            phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobjects)
         SEDfromSNcosmo.synchronizeSED(wavelen_min=filterwav[0],
                                       wavelen_max=filterwav[-2],
                                       wavelen_step=wavelenstep)

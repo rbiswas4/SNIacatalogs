@@ -14,6 +14,9 @@ Contents:
 .. automodule:: snObject
     :members:
 
+.. automodule:: sncat
+    :members:
+
 Indices and tables
 ==================
 
