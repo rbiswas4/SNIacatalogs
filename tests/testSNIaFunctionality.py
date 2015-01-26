@@ -58,6 +58,8 @@ class testSNIaCatalog(unittest.TestCase):
         testLCFromSQLite:
     """
     mjds = [570123.15 + 3.*i for i in range(2)]
+
+
     @classmethod
     def setUpClass(cls):
         # delete previous test db if present
@@ -124,22 +126,21 @@ class testSNIaCatalog(unittest.TestCase):
         print type(lc)
 class testSNObject(unittest.TestCase):
     """
-    Unit tests to test functionality of the SNObject module. The following tests are
-    proposed after the initial objects are setup:
+    Unit tests to test functionality of the SNObject module. The following
+    tests are proposed after the initial objects are setup:
 
-    1. testSNObjectnoMWmags_SNCosmo: Compare the lsst band magnitudes computed using \
-            SNCosmo and the LSST software stack.
-    2. testSNObjectMWmags_SNCosmo: Compare the lsst band magnitudes computed using \
-            SNCosmo and the LSST software stack after the SN Sed has been extincted \
-            in the MW, according to CCM89 and observed dustmaps. **** FAIL *** 
-    3. testSNObject_lc_againstprev: Compare the light curve output by SNObject for a \
-            certain number of days to an older version of the light curve stored on \
-            disk in a file 'testData/std_lc.dat'
+    1. testSNObjectnoMWmags_SNCosmo: Compare the lsst band magnitudes computed
+    using SNCosmo and the LSST software stack when there is no MW extinction.
+    2. testSNObjectMWmags_SNCosmo: Compare the lsst band magnitudes computed
+    using SNCosmo and the LSST software stack after the SN Sed has been
+    extincted in the MW, according to CCM89 and observed dustmaps. *** FAIL *** 
+    3. testSNObject_lc_againstprev: Compare the light curve output by SNObject
+    for a certain number of days to an older version of the light curve stored
+    on disk in a file 'testData/std_lc.dat'
     """
     def setUp(self):
         """
         Setup the objects used in this test suite class
-
         """
         ra = 204.
         dec = -30.
@@ -151,15 +152,17 @@ class testSNObject(unittest.TestCase):
         SN.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
 
         # SNCosmo Model object
+        dust = sncosmo.CCM89Dust()
         SNCosmo = sncosmo.Model(source='salt2-extended',
-                                effects=[sncosmo.CCM89Dust()],
-                                effect_names=['mw'],
-                                effect_frames=['obs'])
+                                effects=[dust, dust],
+                                effect_names=['host', 'mw'],
+                                effect_frames=['rest', 'obs'])
 
         skycoords = SkyCoord(ra, dec, unit='deg')
         t_mwebv = sncosmo.get_ebv_from_map(skycoords,
                                             mapdir=map_dir,
                                             interpolate=False)
+
         SNCosmo.set(mwebv=t_mwebv)
         self.SNCosmo_mw = SNCosmo
 

@@ -57,9 +57,10 @@ class SNObject (Model):
             dec of the SN in degrees
 
         """
+        dust = sncosmo.CCM89Dust()
         Model.__init__(self, source="salt2-extended",
-                       effects=[sncosmo.CCM89Dust()], effect_names=['mw'],
-                       effect_frames=['obs'])
+                       effects=[dust, dust], effect_names=['host', 'mw'],
+                       effect_frames=['rest', 'obs'])
         # Current implementation of Model has a default value of mwebv = 0.
         # ie. no extinction, but this is not part of the API, so should not
         # depend on it, set explicitly in order to unextincted SED from
@@ -159,6 +160,8 @@ class SNObject (Model):
         filterwav = bandpassobjects[0].wavelen
         # else: 
         #    filterwav = phiarray[0].wavelen
+        # print filterwav
+        #print self.minwave(), self.maxwave(), self.parameters
         
         SEDfromSNcosmo = Sed(wavelen=filterwav,
                              flambda=self.flux(time=time,

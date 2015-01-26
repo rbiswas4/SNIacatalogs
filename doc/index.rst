@@ -11,10 +11,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: snObject
+.. automodule:: sniacatalogs.snObject
     :members:
 
-.. automodule:: sncat
+.. automodule:: sniacatalogs.sncat
     :members:
 
 Indices and tables

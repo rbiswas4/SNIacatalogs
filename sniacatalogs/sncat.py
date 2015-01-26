@@ -3,26 +3,30 @@
 from cStringIO import StringIO
 import sys
 import os
+import numpy as np
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-import numpy as np
+
 import lsst.sims.catUtils.baseCatalogModels as bcm
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
 from lsst.sims.catalogs.measures.instance import compound
 from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.generation.db import ObservationMetaData
+
 from lsst.sims.photUtils import Sed
 import lsst.sims.photUtils.Bandpass as Bandpass
 from lsst.sims.photUtils.Photometry import PhotometryBase as PhotometryBase
-import sncosmo
+from lsst.sims.photUtils.CosmologyObject import CosmologyWrapper 
+
 from astropy.units import Unit
 from astropy.utils import lazyproperty
 import astropy.cosmology as cosmology 
-#from astropy.cosmology import Planck13 as cosmo
+
+import sncosmo
 from snObject import SNObject
-from lsst.sims.photUtils.CosmologyObject import CosmologyWrapper 
 # import sqliteutils as sq
+
 import sqlite3
 wavelenstep = 0.1
 
@@ -53,6 +57,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 # 'mass_stellar', 'c', 'x1', 't0', "x0"]
     surveyoffset = 570000.0
     SN_thresh = 100.0
+    maxz = 1.2
 
     @lazyproperty
     def lsstpbase(self):
@@ -71,6 +76,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     def usedlsstbands(self, loadsncosmo=True, loadcatsim=True):
 
         import eups
+
         bandPassList = self.obs_metadata.bandpass
         throughputsdir = eups.productDir('throughputs')
         banddir = os.path.join(throughputsdir, 'baseline')
@@ -155,6 +161,12 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                                       self.surveyoffset)
             if np.abs(v[-1] - self.obs_metadata.mjd) > self.SN_thresh:
                 # v = np.array([np.nan, np.nan, np.nan, np.nan])
+                v[-1] = bad
+                v[0] = bad
+                v[1] = bad
+                v[2] = bad
+                continue
+            if _z[i] > self.maxz:
                 v[-1] = bad
                 v[0] = bad
                 v[1] = bad
