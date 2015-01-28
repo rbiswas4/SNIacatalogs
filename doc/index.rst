@@ -17,6 +17,9 @@ Contents:
 .. automodule:: sniacatalogs.sncat
     :members:
 
+.. automodule:: tests.testSNIaFunctionality
+    :members:
+
 Indices and tables
 ==================
 

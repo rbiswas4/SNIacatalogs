@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-data = np.loadtxt('test_data/lc.dat')
+data = np.loadtxt('testData/lc.dat')
 fig, ax = plt.subplots()
 ax.plot(data[:,0], data[:,1], 'k+', label='u')
 ax.plot(data[:,0], data[:,7], 'k-')

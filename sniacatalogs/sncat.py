@@ -5,8 +5,8 @@ import sys
 import os
 import numpy as np
 import matplotlib as mpl
-mpl.use('Agg')
 import matplotlib.pyplot as plt
+mpl.use('Agg')
 
 import lsst.sims.catUtils.baseCatalogModels as bcm
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
@@ -52,7 +52,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                       'mag_y']
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e',
                       'x0': '%8e'}
-    cannot_be_null = ['x0']
+    cannot_be_null = ['x0','z']
 # column_outputs=['raJ2000','decJ2000','snid','z','snra', 'sndec',\
 # 'mass_stellar', 'c', 'x1', 't0', "x0"]
     surveyoffset = 570000.0
@@ -66,7 +66,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         throughputsdir = eups.productDir('throughputs')
         # banddir = os.path.join(throughputsdir, 'baseline')
 
-        pbase  = PhotometryBase()
+        pbase = PhotometryBase()
         pbase.loadBandPassesFromFiles(bandPassList)
         pbase.setupPhiArray_dict()
 
@@ -140,6 +140,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         _vra = np.zeros(self.numobjs)
         _vdec = np.zeros(self.numobjs)
         _vr = np.zeros(self.numobjs)
+        _z = np.where(_z > self.maxz, np.nan, _z)
         return ([_snra, _sndec, _z, _vra, _vdec, _vr])
 
     @compound('c', 'x1', 'x0', 't0')

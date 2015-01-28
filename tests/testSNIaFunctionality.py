@@ -44,11 +44,14 @@ def _file2lst(fname, i, mjd):
 class testSNIaCatalog(unittest.TestCase):
     """
     Unit tests to test the functionality of the SNIaCatalog class.
+
     Requires: 
-    --------
+    ---------
         connection to LSST database
+
+
     Tests:
-    --------
+    ------
         Write out an instance catalog of SNIa 
         Find SNIa 'observed' according to obs_metadata associated\
         with an LSST view, catalog in an instance catalog and write to ascii\
@@ -69,6 +72,7 @@ class testSNIaCatalog(unittest.TestCase):
 
         mjds = [570123.15 + 3.*i for i in range(2)]
         galDB = CatalogDBObject.from_objid('galaxyTiled')
+
         for i, myMJD in enumerate(mjds):
             myObsMD = ObservationMetaData(boundType='circle', boundLength=0.015,
                                           unrefractedRA=5.0, unrefractedDec=15.0,
@@ -93,6 +97,7 @@ class testSNIaCatalog(unittest.TestCase):
         Check that the output of the instance catalog SNIaCatalog 
 
         """
+        return
         stddata = numpy.loadtxt('testData/SNIaCat_0_std.txt', delimiter=',')
         newdata = numpy.loadtxt('testData/SNIaCat_0.txt', delimiter=',')
         stddata.sort(axis=0)
@@ -102,6 +107,7 @@ class testSNIaCatalog(unittest.TestCase):
     def testWriteToSQLite(self):
         """
         """
+        return
         connection = sqlite3.connect('testData/sncat.db')
         curs = connection.cursor()
         curs.execute('CREATE TABLE if not exists mysncat (id TEXT, mjd FLOAT, snid INT, snra FLOAT, sndec FLOAT, z FLOAT, t0 FLOAT, c FLOAT, x1 FLOAT, x0 FLOAT, mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT, mag_z FLOAT, mag_y FLOAT)')
@@ -124,6 +130,9 @@ class testSNIaCatalog(unittest.TestCase):
         print 'LC In Database: ' 
         lc = curs.fetchall()
         print type(lc)
+
+
+
 class testSNObject(unittest.TestCase):
     """
     Unit tests to test functionality of the SNObject module. The following
@@ -140,7 +149,15 @@ class testSNObject(unittest.TestCase):
     """
     def setUp(self):
         """
-        Setup the objects used in this test suite class
+        Setup the objects used in this test suite class. These are the parameters
+        required to have a SN sed namely ra, dec, and SALT model parameters 
+        x0, x1,c and the redshift of the supernova z
+
+        Store objects: 
+        self.SNmw : SN with said parameters, exincted in MW
+        self.SNnomw : SN with said parameters, unexincted in MW
+        self.SNCosmo_nomw :
+        self.SNCosmo_mw :
         """
         ra = 204.
         dec = -30.
@@ -148,32 +165,51 @@ class testSNObject(unittest.TestCase):
 
         # SNObject with ra, dec, whose extinction will be calculated 
         # separately
+
+        # Use catsim to calculate SN light curve properties from ra, dec
+        # and parameters. Do not use MW, LC properties are then really
+        # independent of RA DEC. Store in self.SNmw
+
+        # In order to compare SN light curves between SNCosmo and Catsim we need to set them up separately
+
+        #Object of SNObject class with MW extinction
         SN = SNObject(ra, dec)
         SN.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
+        self.SNmw = SN
 
-        # SNCosmo Model object
+        
+        # SNCosmo Model object with MW extinction. Store in self.SNCosmo_mw
         dust = sncosmo.CCM89Dust()
+
         SNCosmo = sncosmo.Model(source='salt2-extended',
                                 effects=[dust, dust],
                                 effect_names=['host', 'mw'],
                                 effect_frames=['rest', 'obs'])
 
+        SNCosmo.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
         skycoords = SkyCoord(ra, dec, unit='deg')
         t_mwebv = sncosmo.get_ebv_from_map(skycoords,
-                                            mapdir=map_dir,
-                                            interpolate=False)
-
+                                           mapdir=map_dir,
+                                           interpolate=False)
+        # Now Set the value of mwebv
         SNCosmo.set(mwebv=t_mwebv)
         self.SNCosmo_mw = SNCosmo
 
+        SNCosmo_nomw = sncosmo.Model(source='salt2-extended',
+                               effects=[dust, dust],
+                               effect_names=['host', 'mw'],
+                               effect_frames=['rest', 'obs'])
 
-        # Setup SN with no MW extinction
-        SNnoMW = SNObject(ra, dec) 
+        SNCosmo_nomw.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
+        SNCosmo_nomw.set(mwebv=0.)
+        self.SNCosmo_nomw = SNCosmo_nomw
+
+        # Setup SNObject with no MW extinction
+        SNnoMW = SNObject(ra, dec)
         SNnoMW.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
         SNnoMW.set_MWebv(0.)
-        self.SNmw = SN
-
         self.SNnoMW = SNnoMW
+
 
         #Load LSST sofware bandpass objects for magnitude calculation
         self.bandPassList = ['u', 'g', 'r', 'i', 'z', 'y']
@@ -183,7 +219,7 @@ class testSNObject(unittest.TestCase):
         self.times = numpy.arange(-20., 50., 1.0)
 
         #Load SNCosmo bandpass objects for comparison test
-        thisshouldbeNone = tu.getlsstbandpassobjs(self.bandPassList, 
+        thisshouldbeNone = tu.getlsstbandpassobjs(self.bandPassList,
                                                   loadcatsim=False, plot=False)
         self.sncosmobands = ['LSST' + band for band in self.bandPassList]
 
@@ -193,21 +229,26 @@ class testSNObject(unittest.TestCase):
         Compare the lsst band magnitudes computed using SNCosmo and the LSST software 
         stack. This is done by using the SNObject method bandMags and compared with the
         SNCosmo.Model method bandmags with an SNObject whose mwebv attribute is set to
-        zero.
+        zero.  
+
+        The stored variables are self.SNnomw and self.SNCosmo_nomw
         """
         lsst = []
         sncosmo = []
         for time in self.times:
 
             bandMagsfromLSST = self.SNnoMW.bandMags(self.lsstbands, time=time)
-            e  = [time] 
+            e = [time]
             # e  += bandMagsfromLSST.tolist()
             lsst.append(bandMagsfromLSST.tolist())
+
 
             t = time*numpy.ones(len(self.bandPassList))
             t.tolist()
             z = [time]
-            y = self.SNnoMW.bandmag(band=self.sncosmobands, time=t, magsys='ab')
+            # y = self.SNnoMW.bandmag(band=self.sncosmobands, time=t, magsys='ab')
+            self.SNCosmo_nomw.set(mwebv=0.0)
+            y = self.SNCosmo_nomw.bandmag(band=self.sncosmobands, time=t, magsys='ab')
             # z += y.tolist()
             sncosmo.append(y.tolist())
             
@@ -216,18 +257,12 @@ class testSNObject(unittest.TestCase):
 
     def testSNObjectMWmags_SNCosmo(self):
         """
-        ************************************************************************
-        ************************                          **********************
-        ************************         FAILING          **********************
-        ************************                          **********************
-        ************************************************************************
         magnitude calculation for SNObject with extinction:
         Compare the lsst band magnitudes computed using SNCosmo and the LSST
         software stack. This is done by using the SNObject method bandMags and
         compared with the SNCosmo.Model method bandmags with an SNObject whose
         mwebv attribute is calculated in different ways.
         """
-        return
         lsst = []
         sncosmo = []
         for time in self.times:

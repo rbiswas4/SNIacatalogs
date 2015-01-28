@@ -153,15 +153,19 @@ class SNObject (Model):
         -------
         `np.ndarray` of mag values for each band in lsstbandpass. 
 
-        .. note::
-         Unphysical values of the flux density are reported as `np.nan`
+        .. note:: Unphysical values of the flux density are reported as `np.nan`
         """
+
         # if phiarray is None:
+        if self.parameters[0] > 1.2:
+            return [np.nan]*len(bandpassobjects)
+
         filterwav = bandpassobjects[0].wavelen
         # else: 
         #    filterwav = phiarray[0].wavelen
-        # print filterwav
-        #print self.minwave(), self.maxwave(), self.parameters
+        # print 'new maccalc'
+        # print filterwav.max(), filterwav.min()
+        # print self.minwave(), self.maxwave(), self.parameters
         
         SEDfromSNcosmo = Sed(wavelen=filterwav,
                              flambda=self.flux(time=time,
