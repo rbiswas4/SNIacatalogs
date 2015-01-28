@@ -97,7 +97,6 @@ class testSNIaCatalog(unittest.TestCase):
         Check that the output of the instance catalog SNIaCatalog 
 
         """
-        return
         stddata = numpy.loadtxt('testData/SNIaCat_0_std.txt', delimiter=',')
         newdata = numpy.loadtxt('testData/SNIaCat_0.txt', delimiter=',')
         stddata.sort(axis=0)
@@ -107,7 +106,6 @@ class testSNIaCatalog(unittest.TestCase):
     def testWriteToSQLite(self):
         """
         """
-        return
         connection = sqlite3.connect('testData/sncat.db')
         curs = connection.cursor()
         curs.execute('CREATE TABLE if not exists mysncat (id TEXT, mjd FLOAT, snid INT, snra FLOAT, sndec FLOAT, z FLOAT, t0 FLOAT, c FLOAT, x1 FLOAT, x0 FLOAT, mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT, mag_z FLOAT, mag_y FLOAT)')
