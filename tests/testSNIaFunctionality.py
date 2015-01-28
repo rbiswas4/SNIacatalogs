@@ -202,6 +202,14 @@ class testSNObject(unittest.TestCase):
         SNCosmo_nomw.set(mwebv=0.)
         self.SNCosmo_nomw = SNCosmo_nomw
 
+
+        SNCosmo_float = sncosmo.Model(source='salt2-extended',
+                               effects=[dust, dust],
+                               effect_names=['host', 'mw'],
+                               effect_frames=['rest', 'obs'])
+
+        SNCosmo_float.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
+        self.SNCosmo_float = SNCosmo_float
         # Setup SNObject with no MW extinction
         SNnoMW = SNObject(ra, dec)
         SNnoMW.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
@@ -209,14 +217,14 @@ class testSNObject(unittest.TestCase):
         self.SNnoMW = SNnoMW
 
 
-        #Load LSST sofware bandpass objects for magnitude calculation
+        # Load LSST sofware bandpass objects for magnitude calculation
         self.bandPassList = ['u', 'g', 'r', 'i', 'z', 'y']
         photometry = PhotometryBase()
         photometry.loadBandPassesFromFiles(self.bandPassList)
         self.lsstbands = photometry.bandPassList
         self.times = numpy.arange(-20., 50., 1.0)
 
-        #Load SNCosmo bandpass objects for comparison test
+        # Load SNCosmo bandpass objects for comparison test
         thisshouldbeNone = tu.getlsstbandpassobjs(self.bandPassList,
                                                   loadcatsim=False, plot=False)
         self.sncosmobands = ['LSST' + band for band in self.bandPassList]
@@ -252,6 +260,38 @@ class testSNObject(unittest.TestCase):
             
             numpy.testing.assert_allclose(numpy.array(sncosmo), numpy.array(lsst))
              
+    def testSNmwebv(self):
+        """
+        Check that the mwebv parameters found in both SNCosmo and LSST catsim are the same
+        for the test ra and dec values
+        """
+        sncosmoval = self.SNCosmo_mw.parameters[-2]
+        lsstval = self.SNmw._mwebv
+        numpy.testing.assert_almost_equal(sncosmoval, lsstval)
+    def testSNObjectMWmags_SNCosmowithsamemwebv(self):
+
+        lsstval = self.SNmw._mwebv
+        self.SNCosmo_float.set(mwebv=lsstval)
+
+        lsst = []
+        sncosmo = []
+        for time in self.times:
+
+            bandMagsfromLSST = self.SNmw.bandMags(self.lsstbands, time=time)
+            e = [time]
+            # e  += bandMagsfromLSST.tolist()
+            lsst.append(bandMagsfromLSST.tolist())
+
+            t = time*numpy.ones(len(self.bandPassList))
+            t.tolist()
+            z = [time]
+            y = self.SNCosmo_float.bandmag(band=self.sncosmobands, time=t,
+                                        magsys='ab')
+            # z += y.tolist()
+            sncosmo.append(y.tolist())
+            numpy.testing.assert_allclose(numpy.array(sncosmo),
+                                          numpy.array(lsst))
+
 
     def testSNObjectMWmags_SNCosmo(self):
         """
