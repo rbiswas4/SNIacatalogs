@@ -5,8 +5,8 @@ import sys
 import os
 import numpy as np
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 mpl.use('Agg')
+import matplotlib.pyplot as plt
 
 import lsst.sims.catUtils.baseCatalogModels as bcm
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
@@ -28,6 +28,7 @@ from snObject import SNObject
 # import sqliteutils as sq
 
 import sqlite3
+
 wavelenstep = 0.1
 
 

@@ -262,13 +262,19 @@ class testSNObject(unittest.TestCase):
              
     def testSNmwebv(self):
         """
-        Check that the mwebv parameters found in both SNCosmo and LSST catsim are the same
-        for the test ra and dec values
+        The mwebv parameter is found from dustmaps and the coordinates (ra, dec) in both 
+        the catsim and SNCosmo (astropy) framework. Check that these values match to a certain
+        precision
         """
         sncosmoval = self.SNCosmo_mw.parameters[-2]
         lsstval = self.SNmw._mwebv
-        numpy.testing.assert_almost_equal(sncosmoval, lsstval)
+        numpy.testing.assert_allclose(sncosmoval, lsstval)
+
     def testSNObjectMWmags_SNCosmowithsamemwebv(self):
+        """
+        If we use the same mwebv parameter in both the LSST catsim and SNCosmo implementation of 
+        CCM 87, check for differences in the band magnitudes
+        """
 
         lsstval = self.SNmw._mwebv
         self.SNCosmo_float.set(mwebv=lsstval)
@@ -291,7 +297,6 @@ class testSNObject(unittest.TestCase):
             sncosmo.append(y.tolist())
             numpy.testing.assert_allclose(numpy.array(sncosmo),
                                           numpy.array(lsst))
-
 
     def testSNObjectMWmags_SNCosmo(self):
         """
