@@ -40,6 +40,16 @@ def _file2lst(fname, i, mjd):
         lst = [obsid] + [mjd] + row.tolist()
         l.append(lst)
     return l
+class testccmimplementation(unittest.TestCase):
+    """
+
+    """
+    def setUp(self):
+        flatsed = Sed()
+        flatsed.setFlatSED()
+        lssta, lsstb = mysed.setupCCMab() 
+        return
+
 
 class testSNIaCatalog(unittest.TestCase):
     """
