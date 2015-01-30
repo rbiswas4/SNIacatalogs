@@ -40,15 +40,15 @@ def _file2lst(fname, i, mjd):
         lst = [obsid] + [mjd] + row.tolist()
         l.append(lst)
     return l
-class testccmimplementation(unittest.TestCase):
-    """
-
-    """
-    def setUp(self):
-        flatsed = Sed()
-        flatsed.setFlatSED()
-        lssta, lsstb = mysed.setupCCMab() 
-        return
+#class testccmimplementation(unittest.TestCase):
+#    """
+#
+#    """
+#    def setUp(self):
+#        flatsed = Sed()
+#        flatsed.setFlatSED()
+#        lssta, lsstb = mysed.setupCCMab() 
+#        return
 
 
 class testSNIaCatalog(unittest.TestCase):
@@ -187,7 +187,8 @@ class testSNObject(unittest.TestCase):
 
         
         # SNCosmo Model object with MW extinction. Store in self.SNCosmo_mw
-        dust = sncosmo.CCM89Dust()
+        dust = sncosmo.OD94Dust()
+        # dust = sncosmo.CCM89Dust()
 
         SNCosmo = sncosmo.Model(source='salt2-extended',
                                 effects=[dust, dust],
