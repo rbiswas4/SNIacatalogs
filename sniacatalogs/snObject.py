@@ -182,5 +182,5 @@ class SNObject (Model):
         SEDfromSNcosmo.synchronizeSED(wavelen_min=filterwav[0],
                                       wavelen_max=filterwav[-2],
                                       wavelen_step=wavelenstep)
-
+        
         return SEDfromSNcosmo.manyMagCalc(phiarray, wavelen_step=wavelenstep)
