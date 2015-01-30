@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-Example illustrating the writing to DB and reading from database and obtaining light curves of SN using pandas
+Example illustrating the writing to DB and reading from database and obtaining light curves of SN using pandas. Assumes that the directory data exists
 '''
 
 from cStringIO import StringIO
