@@ -1,11 +1,13 @@
 """
 Class describing the SN object itself. The SN object derives from
-SNCosmo.Model and has additional properties such as ra, dec.
-It also has additional methods:
-
+SNCosmo.Model and provides a model sed of SNIa based on the SALT2 model-like
+ model often called 'salt2-extended'. This model is extended to longer 
+ wavelength ranges compared to models in Guy10 or Betoule14, at the cost of
+ larger model varianc. SNObject has additional attributes such as ra, dec. and
+additional methods to calculate band magnitudes using the LSST software stack
+after applying MW extinction:
  -  calc_mags which use the magnitude calculations in LSST stack
  -  extinction which use the extinction calculations in LSST stack
- -  Usage:  (after setups described in the readme.rst) python snObject.py
 
 """
 import sncosmo
