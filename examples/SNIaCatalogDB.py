@@ -159,11 +159,22 @@ def getLCsFromDB(dbfile, dbtable, lc_root):
     df = pd.read_sql('SELECT * FROM ' + dbtable, connection)
     grouped = df.groupby('snid')
     snids = grouped.groups.keys()
+    lcs = [] 
     for snid in snids:
         fname = lc_root + str(snid) + '.dat'
         mylc = df.loc[grouped.groups[snid]]
+        lcs.append((snid, mylc))
         mylc.to_csv(fname, na_rep="NaN", index=False)
     connection.close()
+    return lcs
+
+def convert2SNcosmo(lc):
+    """
+    convert a lc into SNCosmo photometric data format returning an
+    `~astropy.Table`
+
+    """
+    # metadata in lc is snid, snra, sndec, z, t0, x1, x0, c
 
 if __name__ == "__main__":
     writeCatalogtoDB(dbfile='data/sncat.db',
