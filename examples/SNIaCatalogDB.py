@@ -168,13 +168,14 @@ def getLCsFromDB(dbfile, dbtable, lc_root):
     connection.close()
     return lcs
 
-def convert2SNcosmo(lc):
+#def convert2SNcosmo(lc):
     """
     convert a lc into SNCosmo photometric data format returning an
     `~astropy.Table`
 
     """
     # metadata in lc is snid, snra, sndec, z, t0, x1, x0, c
+#    RA = sn.
 
 if __name__ == "__main__":
     writeCatalogtoDB(dbfile='data/sncat.db',
