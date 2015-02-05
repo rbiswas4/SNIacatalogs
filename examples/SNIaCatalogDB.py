@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/isr/bin/env python
 '''
 Example illustrating the following tasks:
     1. Write instance catalogs corresponding to pointings to ASCII files
@@ -55,8 +55,47 @@ def _file2lst(fname, i, mjd):
     return l
 # main example :  create all the 'observations' separated by a day,
 
+def obsMetaDataList(cadence=3.0, numepochs=20):
+    """
+    create a list of obsMetaData variables for a list of pointings.
 
-def writeCatalogtoDB(dbfile, dbtable, ascii_root):
+
+    Parameters
+    ----------
+    cadence: float, optional, defaults to 3.0
+        interval between epochs of observations
+    numepochs: int, optional, defaults to 20
+        number of epochs of observations
+
+
+    Returns
+    -------
+    list of `~lsst.sims.catalogs.generation.db.ObservationMetaData` variables
+
+
+    .. note: This will finally come from OpSims output, this is just a mock up. 
+    """
+    
+    # List of MJDs with a three day cadence with 20 epochs 
+    myMJDS = [570123.15 + cadence*i for i in range(numepochs)]
+    filters = ['u', 'g', 'r', 'i', 'z', 'y']
+    unrefRA = 5.0 
+    unrefDec = 15.0 
+    boundLen = 0.015
+    boundType = 'circle'
+
+    obsMetaDataList = []
+    for mjd in myMJDS:
+        obsMetaDataList.append(ObservationMetaData(boundType=boundType,
+                               unrefractedRA=unrefRA,
+                               unrefractedDec=unrefDec,
+                               boundLength=boundLen,
+                               bandpassName=filters,
+                               mjd=mjd))
+    return obsMetaDataList
+
+
+def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList):
     '''
     Write a set of instance catalogs to a sqlite3 database file called dbfile,
     deleting the file if it already exists. This is done in 2 steps: first the
@@ -65,15 +104,13 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root):
     are not removed. It is assumed that the directory in which these files
     are written to exists.
 
+
     Parameters
     ----------
-
     dbfile : string
         absolute path to the database file
-
     dbtable : string
         table name in the database file
-
     ascii_root : str
         Determines the set of filenames that the instance catalogs are written
         to. The Filenames are of the form ascii_root_i.txt where i is integer
@@ -81,18 +118,24 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root):
         catalog corresponding to the 3rd observation is written to a ASCII file
         of name 'data/SNIaCat_3.txt' relative to `pwd` if ascii_root is
         'data/SNIaCata_'
+    galdb : `~CatalogDBObject.from_objid` galaxy catalog database  
+    obsMetaDataList : list of
+        `~lsst.sims.catalogs.generation.db.ObservationMetaData` variables
+
+
     Returns
     -------
-
     None
 
 
     ..note: But output is written to disk
     '''
+
     # erase database if it already exists
     if os.path.exists(dbfile):
         print 'deleting previous database'
         os.unlink(dbfile)
+
     # Setup connection to write
     connection = sqlite3.connect(dbfile)
     curs = connection.cursor()
@@ -102,15 +145,10 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root):
             mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT,\
             mag_z FLOAT, mag_y FLOAT)')
     # Catalog, and range over which it is written
-    galDB = CatalogDBObject.from_objid('galaxyTiled')
-    myMJDS = [570123.15 + 3.*i for i in range(20)]
-    for i, myMJD in enumerate(myMJDS):
-        myObsMD = ObservationMetaData(boundType='circle',
-                                      unrefractedRA=5.0,
-                                      unrefractedDec=15.0,
-                                      boundLength=0.015,
-                                      bandpassName=['u', 'g', 'r', 'i', 'z',
-                                                    'y'], mjd=myMJD)
+    # myMJDS = [570123.15 + 3.*i for i in range(20)]
+    # for i, myMJD in enumerate(myMJDS):
+    for i, obsmetadata in enumerate(obsMetaDataList):
+        myObsMD = obsmetadata 
         catalog = SNIaCatalog(db_obj=galDB,
                               obs_metadata=myObsMD)
         print "====================================="
@@ -119,7 +157,7 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root):
         # fname = "data/SNIaCat_" + str(i) + ".txt"
         fname = ascii_root + str(i) + ".txt"
         catalog.write_catalog(fname)
-        l = _file2lst(fname, i, mjd=myMJD)
+        l = _file2lst(fname, i, mjd=catalog.obs_metadata.mjd)
         recs = sq.array2dbrecords(l)
         exec_str = sq.insertfromdata(tablename=dbtable, records=recs,
                                      multiple=True)
@@ -152,8 +190,7 @@ def getLCsFromDB(dbfile, dbtable, lc_root):
 
     None
 
-    ..note:
-        This function writes to disk at lc_rootsnid.dat for each SN.
+    ..note: This function writes to disk at lc_rootsnid.dat for each SN.
     """
     connection = sqlite3.connect(dbfile)
     df = pd.read_sql('SELECT * FROM ' + dbtable, connection)
@@ -178,9 +215,15 @@ def getLCsFromDB(dbfile, dbtable, lc_root):
 #    RA = sn.
 
 if __name__ == "__main__":
+
+
+    galDB = CatalogDBObject.from_objid('galaxyTiled')
+    obsmetaDataList = obsMetaDataList(cadence=3.0, numepochs=20)
     writeCatalogtoDB(dbfile='data/sncat.db',
                      dbtable='mysncat',
-                     ascii_root='data/SNIaCat_')
+                     ascii_root='data/SNIaCat_',
+                     galdb=galDB,
+                     obsMetaDataList=obsmetaDataList)
     getLCsFromDB(dbfile='data/sncat.db',
                  dbtable='mysncat',
                  lc_root='data/LightCurves/SN_')
