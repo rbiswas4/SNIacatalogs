@@ -16,7 +16,8 @@ Contents:
 
 .. automodule:: sniacatalogs.sncat
     :members:
-
+.. automodule:: examples.SNIaCatalogDB
+    :members:
 .. automodule:: tests.testSNIaFunctionality
     :members:
 
