@@ -16,7 +16,7 @@ import os
 
 from astropy.units import Unit
 from astropy.coordinates import SkyCoord
-from sncosmo import Model
+# from sncosmo import Model
 
 import eups
 from lsst.sims.photUtils.Photometry import PhotometryStars, Sed, Bandpass
@@ -28,7 +28,7 @@ map_dir = os.path.join(dustmaproot, 'DustMaps')
 wavelenstep = 0.1
 
 
-class SNObject (Model):
+class SNObject (sncosmo.Model):
     """
     Extension of the SNCosmo `TimeSeriesModel` to include more parameters and
     use methods in the catsim stack. We constrain ourselves to the use of a
@@ -60,7 +60,7 @@ class SNObject (Model):
 
         """
         dust = sncosmo.CCM89Dust()
-        Model.__init__(self, source="salt2-extended",
+        sncosmo.Model.__init__(self, source="salt2-extended",
                        effects=[dust, dust], effect_names=['host', 'mw'],
                        effect_frames=['rest', 'obs'])
         # Current implementation of Model has a default value of mwebv = 0.
