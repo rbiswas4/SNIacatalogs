@@ -10,24 +10,16 @@ after applying MW extinction:
  -  extinction which use the extinction calculations in LSST stack
 
 """
-import sncosmo
 import numpy as np
 import os
 
-# from astropy.units import Unit
-# from astropy.coordinates import SkyCoord
-# from sncosmo import Model
-
-import eups
 from lsst.sims.photUtils.Photometry import PhotometryStars, Sed, Bandpass
 from lsst.sims.photUtils.EBV import EBVbase
 
-dustmaproot = os.getenv('SIMS_DUSTMAPS_DIR')
-map_dir = os.path.join(dustmaproot, 'DustMaps')
+import sncosmo
+
 
 wavelenstep = 0.1
-
-
 class SNObject (sncosmo.Model):
     """
     Extension of the SNCosmo `TimeSeriesModel` to include more parameters and

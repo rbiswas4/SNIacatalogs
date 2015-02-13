@@ -20,6 +20,7 @@ from astropy.coordinates import SkyCoord
 from sncosmo import Model
 import sncosmo
 
+import eups
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
 # from lsst.sims.catalogs.measures.instance import compound
 from lsst.sims.catalogs.generation.db import CatalogDBObject
@@ -28,7 +29,7 @@ from lsst.sims.catalogs.generation.db import ObservationMetaData
 import testUtilsSNe as sq
 import sqlite3
 # Global Variables for calculating MWEBV through astropy/SNcosmo
-dustmaproot = os.getenv('SIMS_DUSTMAPS_DIR')
+dustmaproot = eups.productDir('sims_dustmaps')
 map_dir = os.path.join(dustmaproot, 'DustMaps')
 
 
