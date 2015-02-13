@@ -14,8 +14,8 @@ import sncosmo
 import numpy as np
 import os
 
-from astropy.units import Unit
-from astropy.coordinates import SkyCoord
+# from astropy.units import Unit
+# from astropy.coordinates import SkyCoord
 # from sncosmo import Model
 
 import eups
