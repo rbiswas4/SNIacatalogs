@@ -93,7 +93,6 @@ class SNObject (sncosmo.Model):
         self.lsstmwebv = EBVbase()
         self.ebvofMW = None
         self.mwEBVfromMaps()
-        self._seed = None
         return
 
 
@@ -178,6 +177,10 @@ class SNObject (sncosmo.Model):
 
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
+        if self.ebvofMW is None:
+            raise ValueError('ebvofMW attribute cannot be None Type, and must\
+                    be set using either ra, dec or by hand useing set_MWebv \
+                    before this stage \n')
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
         if phiarray is None:
             phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobjects)
