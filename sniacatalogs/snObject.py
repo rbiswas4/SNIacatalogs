@@ -75,6 +75,7 @@ class SNObject (sncosmo.Model):
         sncosmo.Model.__init__(self, source="salt2-extended",
                        effects=[dust, dust], effect_names=['host', 'mw'],
                        effect_frames=['rest', 'obs'])
+
         # Current implementation of Model has a default value of mwebv = 0.
         # ie. no extinction, but this is not part of the API, so should not
         # depend on it, set explicitly in order to unextincted SED from
@@ -95,16 +96,11 @@ class SNObject (sncosmo.Model):
         self._seed = None
         return
 
-    # Comment to self: Don't see why having the seed is of any help here
-    # will probably remove
-    # @property
-    # def seed(self):
-    #    return self._seed
 
     def set_MWebv(self, value):
         """
         if mwebv value is known, this can be used to set the attribute
-        _mwebv of the SNObject class to the value (float).
+        ebvofMW of the SNObject class to the value (float).
 
         Parameters
         -----------
@@ -121,13 +117,12 @@ class SNObject (sncosmo.Model):
                   functions to obtain an array of such values, and then set 
                   the values from such an array.
         """
-        #self._mwebv = value
         self.ebvofMW = value
         return
 
     def mwEBVfromMaps(self):
         """
-        set the attribute _mwebv of the class from the ra and dec
+        set the attribute ebvofMW of the class from the ra and dec
         of the SN. If the ra or dec attribute of the class is None,
         set this attribute to None.
 
@@ -145,7 +140,6 @@ class SNObject (sncosmo.Model):
 
         """
 
-        # If ra or dec is None, leave mwebv as initialized 
         if self.ra is None or self.dec is None:
             return
         # else set skycoord
@@ -173,24 +167,15 @@ class SNObject (sncosmo.Model):
         .. note:: Unphysical values of the flux density are reported as `np.nan`
         """
 
-        # if phiarray is None:
         if self.parameters[0] > 1.2:
             return [np.nan]*len(bandpassobjects)
 
         filterwav = bandpassobjects[0].wavelen
-        # else: 
-        #    filterwav = phiarray[0].wavelen
-        # print 'new maccalc'
-        # print filterwav.max(), filterwav.min()
-        # print self.minwave(), self.maxwave(), self.parameters
         
         SEDfromSNcosmo = Sed(wavelen=filterwav,
                              flambda=self.flux(time=time,
                                                wave=filterwav*10.)*10.)
-        # Check if I need this sync
-        # SEDfromSNcosmo.synchronizeSED(wavelen_min=filterwav[0],
-        #                              wavelen_max=filterwav[-2],
-        #                              wavelen_step=wavelenstep)
+
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
