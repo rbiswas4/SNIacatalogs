@@ -67,6 +67,12 @@ class SNObject (sncosmo.Model):
         # If we know ra, dec in degree
         self.ra = ra
         self.dec = dec
+        self.skycoord = None
+        if self.dec is not None:
+            self.dec = dec * np.pi / 180.0 
+        if self.ra is not None:
+            self.ra = ra * np.pi / 180.0
+
         self.lsstmwebv = EBVbase()
         self.ebvofMW = None
         self.mwEBVfromMaps()
@@ -122,18 +128,18 @@ class SNObject (sncosmo.Model):
                   will be set to None.
 
         """
-        ra = self.ra
-        dec = self.dec
-        if ra is None or dec is None:
-            self._mwebv = None
+
+        # If ra or dec is None, leave mwebv as initialized 
+        if self.ra is None or self.dec is None:
             return
-        skycoord = np.array([[ra], [dec]]) * np.pi / 180.
+        # else set skycoord
+        self.skycoord = np.array([[self.ra], [self.dec]])
         # skycoords = SkyCoord(ra, dec, unit='deg')
         # t_mwebv = sncosmo.get_ebv_from_map(skycoords,
         #                                    mapdir=map_dir,
         #                                    interpolate=False)
         self.ebvofMW  = self.lsstmwebv.calculateEbv(equatorialCoordinates=
-                                                  skycoord)[0]
+                                                  self.skycoord)[0]
         # print "compare vals :", t_mwebv, self._mwebv
         return
 

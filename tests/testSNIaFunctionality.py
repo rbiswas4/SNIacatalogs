@@ -103,7 +103,7 @@ class testSNIaCatalog(unittest.TestCase):
         newdata = numpy.loadtxt('testData/SNIaCat_0.txt', delimiter=',')
         stddata.sort(axis=0)
         newdata.sort(axis=0)
-        numpy.testing.assert_allclose(stddata, newdata)
+        numpy.testing.assert_allclose(stddata, newdata, rtol=1.0e-3)
 
     def testWriteToSQLite(self):
         """
