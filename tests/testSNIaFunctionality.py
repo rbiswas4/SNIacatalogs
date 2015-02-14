@@ -267,7 +267,7 @@ class testSNObject(unittest.TestCase):
         that these values match to a certain precision
         """
         sncosmoval = self.SNCosmo_mw.parameters[-2]
-        lsstval = self.SNmw._mwebv
+        lsstval = self.SNmw.ebvofMW
         numpy.testing.assert_allclose(sncosmoval, lsstval)
 
     def testSNObjectMWmags_SNCosmowithsamemwebv(self):
@@ -277,7 +277,7 @@ class testSNObject(unittest.TestCase):
         magnitudes
         """
 
-        lsstval = self.SNmw._mwebv
+        lsstval = self.SNmw.ebvofMW
         self.SNCosmo_float.set(mwebv=lsstval)
 
         lsst = []

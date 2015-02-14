@@ -28,12 +28,16 @@ class SNObject (sncosmo.Model):
     extinction to be 0, since we will use the LSST software to calculate
     extinction.
 
-    Attributes 
+    Parameters
     ----------
     ra : float
          ra of the SN in degrees
     dec : float
         dec of the SN in degrees
+
+
+    Attributes
+    ----------
 
     Methods
     -------
@@ -64,6 +68,7 @@ class SNObject (sncosmo.Model):
         self.ra = ra
         self.dec = dec
         self.lsstmwebv = EBVbase()
+        self.ebvofMW = None
         self.mwEBVfromMaps()
         self._seed = None
         return
@@ -94,7 +99,8 @@ class SNObject (sncosmo.Model):
                   functions to obtain an array of such values, and then set 
                   the values from such an array.
         """
-        self._mwebv = value
+        #self._mwebv = value
+        self.ebvofMW = value
         return
 
     def mwEBVfromMaps(self):
@@ -126,7 +132,7 @@ class SNObject (sncosmo.Model):
         # t_mwebv = sncosmo.get_ebv_from_map(skycoords,
         #                                    mapdir=map_dir,
         #                                    interpolate=False)
-        self._mwebv = self.lsstmwebv.calculateEbv(equatorialCoordinates=
+        self.ebvofMW  = self.lsstmwebv.calculateEbv(equatorialCoordinates=
                                                   skycoord)[0]
         # print "compare vals :", t_mwebv, self._mwebv
         return
@@ -170,7 +176,7 @@ class SNObject (sncosmo.Model):
         #                              wavelen_step=wavelenstep)
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
-        SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self._mwebv)
+        SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
         if phiarray is None:
             phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobjects)
         SEDfromSNcosmo.synchronizeSED(wavelen_min=filterwav[0],
