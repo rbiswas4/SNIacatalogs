@@ -35,10 +35,26 @@ class SNObject (sncosmo.Model):
     dec : float
         dec of the SN in degrees
 
-
+    
     Attributes
     ----------
+    ra : float or None 
+        ra of the SN in radians
+        
+    dec : float or None
+        dec of the SN in radians
 
+    skycoord: `np.ndarray' of size 2 or None
+        np.array([[ra], [dec]]), which are in radians
+
+    ebvofMW: float or None
+        mwebv value calculated from the self.skycoord if not None, or set to 
+        a value using self.set_MWebv. If neither of these are done, this value
+        will be None, leading to exceptions in extinction calculation.
+        Therefore, the value must be set explicitly to 0. to get unextincted
+        quantities.
+
+        
     Methods
     -------
     """
@@ -81,9 +97,9 @@ class SNObject (sncosmo.Model):
 
     # Comment to self: Don't see why having the seed is of any help here
     # will probably remove
-    @property
-    def seed(self):
-        return self._seed
+    # @property
+    # def seed(self):
+    #    return self._seed
 
     def set_MWebv(self, value):
         """
@@ -134,13 +150,8 @@ class SNObject (sncosmo.Model):
             return
         # else set skycoord
         self.skycoord = np.array([[self.ra], [self.dec]])
-        # skycoords = SkyCoord(ra, dec, unit='deg')
-        # t_mwebv = sncosmo.get_ebv_from_map(skycoords,
-        #                                    mapdir=map_dir,
-        #                                    interpolate=False)
         self.ebvofMW  = self.lsstmwebv.calculateEbv(equatorialCoordinates=
                                                   self.skycoord)[0]
-        # print "compare vals :", t_mwebv, self._mwebv
         return
 
     def bandMags(self, bandpassobjects, time, phiarray=None):
