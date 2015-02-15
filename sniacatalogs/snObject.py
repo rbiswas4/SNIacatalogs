@@ -231,7 +231,6 @@ class SNObject (sncosmo.Model):
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
 
 
-        # filterwav = bandpassobjects[0].wavelen
         if phiarray is None:
             phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobjects)
 
