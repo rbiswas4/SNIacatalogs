@@ -29,7 +29,7 @@ from snObject import SNObject
 
 import sqlite3
 
-wavelenstep = 0.1
+# wavelenstep = 0.1
 
 
 cosmo = CosmologyWrapper()
