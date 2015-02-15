@@ -146,7 +146,39 @@ class SNObject (sncosmo.Model):
         self.ebvofMW  = self.lsstmwebv.calculateEbv(equatorialCoordinates=
                                                   self.skycoord)[0]
         return
+    def SNObjectSED(self, bandpassobjects, time):
+        '''
+        return a SED of the SNObject with extinction from MW if appropriate
 
+        '''
+        # self.parameters contains a list of values of SNModel as defined 
+        # The parameters are z, t0, x1, c 
+        # in sncosmo.Model. These can be set using the method `SNObject.set( ) 
+        # inherited from sncosmo.Model
+
+        # z = self.parameters[0] 
+        if self.parameters[0] > 1.2:
+            return [np.nan]*len(bandpassobjects)
+
+        filterwav = bandpassobjects[0].wavelen
+        
+        SEDfromSNcosmo = Sed(wavelen=filterwav,
+                             flambda=self.flux(time=time,
+                                               wave=filterwav*10.)*10.)
+
+        # Apply LSST extinction
+        ax, bx = SEDfromSNcosmo.setupCCMab()
+        if self.ebvofMW is None:
+            raise ValueError('ebvofMW attribute cannot be None Type, and must\
+                    be set using either ra, dec or by hand useing set_MWebv \
+                    before this stage \n')
+        SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
+
+        print '+++++++++++++++'
+        print type(SEDfromSNcosmo), SEDfromSNcosmo.__class__
+        print '++++++++++++++++'
+        return SEDfromSNcosmo
+        
     def bandMags(self, bandpassobjects, time, phiarray=None):
         """
         return a numpy array of magnitudes of the SN spectrum in the ab
@@ -166,6 +198,21 @@ class SNObject (sncosmo.Model):
         .. note:: Unphysical values of the flux density are reported as `np.nan`
         """
 
+        # CODE to call function returning the SED that is not working
+        # Talk to Scott about it
+
+        # SEDfromSNcosmo = self.SNObjectSED(bandpassobjects, time)
+
+        # print '------------'
+        # print type(SEDfromSNcosmo), SEDfromSNcosmo.__class__
+        # print '------------'
+
+        # self.parameters contains a list of values of SNModel as defined 
+        # The parameters are z, t0, x1, c 
+        # in sncosmo.Model. These can be set using the method `SNObject.set( ) 
+        # inherited from sncosmo.Model
+
+        # z = self.parameters[0] 
         if self.parameters[0] > 1.2:
             return [np.nan]*len(bandpassobjects)
 
@@ -182,10 +229,12 @@ class SNObject (sncosmo.Model):
                     be set using either ra, dec or by hand useing set_MWebv \
                     before this stage \n')
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
+
+
+        # filterwav = bandpassobjects[0].wavelen
         if phiarray is None:
             phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobjects)
-        SEDfromSNcosmo.synchronizeSED(wavelen_min=filterwav[0],
-                                      wavelen_max=filterwav[-2],
-                                      wavelen_step=wavelenstep)
+
+        SEDfromSNcosmo.flambdaTofnu()
         
         return SEDfromSNcosmo.manyMagCalc(phiarray, wavelen_step=wavelenstep)
