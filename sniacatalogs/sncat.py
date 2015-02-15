@@ -19,13 +19,10 @@ import lsst.sims.photUtils.Bandpass as Bandpass
 from lsst.sims.photUtils.Photometry import PhotometryBase as PhotometryBase
 from lsst.sims.photUtils.CosmologyObject import CosmologyWrapper 
 
-from astropy.units import Unit
-from astropy.utils import lazyproperty
-import astropy.cosmology as cosmology 
-
+import astropy
 import sncosmo
+
 from snObject import SNObject
-# import sqliteutils as sq
 
 import sqlite3
 
@@ -60,7 +57,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     SN_thresh = 100.0
     maxz = 1.2
 
-    @lazyproperty
+    @astropy.utils.lazyproperty
     def lsstpbase(self):
         # import eups
         bandPassList = self.obs_metadata.bandpass
@@ -98,7 +95,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                 numpyband = np.loadtxt(bandfname)
                 sncosmoband = sncosmo.Bandpass(wave=numpyband[:, 0],
                                                trans=numpyband[:, 1],
-                                               wave_unit=Unit('nm'),
+                                               wave_unit=astropy.units.Unit('nm'),
                                                name='LSST'+band)
                 sncosmo.registry.register(sncosmoband, force=True)
             if loadcatsim:
