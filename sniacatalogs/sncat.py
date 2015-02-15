@@ -29,11 +29,10 @@ from snObject import SNObject
 
 import sqlite3
 
-# wavelenstep = 0.1
+wavelenstep = 0.1
 
 
 cosmo = CosmologyWrapper()
-# class SNIaCatalog (object):
 class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     """
     Supernova Type Ia in the catalog are characterized by the  following
@@ -44,27 +43,28 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     position : 3-tuple of floats
               (ra, dec, redshift),
     velocity : 3 tuple of floats
-              velocity wrt host galaxy,
+              velocity wrt host galaxy in Km/s,
     the supernova model (eg. SALT2)
     and parameters of the supernova model that predict the SED.
     """
+
+    # t_0, c, x_1, x_0 are parameters characterizing a SALT based SN model
+    # as defined in sncosmo 
     column_outputs = ['snid', 'snra', 'sndec', 'z', 't0', 'c', 'x1',
                       'x0','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z',
                       'mag_y']
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e',
                       'x0': '%8e'}
     cannot_be_null = ['x0','z']
-# column_outputs=['raJ2000','decJ2000','snid','z','snra', 'sndec',\
-# 'mass_stellar', 'c', 'x1', 't0', "x0"]
     surveyoffset = 570000.0
     SN_thresh = 100.0
     maxz = 1.2
 
     @lazyproperty
     def lsstpbase(self):
-        import eups
+        # import eups
         bandPassList = self.obs_metadata.bandpass
-        throughputsdir = eups.productDir('throughputs')
+        # throughputsdir = eups.productDir('throughputs')
         # banddir = os.path.join(throughputsdir, 'baseline')
 
         pbase = PhotometryBase()
