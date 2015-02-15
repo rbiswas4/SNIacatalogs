@@ -124,7 +124,6 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 
     def get_snid(self):
         # Not necessarily unique if the same galaxy hosts two SN
-        # rethink
         return self.column_by_name('id')
 
     @property
@@ -147,8 +146,6 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     @compound('c', 'x1', 'x0', 't0')
     def get_snparams(self):
         lsstbands = self.usedlsstbands()
-        # ra, dec = self.column_by_name('raJ2000'),\
-        #    self.column_by_name('decJ2000')
         SNmodel = SNObject()
         hundredyear = 100*365.0
         vals = np.zeros(shape=(self.numobjs, 4))
