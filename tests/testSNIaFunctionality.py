@@ -84,6 +84,7 @@ class testSNIaCatalog(unittest.TestCase):
                                           mjd=myMJD)
             catalog = SNIaCatalog(db_obj=galDB, obs_metadata=myObsMD)
             fname = "testData/SNIaCat_" + str(i) + ".txt"
+            print fname, myObsMD.mjd
             catalog.write_catalog(fname)
 
     @classmethod

@@ -92,7 +92,8 @@ class SNObject (sncosmo.Model):
 
         self.lsstmwebv = EBVbase()
         self.ebvofMW = None
-        self.mwEBVfromMaps()
+        if self.ra is not None and self.dec is not None:
+            self.mwEBVfromMaps()
         return
 
 
@@ -217,6 +218,9 @@ class SNObject (sncosmo.Model):
             return [np.nan]*len(bandpassobjects)
 
         filterwav = bandpassobjects[0].wavelen
+
+        # print 'TIME ', time
+        # print self.parameters
         
         SEDfromSNcosmo = Sed(wavelen=filterwav,
                              flambda=self.flux(time=time,

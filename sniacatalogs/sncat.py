@@ -58,6 +58,16 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     maxz = 1.2
 
     @astropy.utils.lazyproperty
+    def SNoutsideSurveyTime(self):
+        return False
+
+    
+    @property
+    def maxz(self):
+        return 1.2
+
+
+    @astropy.utils.lazyproperty
     def lsstpbase(self):
         # import eups
         bandPassList = self.obs_metadata.bandpass
@@ -143,11 +153,12 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     @compound('c', 'x1', 'x0', 't0')
     def get_snparams(self):
         lsstbands = self.usedlsstbands()
+
         SNmodel = SNObject()
         hundredyear = 100*365.0
         vals = np.zeros(shape=(self.numobjs, 4))
-        _z, _id, mu  = self.column_by_name('redshift'), self.column_by_name('snid'),\
-                self.column_by_name('cosmologicalDistanceModulus')
+        _z, _id, mu  = self.column_by_name('redshift'), self.column_by_name('snid'), self.column_by_name('cosmologicalDistanceModulus')
+
         bad = np.nan
         for i, v in enumerate(vals):
             np.random.seed(_id[i])
@@ -155,19 +166,21 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                                       self.surveyoffset,
                                       hundredyear / 2.0 +
                                       self.surveyoffset)
-            if np.abs(v[-1] - self.obs_metadata.mjd) > self.SN_thresh:
-                # v = np.array([np.nan, np.nan, np.nan, np.nan])
-                v[-1] = bad
-                v[0] = bad
-                v[1] = bad
-                v[2] = bad
-                continue
-            if _z[i] > self.maxz:
-                v[-1] = bad
-                v[0] = bad
-                v[1] = bad
-                v[2] = bad
-                continue
+            # if np.abs(v[-1] - self.obs_metadata.mjd) > self.SN_thresh:
+            #    v[-1] = bad
+            #    v[-1] = -1
+            #    v[0] = bad
+            #    v[1] = bad
+            #    v[2] = bad
+            #    continue
+
+            # if _z[i] > self.maxz:
+            #    v[-1] = bad
+            #    v[0] = bad
+            #    v[1] = bad
+            #    v[2] = bad
+            #    continue
+
             v[0] = np.random.normal(0., 0.3)
             v[1] = np.random.normal(0., 3.0)
             mabs = np.random.normal(-19.3, 0.3)
@@ -180,6 +193,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
             # We can now get x0
             v[2] = SNmodel.get('x0')
             v[3] = v[-1]
+        print "VALS: ", vals
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3]) 
 
@@ -189,6 +203,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         # lsstbands = self.usedlsstbands()
         SNmodel = SNObject()
         vals = np.zeros(shape=(self.numobjs, 6))
+       
         c, x1, x0, t0, _z , _id, ra, dec = self.column_by_name('c'),\
                                  self.column_by_name('x1'),\
                                  self.column_by_name('x0'),\
@@ -199,10 +214,20 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                                  self.column_by_name('decJ2000')
 
         for i, v in enumerate(vals):
+            arr = [_z[i], c[i], x1[i], t0[i], x0[i]]
+            # print BEFORE FLUX CALL'
+            # print map(type, arr)
+            # print arr
+            testnan = lambda x: x is np.nan
+            # if any(map(testnan, arr)):
+                # vals[i, :] = np.array([np.nan]*5)
+                # print 'bad SN'
+                # continue
             SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
             SNmodel.ra=ra[i]
             SNmodel.dec=dec[i]
             SNmodel.mwEBVfromMaps()
+            # print 'IN SNCAT ', SNmodel.parameters
             vals[i, :] = SNmodel.bandMags(bandpassobjects=self.lsstpbase.bandPassList,
                                           phiarray=self.lsstpbase.phiArray,
                                           time=self.obs_metadata.mjd)
