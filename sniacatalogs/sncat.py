@@ -60,7 +60,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     # @astropy.utils.lazyproperty
     @property
     def suppressHighzSN(self):
-        return False
+        return True
 
     @property
     def surveyoffset(self):
@@ -257,9 +257,9 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
             SNmodel.dec=dec[i]
             SNmodel.mwEBVfromMaps()
             # print 'IN SNCAT ', SNmodel.parameters
-            vals[i, :] = [25., 25., 25., 25., 25., 25.]
-            # vals[i, :] = SNmodel.bandFluxes(bandpassobjects=self.lsstpbase.bandPassList,
-            #                              phiarray=self.lsstpbase.phiArray,
-            #                              time=self.obs_metadata.mjd)
+            # vals[i, :] = [25., 25., 25., 25., 25., 25.]
+            vals[i, :] = SNmodel.bandFluxes(bandpassobjects=self.lsstpbase.bandPassList,
+                                          phiarray=self.lsstpbase.phiArray,
+                                          time=self.obs_metadata.mjd)
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5]) 

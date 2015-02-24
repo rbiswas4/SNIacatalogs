@@ -158,8 +158,8 @@ class SNObject (sncosmo.Model):
         # inherited from sncosmo.Model
 
         # z = self.parameters[0] 
-        if self.parameters[0] > 1.2:
-            return [np.nan]*len(bandpassobjects)
+        # if self.parameters[0] > 1.2:
+        #    return [np.nan]*len(bandpassobjects)
 
         filterwav = bandpassobjects[0].wavelen
         
@@ -214,10 +214,13 @@ class SNObject (sncosmo.Model):
         # inherited from sncosmo.Model
 
         # z = self.parameters[0] 
-        if self.parameters[0] > 1.2:
-            return [np.nan]*len(bandpassobjects)
+        #if self.parameters[0] > 1.2:
+        #    return [np.nan]*len(bandpassobjects)
 
         filterwav = bandpassobjects[0].wavelen
+
+        lkdh hjakdkla dkajlsd åßdas 
+        Need a wrappeer function here
 
         # print 'TIME ', time
         # print self.parameters
