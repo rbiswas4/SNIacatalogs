@@ -52,13 +52,27 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                       'mag_y']
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e',
                       'x0': '%8e'}
-    cannot_be_null = ['x0','z']
+    cannot_be_null = ['x0','z', 't0']
     surveyoffset = 570000.0
     SN_thresh = 100.0
     maxz = 1.2
 
-    @astropy.utils.lazyproperty
-    def SNoutsideSurveyTime(self):
+    # @astropy.utils.lazyproperty
+    @property
+    def suppressHighzSN(self):
+        return False
+
+    @property
+    def surveyoffset(self):
+        return 570000.0
+
+    @property
+    def SN_thresh(self):
+        return 100.
+
+
+    @property
+    def suppressSNoutsideSurveyTime(self):
         return False
 
     
@@ -108,12 +122,14 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                                                wave_unit=astropy.units.Unit('nm'),
                                                name='LSST'+band)
                 sncosmo.registry.register(sncosmoband, force=True)
+
             if loadcatsim:
                 # Now load LSST bandpasses for catsim
                 lsstbp[band] = Bandpass()
                 lsstbp[band].readThroughput(bandfname,
                                             wavelen_step=wavelenstep)
                 lsstbands.append(lsstbp[band])
+
         plot = False
         if plot:
             filterfigs, filterax = plt.subplots()
@@ -147,7 +163,15 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         _vra = np.zeros(self.numobjs)
         _vdec = np.zeros(self.numobjs)
         _vr = np.zeros(self.numobjs)
-        _z = np.where(_z > self.maxz, np.nan, _z)
+        print '++++++++++++++++'
+        print 'before suppressing high z sn '
+        print self.suppressHighzSN
+        print '++++++++++++++++'
+        if self.suppressHighzSN:
+            print '============='
+            print 'SUPRESSING HIGH Z SN'
+            print '============='
+            _z = np.where(_z > self.maxz, np.nan, _z)
         return ([_snra, _sndec, _z, _vra, _vdec, _vr])
 
     @compound('c', 'x1', 'x0', 't0')
@@ -162,7 +186,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         bad = np.nan
         for i, v in enumerate(vals):
             np.random.seed(_id[i])
-            v[-1] = np.random.uniform(-hundredyear / 2.0 +
+            t0val = np.random.uniform(-hundredyear / 2.0 +
                                       self.surveyoffset,
                                       hundredyear / 2.0 +
                                       self.surveyoffset)
@@ -180,20 +204,25 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
             #    v[1] = bad
             #    v[2] = bad
             #    continue
+            if self.suppressSNoutsideSurveyTime:
+                if np.abs(t0val - self.obs_metadata.mjd) > self.SN_thresh:
+                    t0val = np.nan
 
-            v[0] = np.random.normal(0., 0.3)
-            v[1] = np.random.normal(0., 3.0)
+            cval = np.random.normal(0., 0.3)
+            x1val = np.random.normal(0., 3.0)
             mabs = np.random.normal(-19.3, 0.3)
-            SNmodel.set(z=_z[i], c=v[0], x1=v[1], t0=v[-1])
+            SNmodel.set(z=_z[i], c=cval, x1=x1val, t0=t0val)
             # rather than use the SNCosmo function below which uses astropy to obtain
             # distanceModulus, we will use photUtils CosmologyWrapper for consistency
             # SNmodel.set_source_peakabsmag(mabs, 'bessellb', 'ab', cosmo=cosmo)
             mag = mabs + mu[i]
             SNmodel.source.set_peakmag(mag, band='bessellb', magsys='ab')
             # We can now get x0
-            v[2] = SNmodel.get('x0')
-            v[3] = v[-1]
-        print "VALS: ", vals
+            x0val = SNmodel.get('x0')
+            vals[i, 0] = cval
+            vals[i, 1] = x1val
+            vals[i, 2] = x0val
+            vals[i, 3] = t0val
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3]) 
 
@@ -228,8 +257,9 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
             SNmodel.dec=dec[i]
             SNmodel.mwEBVfromMaps()
             # print 'IN SNCAT ', SNmodel.parameters
-            vals[i, :] = SNmodel.bandMags(bandpassobjects=self.lsstpbase.bandPassList,
-                                          phiarray=self.lsstpbase.phiArray,
-                                          time=self.obs_metadata.mjd)
+            vals[i, :] = [25., 25., 25., 25., 25., 25.]
+            # vals[i, :] = SNmodel.bandFluxes(bandpassobjects=self.lsstpbase.bandPassList,
+            #                              phiarray=self.lsstpbase.phiArray,
+            #                              time=self.obs_metadata.mjd)
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5]) 

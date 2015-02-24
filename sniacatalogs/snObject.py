@@ -180,7 +180,7 @@ class SNObject (sncosmo.Model):
         print '++++++++++++++++'
         return SEDfromSNcosmo
         
-    def bandMags(self, bandpassobjects, time, phiarray=None):
+    def bandFluxes(self, bandpassobjects, time, phiarray=None):
         """
         return a numpy array of magnitudes of the SN spectrum in the ab
         magnitude system.
@@ -240,4 +240,6 @@ class SNObject (sncosmo.Model):
 
         SEDfromSNcosmo.flambdaTofnu()
         
-        return SEDfromSNcosmo.manyMagCalc(phiarray, wavelen_step=wavelenstep)
+        #return SEDfromSNcosmo.manyMagCalc(phiarray, wavelen_step=wavelenstep)
+        # return SEDfromSNcosmo.flambda[:,6]
+        return [25., 25., 25., 25., 25., 25.]
