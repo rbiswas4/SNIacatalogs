@@ -194,7 +194,8 @@ class SNObject (sncosmo.Model):
         mask2 = wave < self.maxwave()
         mask = mask1 & mask2
 
-        newflux[mask] = self.flux(time=0., wave=wave[mask])
+        newflux[mask] = self.flux(time= time, wave=wave[mask])
+        newflux = np.where( newflux > 0., newflux, 0.) 
         return newflux
 
      
