@@ -145,8 +145,9 @@ class SNObject (sncosmo.Model):
         # else set skycoord
         self.skycoord = np.array([[self.ra], [self.dec]])
         self.ebvofMW  = self.lsstmwebv.calculateEbv(equatorialCoordinates=
-                                                  self.skycoord)[0]
+                                                    self.skycoord)[0]
         return
+
     def SNObjectSED(self, bandpassobjects, time):
         '''
         return a SED of the SNObject with extinction from MW if appropriate
@@ -164,7 +165,7 @@ class SNObject (sncosmo.Model):
         filterwav = bandpassobjects[0].wavelen
         
         SEDfromSNcosmo = Sed(wavelen=filterwav,
-                             flambda=self.flux(time=time,
+                             flambda=self.snObjectFlux(time=time,
                                                wave=filterwav*10.)*10.)
 
         # Apply LSST extinction
@@ -173,6 +174,7 @@ class SNObject (sncosmo.Model):
             raise ValueError('ebvofMW attribute cannot be None Type, and must\
                     be set using either ra, dec or by hand useing set_MWebv \
                     before this stage \n')
+
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
 
         print '+++++++++++++++'
@@ -180,6 +182,22 @@ class SNObject (sncosmo.Model):
         print '++++++++++++++++'
         return SEDfromSNcosmo
         
+    def snObjectFlux(self, time, wave):
+        '''
+        returns the spectral flux density at the requested times and wavelengths
+
+        '''
+        newflux = np.empty(np.shape(wave), dtype=float)
+        newflux[:] = np.nan
+                    
+        mask1 = wave > self.minwave()
+        mask2 = wave < self.maxwave()
+        mask = mask1 & mask2
+
+        newflux[mask] = self.flux(time=0., wave=wave[mask])
+        return newflux
+
+     
     def bandFluxes(self, bandpassobjects, time, phiarray=None):
         """
         return a numpy array of magnitudes of the SN spectrum in the ab
@@ -219,15 +237,16 @@ class SNObject (sncosmo.Model):
 
         filterwav = bandpassobjects[0].wavelen
 
-        lkdh hjakdkla dkajlsd åßdas 
-        Need a wrappeer function here
 
         # print 'TIME ', time
         # print self.parameters
         
+        # This is dE/dt/dA/dlambda 
+        # Since lambda is expressed in nm
+        sncosmofluxdensity = self.snObjectFlux(time=time, 
+                                        wave=filterwav*10.)*10.
         SEDfromSNcosmo = Sed(wavelen=filterwav,
-                             flambda=self.flux(time=time,
-                                               wave=filterwav*10.)*10.)
+                             flambda=sncosmofluxdensity)
 
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
@@ -243,6 +262,6 @@ class SNObject (sncosmo.Model):
 
         SEDfromSNcosmo.flambdaTofnu()
         
-        #return SEDfromSNcosmo.manyMagCalc(phiarray, wavelen_step=wavelenstep)
+        return SEDfromSNcosmo.manyMagCalc(phiarray, wavelen_step=wavelenstep)
         # return SEDfromSNcosmo.flambda[:,6]
-        return [25., 25., 25., 25., 25., 25.]
+        # return [25., 25., 25., 25., 25., 25.]
