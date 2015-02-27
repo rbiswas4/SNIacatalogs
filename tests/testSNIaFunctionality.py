@@ -361,7 +361,7 @@ def suite():
     utilsTests.init()
     suites = []
     suites += unittest.makeSuite(testSNObject)
-    suites += unittest.makeSuite(testSNIaCatalog)
+    # suites += unittest.makeSuite(testSNIaCatalog)
     return unittest.TestSuite(suites)
 
 

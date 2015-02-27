@@ -48,8 +48,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     # t_0, c, x_1, x_0 are parameters characterizing a SALT based SN model
     # as defined in sncosmo 
     column_outputs = ['snid', 'snra', 'sndec', 'z', 't0', 'c', 'x1',
-                      'x0','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z',
-                      'mag_y']
+                      'x0','flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z',
+                      'flux_y']
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e',
                       'x0': '%8e'}
     cannot_be_null = ['x0','z', 't0']
@@ -226,8 +226,9 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3]) 
 
-    @compound('mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
-    def get_snmags(self):
+    @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y')
+    # @compound('mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
+    def get_snfluxes(self):
 
         # lsstbands = self.usedlsstbands()
         SNmodel = SNObject()

@@ -195,7 +195,7 @@ class SNObject (sncosmo.Model):
         mask = mask1 & mask2
 
         newflux[mask] = self.flux(time= time, wave=wave[mask])
-        newflux = np.where( newflux > 0., newflux, 0.) 
+        # newflux = np.where( newflux > 0., newflux, 0.) 
         return newflux
 
      
@@ -245,7 +245,7 @@ class SNObject (sncosmo.Model):
         # This is dE/dt/dA/dlambda 
         # Since lambda is expressed in nm
         sncosmofluxdensity = self.snObjectFlux(time=time, 
-                                        wave=filterwav*10.)*10.
+                                               wave=filterwav*10.)*10.
         SEDfromSNcosmo = Sed(wavelen=filterwav,
                              flambda=sncosmofluxdensity)
 
@@ -261,8 +261,6 @@ class SNObject (sncosmo.Model):
         if phiarray is None:
             phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobjects)
 
-        SEDfromSNcosmo.flambdaTofnu()
+        SEDfromSNcosmo.flambdaTofnu)
         
-        return SEDfromSNcosmo.manyMagCalc(phiarray, wavelen_step=wavelenstep)
-        # return SEDfromSNcosmo.flambda[:,6]
-        # return [25., 25., 25., 25., 25., 25.]
+        return SEDfromSNcosmo.manyFluxCalc(phiarray, wavelen_step=wavelenstep)
