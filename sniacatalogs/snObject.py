@@ -79,12 +79,16 @@ class SNObject (sncosmo.Model):
         # Current implementation of Model has a default value of mwebv = 0.
         # ie. no extinction, but this is not part of the API, so should not
         # depend on it, set explicitly in order to unextincted SED from
-        # SNCosmo. We will use catsim extinction from photUtils.
+        # SNCosmo. We will use catsim extinction from photUtils. 
+
         self.set(mwebv=0.)
-        # If we know ra, dec in degree
+
+        # ra and dec passed as parameters are in degrees
         self.ra = ra
         self.dec = dec
-        self.skycoord = None
+
+        # ra and dec if passed as non Nne variables are converted into 
+        # radians
         if self.dec is not None:
             self.dec = dec * np.pi / 180.0 
         if self.ra is not None:
@@ -148,9 +152,16 @@ class SNObject (sncosmo.Model):
                                                     self.skycoord)[0]
         return
 
-    def SNObjectSED(self, bandpassobjects, time):
+    def SNObjectSED(self, time, wave ):
         '''
         return a SED of the SNObject with extinction from MW if appropriate
+
+        Parameters
+        ----------
+        wave: `np.ndarray` of floats
+            array containing wavelengths in nm
+        time: float
+            time of observation
 
         '''
         # self.parameters contains a list of values of SNModel as defined 
@@ -158,15 +169,10 @@ class SNObject (sncosmo.Model):
         # in sncosmo.Model. These can be set using the method `SNObject.set( ) 
         # inherited from sncosmo.Model
 
-        # z = self.parameters[0] 
-        # if self.parameters[0] > 1.2:
-        #    return [np.nan]*len(bandpassobjects)
-
-        filterwav = bandpassobjects[0].wavelen
         
-        SEDfromSNcosmo = Sed(wavelen=filterwav,
+        SEDfromSNcosmo = Sed(wavelen=wave,
                              flambda=self.snObjectFlux(time=time,
-                                               wave=filterwav*10.)*10.)
+                                               wave=wave*10.)*10.)
 
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
@@ -177,9 +183,9 @@ class SNObject (sncosmo.Model):
 
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
 
-        print '+++++++++++++++'
-        print type(SEDfromSNcosmo), SEDfromSNcosmo.__class__
-        print '++++++++++++++++'
+        # print '+++++++++++++++'
+        # print type(SEDfromSNcosmo), SEDfromSNcosmo.__class__
+        # print '++++++++++++++++'
         return SEDfromSNcosmo
         
     def snObjectFlux(self, time, wave):
@@ -261,6 +267,6 @@ class SNObject (sncosmo.Model):
         if phiarray is None:
             phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobjects)
 
-        SEDfromSNcosmo.flambdaTofnu)
+        SEDfromSNcosmo.flambdaTofnu()
         
         return SEDfromSNcosmo.manyFluxCalc(phiarray, wavelen_step=wavelenstep)
