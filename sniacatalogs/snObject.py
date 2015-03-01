@@ -152,29 +152,61 @@ class SNObject (sncosmo.Model):
                                                     self.skycoord)[0]
         return
 
-    def SNObjectSED(self, time, wave ):
+    def SNObjectSED(self, time, wavelen):
         '''
-        return a SED of the SNObject with extinction from MW if appropriate
+        return a sims_photutils.sed  object from the model with extinction 
+        from MW.
 
         Parameters
         ----------
-        wave: `np.ndarray` of floats
+        wavelen: `np.ndarray` of floats
             array containing wavelengths in nm
         time: float
             time of observation
 
+
+        Returns
+        -------
+        sims_photutils.sed object containing the wavelengths and SED values
+        from the SN at time time
+
+
+        Examples
+        --------
+        >>> sed = SN.SNObjectSED(time=0., wavelen=wavenm)
+        >>> # Usual Sed methods and attributes can be accessed
         '''
         
+        flambda = np.zeros(len(wavelen))
+
         # self.mintime() and self.maxtime() are properties describing 
         # the ranges of SNCosmo.Model in time.
-        if time < self.mintime() or time > self.maxtime():
-            # Set SED to 0 beyond the model range, will change this if
-            # SNCosmo includes a more sensible decay later.
-            flambda = np.zeros(len(wave))
-        else:
-            flambda = self.flux(time=time, wave=wave*10.)*10.
 
-        SEDfromSNcosmo = Sed(wavelen=wave, flambda=flambda)
+        # Set SED to 0 beyond the model phase range, will change this if
+        # SNCosmo includes a more sensible decay later.
+
+        if time > self.mintime() and time < self.maxtime():
+
+
+            # If SNCosmo is requested a SED value beyond the model range
+            # it will crash. Try to prevent that by returning np.nan for
+            # such wavelengths. This will still not help band flux calculations
+            # but helps us get past this stage.
+            flambda = flambda * np.nan
+
+            wave = wavelen * 10.
+
+            mask1 = wave > self.minwave()
+            mask2 = wave < self.maxwave()
+            mask = mask1 & mask2
+
+            wave = wave[mask]
+
+
+            flambda[mask] = self.flux(time=time, wave=wave) * 10.
+            print flambda
+
+        SEDfromSNcosmo = Sed(wavelen=wavelen, flambda=flambda)
 
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
@@ -184,10 +216,6 @@ class SNObject (sncosmo.Model):
                     before this stage \n')
 
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
-
-        # print '+++++++++++++++'
-        # print type(SEDfromSNcosmo), SEDfromSNcosmo.__class__
-        # print '++++++++++++++++'
         return SEDfromSNcosmo
         
     def snObjectFlux(self, time, wave):
