@@ -154,8 +154,13 @@ class SNObject (sncosmo.Model):
 
     def SNObjectSED(self, time, wavelen):
         '''
-        return a sims_photutils.sed  object from the model with extinction 
-        from MW.
+        return a sims_photutils.sed  object from the SN model with extinction 
+        from MW according to the SED extinction methods. If the sed is requested
+        at times outside the validity range of the model, 0. is returned as the
+        flux density. If the time is within the range of validity of the model,
+        but the wavelength range requested is outside the range, then the
+        returned fluxes are np.nan outside the range, and the model fluxes
+        inside
 
         Parameters
         ----------
