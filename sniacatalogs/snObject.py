@@ -164,15 +164,17 @@ class SNObject (sncosmo.Model):
             time of observation
 
         '''
-        # self.parameters contains a list of values of SNModel as defined 
-        # The parameters are z, t0, x1, c 
-        # in sncosmo.Model. These can be set using the method `SNObject.set( ) 
-        # inherited from sncosmo.Model
-
         
-        SEDfromSNcosmo = Sed(wavelen=wave,
-                             flambda=self.snObjectFlux(time=time,
-                                               wave=wave*10.)*10.)
+        # self.mintime() and self.maxtime() are properties describing 
+        # the ranges of SNCosmo.Model in time.
+        if time < self.mintime() or time > self.maxtime():
+            # Set SED to 0 beyond the model range, will change this if
+            # SNCosmo includes a more sensible decay later.
+            flambda = np.zeros(len(wave))
+        else:
+            flambda = self.flux(time=time, wave=wave*10.)*10.
+
+        SEDfromSNcosmo = Sed(wavelen=wave, flambda=flambda)
 
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
