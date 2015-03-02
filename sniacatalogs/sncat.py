@@ -51,10 +51,11 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                       'x0','flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z',
                       'flux_y']
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e',
-                      'x0': '%8e'}
+            'x0': '%8e', 'flux_u': '%8e', 'flux_g': '%8e', 'flux_r': '%8e',
+            'flux_i': '%8e', 'flux_z': '%8e', 'flux_y': '%8e'}
     cannot_be_null = ['x0','z', 't0']
     surveyoffset = 570000.0
-    SN_thresh = 100.0
+    SN_thresh = 40.0
     maxz = 1.2
 
     # @astropy.utils.lazyproperty
@@ -259,8 +260,13 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
             SNmodel.mwEBVfromMaps()
             # print 'IN SNCAT ', SNmodel.parameters
             # vals[i, :] = [25., 25., 25., 25., 25., 25.]
-            vals[i, :] = SNmodel.bandFluxes(bandpassobjects=self.lsstpbase.bandPassList,
-                                          phiarray=self.lsstpbase.phiArray,
-                                          time=self.obs_metadata.mjd)
+            sed = SNmodel.SNObjectSED(time=self.obs_metadata.mjd, 
+                    bandpassobject=self.lsstpbase.bandPassList)
+            sed.flambdaTofnu()
+            vals[i, :] = sed.manyFluxCalc(phiarray=self.lsstpbase.phiArray,
+                    wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
+            # vals[i, :] = SNmodel.bandFluxes(bandpassobjects=self.lsstpbase.bandPassList,
+             #                             phiarray=self.lsstpbase.phiArray,
+             #                             time=self.obs_metadata.mjd)
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5]) 
