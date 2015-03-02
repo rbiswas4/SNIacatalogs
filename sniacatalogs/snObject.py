@@ -229,7 +229,6 @@ class SNObject (sncosmo.Model):
 
 
             flambda[mask] = self.flux(time=time, wave=wave) * 10.
-            print flambda
 
         SEDfromSNcosmo = Sed(wavelen=wavelen, flambda=flambda)
 
