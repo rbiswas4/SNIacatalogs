@@ -152,9 +152,10 @@ class SNObject (sncosmo.Model):
                                                     self.skycoord)[0]
         return
 
-    def SNObjectSED(self, time, wavelen):
+    def SNObjectSED(self, time, wavelen=None, bandpassobject=None):
         '''
-        return a sims_photutils.sed  object from the SN model with extinction 
+        return a sims_photutils.sed  object from the SN model at the requested
+        time and wavelengths (or bandpassobject) with extinction
         from MW according to the SED extinction methods. If the sed is requested
         at times outside the validity range of the model, 0. is returned as the
         flux density. If the time is within the range of validity of the model,
@@ -164,16 +165,25 @@ class SNObject (sncosmo.Model):
 
         Parameters
         ----------
-        wavelen: `np.ndarray` of floats
-            array containing wavelengths in nm
         time: float
             time of observation
+        wavelen: `np.ndarray` of floats, optional, defaults to None
+            array containing wavelengths in nm
+        bandpassobject: `sims_photUtils.bandpass` object or list thereof,
+                         optional, defaults to `None`
+
+            if provided, overrides wavelen input and the SED is obtained at the
+            wavelength values native to bandpass object.
 
 
         Returns
         -------
-        sims_photutils.sed object containing the wavelengths and SED values
+        `sims_photutils.sed` object containing the wavelengths and SED values
         from the SN at time time
+
+
+        .. note: If both wavelen and bandpassobject are `None` then exception,
+                 will be raised.
 
 
         Examples
@@ -181,6 +191,16 @@ class SNObject (sncosmo.Model):
         >>> sed = SN.SNObjectSED(time=0., wavelen=wavenm)
         >>> # Usual Sed methods and attributes can be accessed
         '''
+
+        if wavelen is None and bandpassobject is None:
+            raise ValueError('A non None input to either wavelen or bandpassobject must be provided')
+
+        if bandpassobject is not None:
+            if isinstance(bandpassobject, list):
+                bp = bandpassobject[0]
+            else:
+                bp = bandpassobject
+            wavelen =  bp.wavelen
         
         flambda = np.zeros(len(wavelen))
 
