@@ -49,7 +49,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     # as defined in sncosmo 
     column_outputs = ['snid', 'snra', 'sndec', 'z', 't0', 'c', 'x1',
                       'x0','flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z',
-                      'flux_y']
+                      'flux_y' , 'mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z',
+                      'mag_y']
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e',
             'x0': '%8e', 'flux_u': '%8e', 'flux_g': '%8e', 'flux_r': '%8e',
             'flux_i': '%8e', 'flux_z': '%8e', 'flux_y': '%8e'}
@@ -227,13 +228,10 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3]) 
 
-    @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y')
-    # @compound('mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
+    @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
     def get_snfluxes(self):
 
-        # lsstbands = self.usedlsstbands()
         SNmodel = SNObject()
-        vals = np.zeros(shape=(self.numobjs, 6))
        
         c, x1, x0, t0, _z , _id, ra, dec = self.column_by_name('c'),\
                                  self.column_by_name('x1'),\
@@ -244,11 +242,10 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                                  self.column_by_name('raJ2000'),\
                                  self.column_by_name('decJ2000')
 
+        # Set return array
+        vals = np.zeros(shape=(self.numobjs, 12))
         for i, v in enumerate(vals):
             arr = [_z[i], c[i], x1[i], t0[i], x0[i]]
-            # print BEFORE FLUX CALL'
-            # print map(type, arr)
-            # print arr
             testnan = lambda x: x is np.nan
             # if any(map(testnan, arr)):
                 # vals[i, :] = np.array([np.nan]*5)
@@ -258,15 +255,17 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
             SNmodel.ra=ra[i]
             SNmodel.dec=dec[i]
             SNmodel.mwEBVfromMaps()
-            # print 'IN SNCAT ', SNmodel.parameters
-            # vals[i, :] = [25., 25., 25., 25., 25., 25.]
+            # Get the `photUtils.SED` object from SNObject
             sed = SNmodel.SNObjectSED(time=self.obs_metadata.mjd, 
                     bandpassobject=self.lsstpbase.bandPassList)
             sed.flambdaTofnu()
-            vals[i, :] = sed.manyFluxCalc(phiarray=self.lsstpbase.phiArray,
+            # Calculate fluxes
+            vals[i, :6] = sed.manyFluxCalc(phiarray=self.lsstpbase.phiArray,
                     wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
-            # vals[i, :] = SNmodel.bandFluxes(bandpassobjects=self.lsstpbase.bandPassList,
-             #                             phiarray=self.lsstpbase.phiArray,
-             #                             time=self.obs_metadata.mjd)
+            # Calculate magnitudes
+            vals[i, 6:] = sed.manyMagCalc(phiarray=self.lsstpbase.phiArray,
+                   wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
 
-        return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3], vals[:, 4], vals[:, 5]) 
+        return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3],
+                vals[:, 4], vals[:, 5], vals[:, 6], vals[:, 7],
+                vals[:, 8], vals[:, 9], vals[:, 10], vals[:, 11])
