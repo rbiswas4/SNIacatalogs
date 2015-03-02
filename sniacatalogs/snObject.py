@@ -171,7 +171,6 @@ class SNObject (sncosmo.Model):
             array containing wavelengths in nm
         bandpassobject: `sims_photUtils.bandpass` object or list thereof,
                          optional, defaults to `None`
-
             if provided, overrides wavelen input and the SED is obtained at the
             wavelength values native to bandpass object.
 
@@ -193,7 +192,8 @@ class SNObject (sncosmo.Model):
         '''
 
         if wavelen is None and bandpassobject is None:
-            raise ValueError('A non None input to either wavelen or bandpassobject must be provided')
+            raise ValueError('A non None input to either wavelen or\
+                              bandpassobject must be provided')
 
         if bandpassobject is not None:
             if isinstance(bandpassobject, list):
@@ -217,6 +217,7 @@ class SNObject (sncosmo.Model):
             # it will crash. Try to prevent that by returning np.nan for
             # such wavelengths. This will still not help band flux calculations
             # but helps us get past this stage.
+
             flambda = flambda * np.nan
 
             wave = wavelen * 10.
