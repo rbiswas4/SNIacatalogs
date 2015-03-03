@@ -181,7 +181,10 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 
     @compound('c', 'x1', 'x0', 't0')
     def get_snparams(self):
-        lsstbands = self.usedlsstbands()
+        # RB:  Mon Mar  2 21:02:41 PST 2015
+        # Don't see why usedlsstbands is useful for this
+        # 
+        # lsstbands = self.usedlsstbands()
 
         SNmodel = SNObject()
         hundredyear = 100*365.0

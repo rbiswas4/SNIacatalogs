@@ -9,7 +9,11 @@ class Universe(object):
         pass
 
     def SNCoordinatesFromHost(hostra, hostdec, hostz, numhosts):
+        '''
+        Distribution of SN coordinates and velocities given a set of host
+        coordinates and velocities.
     
+        '''
         _sndec = hostdec
         _snra = hostra
         snz = hostz
