@@ -54,9 +54,10 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e',
             'x0': '%8e', 'flux_u': '%8e', 'flux_g': '%8e', 'flux_r': '%8e',
             'flux_i': '%8e', 'flux_z': '%8e', 'flux_y': '%8e'}
+
     cannot_be_null = ['x0','z', 't0']
     surveyoffset = 570000.0
-    SN_thresh = 40.0
+    SN_thresh = 100.0
     maxz = 1.2
 
     # @astropy.utils.lazyproperty

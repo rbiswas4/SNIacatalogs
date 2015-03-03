@@ -33,106 +33,6 @@ dustmaproot = eups.productDir('sims_dustmaps')
 map_dir = os.path.join(dustmaproot, 'DustMaps')
 
 
-def _file2lst(fname, i, mjd):
-    d = numpy.loadtxt(fname, delimiter=',')
-    l = list()
-    for i, row in enumerate(d):
-        obsid = 'obshist' + str(i)
-        lst = [obsid] + [mjd] + row.tolist()
-        l.append(lst)
-    return l
-
-
-class testSNIaCatalog(unittest.TestCase):
-    """
-    Unit tests to test the functionality of the SNIaCatalog class.
-
-    Requires:
-    ---------
-        connection to LSST database
-
-
-    Tests:
-    ------
-        Write out an instance catalog of SNIa
-        Find SNIa 'observed' according to obs_metadata associated\
-        with an LSST view, catalog in an instance catalog and write to ascii\
-        files testData/SNIaCat_i.txt as output.
-        testICatOuput:
-        testWriteToSQLite:
-        testLCFromSQLite:
-    """
-    mjds = [570123.15 + 3.*i for i in range(2)]
-
-    @classmethod
-    def setUpClass(cls):
-        # delete previous test db if present
-        if os.path.exists('testData/sncat.db'):
-            print 'deleting previous database'
-            os.unlink('testData/sncat.db')
-
-        mjds = [570123.15 + 3.*i for i in range(2)]
-        galDB = CatalogDBObject.from_objid('galaxyTiled')
-
-        for i, myMJD in enumerate(mjds):
-            myObsMD = ObservationMetaData(boundType='circle',
-                                          boundLength=0.015,
-                                          unrefractedRA=5.0,
-                                          unrefractedDec=15.0,
-                                          bandpassName=
-                                          ['u', 'g', 'r', 'i', 'z', 'y'],
-                                          mjd=myMJD)
-            catalog = SNIaCatalog(db_obj=galDB, obs_metadata=myObsMD)
-            fname = "testData/SNIaCat_" + str(i) + ".txt"
-            print fname, myObsMD.mjd
-            catalog.write_catalog(fname)
-
-    @classmethod
-    def tearDownClass(cls):
-        pass
-        # delete the test db
-        # if os.path.exists('testData/sncat.db'):
-        #    print 'deleting previous database'
-        #    os.unlink('testData/sncat.db')
-
-    def testICatOutput(self):
-        """
-        Check that the output of the instance catalog SNIaCatalog
-
-        """
-        stddata = numpy.loadtxt('testData/SNIaCat_0_std.txt', delimiter=',')
-        newdata = numpy.loadtxt('testData/SNIaCat_0.txt', delimiter=',')
-        stddata.sort(axis=0)
-        newdata.sort(axis=0)
-        numpy.testing.assert_allclose(stddata, newdata, rtol=1.0e-3)
-
-    def testWriteToSQLite(self):
-        """
-        """
-        connection = sqlite3.connect('testData/sncat.db')
-        curs = connection.cursor()
-        curs.execute('CREATE TABLE if not exists mysncat (id TEXT, mjd FLOAT, snid INT, snra FLOAT, sndec FLOAT, z FLOAT, t0 FLOAT, c FLOAT, x1 FLOAT, x0 FLOAT, mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT, mag_z FLOAT, mag_y FLOAT)')
-
-        for i, myMJD in enumerate(self.mjds):
-            fname = "testData/SNIaCat_" + str(i) + ".txt"
-            l = _file2lst(fname, i, mjd=myMJD)
-            recs = sq.array2dbrecords(l)
-            exec_str = sq.insertfromdata(tablename='mysncat', records=recs,
-                                         multiple=True)
-            curs.executemany(exec_str, recs)
-        connection.commit()
-        # connection.close()
-        # def testLCFromSQLite(self):
-        # """
-        # """
-        # connection = sqlite3.connect('testData/sncat.db')
-        # curs = connection.cursor()
-        curs.execute('SELECT * FROM mysncat')
-        print 'LC In Database: '
-        lc = curs.fetchall()
-        print type(lc)
-
-
 class testSNObject(unittest.TestCase):
     """
     Unit tests to test functionality of the SNObject module. The following
@@ -159,8 +59,9 @@ class testSNObject(unittest.TestCase):
         self.SNCosmo_nomw :
         self.SNCosmo_mw :
         """
-        ra = 204.
-        dec = -30.
+        ra = 8.723553e-02 
+        dec = 2.618648e-01
+        mjdobs = 571203.
         # Setup SN object of different kinds we want to check
 
         # SNObject with ra, dec, whose extinction will be calculated
@@ -175,7 +76,7 @@ class testSNObject(unittest.TestCase):
 
         # Object of SNObject class with MW extinction
         SN = SNObject(ra, dec)
-        SN.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
+        SN.set(x0=1.847e-6, x1=2.66, c=0., z=0.96)
         self.SNmw = SN
 
         # SNCosmo Model object with MW extinction. Store in self.SNCosmo_mw
@@ -361,7 +262,6 @@ def suite():
     utilsTests.init()
     suites = []
     suites += unittest.makeSuite(testSNObject)
-    # suites += unittest.makeSuite(testSNIaCatalog)
     return unittest.TestSuite(suites)
 
 

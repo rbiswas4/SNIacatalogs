@@ -142,6 +142,8 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList):
     curs.execute('CREATE TABLE if not exists mysncat \
             (id TEXT, mjd FLOAT, snid INT, snra FLOAT, sndec FLOAT,\
             z FLOAT, t0 FLOAT, c FLOAT, x1 FLOAT, x0 FLOAT,\
+            flux_u FLOAT, flux_g FLOAT, flux_r FLOAT, flux_i FLOAT,\
+            flux_z FLOAT, flux_y FLOAT,\
             mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT,\
             mag_z FLOAT, mag_y FLOAT)')
     # Catalog, and range over which it is written
