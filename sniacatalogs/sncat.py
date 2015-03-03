@@ -62,6 +62,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 
     self.badvalues = np.nan
     # @astropy.utils.lazyproperty
+
+    self.mjdobs = self.obs_metadata.mjd
     @property
     def suppressHighzSN(self):
         return True
