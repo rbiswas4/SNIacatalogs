@@ -158,6 +158,14 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 
     @compound('snra', 'sndec', 'z', 'vra', 'vdec', 'vr')
     def get_angularCoordinates(self):
+        '''
+        Obtain the coordinates and velocity of the SN from the host galaxy
+
+        Returns
+        -------
+        `np.ndarray` of coordinara, dec, z, vra, vdec, and vr
+
+        '''
         _snra, _sndec, _z = self.column_by_name('raJ2000'), \
             self.column_by_name('decJ2000'), \
             self.column_by_name('redshift')
@@ -166,14 +174,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         _vra = np.zeros(self.numobjs)
         _vdec = np.zeros(self.numobjs)
         _vr = np.zeros(self.numobjs)
-        print '++++++++++++++++'
-        print 'before suppressing high z sn '
-        print self.suppressHighzSN
-        print '++++++++++++++++'
+
         if self.suppressHighzSN:
-            print '============='
-            print 'SUPRESSING HIGH Z SN'
-            print '============='
             _z = np.where(_z > self.maxz, np.nan, _z)
         return ([_snra, _sndec, _z, _vra, _vdec, _vr])
 
