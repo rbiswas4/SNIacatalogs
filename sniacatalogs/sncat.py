@@ -60,17 +60,36 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     SN_thresh = 100.0
     maxz = 1.2
 
+    self.badvalues = np.nan
     # @astropy.utils.lazyproperty
     @property
     def suppressHighzSN(self):
         return True
 
     @property
-    def surveyoffset(self):
+    def midSurveyTime(self):
+        '''
+        The time at the middle of the survey: ie. at the 5 year period.
+
+
+        .. note: Changing this should not change the statistical
+        properties of the survey, but will change the exact SN we find.
+        '''
         return 570000.0
 
     @property
+    def maxTimeSNVisible(self):
+        '''
+        The catalog will provide values for SN flux (even if zero according to
+        model) for peak \pm maxTimeVisibilityforSN 
+        '''
+        return 100.
+
+    @property
     def SN_thresh(self):
+        ''' 
+        superseded by maxTimeVisibilityforSN
+        '''
         return 100.
 
 
@@ -98,55 +117,55 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         return pbase
 
 
-    def usedlsstbands(self, loadsncosmo=True, loadcatsim=True):
-
-        import eups
-
-        bandPassList = self.obs_metadata.bandpass
-        throughputsdir = eups.productDir('throughputs')
-        banddir = os.path.join(throughputsdir, 'baseline')
-
-        pbase = PhotometryBase()
-        pbase.loadBandPassesFromFiles(bandPassList)
-        pbase.setupPhiArray_dict()
-
-        lsstbands = []
-        lsstbp = {}
-
-        for band in bandPassList:
-            # setup sncosmo bandpasses
-            bandfname = banddir + "/total_" + band + '.dat'
-            if loadsncosmo:
-                # Usually the next two lines can be merged,
-                # but there is an astropy bug currently.
-                numpyband = np.loadtxt(bandfname)
-                sncosmoband = sncosmo.Bandpass(wave=numpyband[:, 0],
-                                               trans=numpyband[:, 1],
-                                               wave_unit=astropy.units.Unit('nm'),
-                                               name='LSST'+band)
-                sncosmo.registry.register(sncosmoband, force=True)
-
-            if loadcatsim:
-                # Now load LSST bandpasses for catsim
-                lsstbp[band] = Bandpass()
-                lsstbp[band].readThroughput(bandfname,
-                                            wavelen_step=wavelenstep)
-                lsstbands.append(lsstbp[band])
-
-        plot = False
-        if plot:
-            filterfigs, filterax = plt.subplots()
-            for band in bandPassList:
-                b = sncosmo.get_bandpass('LSST' + band)
-                filterax.plot(b.wave, b.trans, '-k', lw=2.0)
-                filterax.set_xlabel(r'$\lambda$, ($\AA$)')
-                filterax.set_ylabel(r'transmission')
-            plt.show()
-
-        if loadcatsim:
-            return lsstbands
-        else:
-            return None
+#    def usedlsstbands(self, loadsncosmo=True, loadcatsim=True):
+#
+#        import eups
+#
+#        bandPassList = self.obs_metadata.bandpass
+#        throughputsdir = eups.productDir('throughputs')
+#        banddir = os.path.join(throughputsdir, 'baseline')
+#
+#        pbase = PhotometryBase()
+#        pbase.loadBandPassesFromFiles(bandPassList)
+#        pbase.setupPhiArray_dict()
+#
+#        lsstbands = []
+#        lsstbp = {}
+#
+#        for band in bandPassList:
+#            # setup sncosmo bandpasses
+#            bandfname = banddir + "/total_" + band + '.dat'
+#            if loadsncosmo:
+#                # Usually the next two lines can be merged,
+#                # but there is an astropy bug currently.
+#                numpyband = np.loadtxt(bandfname)
+#                sncosmoband = sncosmo.Bandpass(wave=numpyband[:, 0],
+#                                               trans=numpyband[:, 1],
+#                                               wave_unit=astropy.units.Unit('nm'),
+#                                               name='LSST'+band)
+#                sncosmo.registry.register(sncosmoband, force=True)
+#
+#            if loadcatsim:
+#                # Now load LSST bandpasses for catsim
+#                lsstbp[band] = Bandpass()
+#                lsstbp[band].readThroughput(bandfname,
+#                                            wavelen_step=wavelenstep)
+#                lsstbands.append(lsstbp[band])
+#
+#        plot = False
+#        if plot:
+#            filterfigs, filterax = plt.subplots()
+#            for band in bandPassList:
+#                b = sncosmo.get_bandpass('LSST' + band)
+#                filterax.plot(b.wave, b.trans, '-k', lw=2.0)
+#                filterax.set_xlabel(r'$\lambda$, ($\AA$)')
+#                filterax.set_ylabel(r'transmission')
+#            plt.show()
+#
+#        if loadcatsim:
+#            return lsstbands
+#        else:
+#            return None
 
     def get_snid(self):
         # Not necessarily unique if the same galaxy hosts two SN
@@ -195,9 +214,9 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         for i, v in enumerate(vals):
             np.random.seed(_id[i])
             t0val = np.random.uniform(-hundredyear / 2.0 +
-                                      self.surveyoffset,
+                                      self.midSurveyTime
                                       hundredyear / 2.0 +
-                                      self.surveyoffset)
+                                      self.midSurveyTime)
             # if np.abs(v[-1] - self.obs_metadata.mjd) > self.SN_thresh:
             #    v[-1] = bad
             #    v[-1] = -1
