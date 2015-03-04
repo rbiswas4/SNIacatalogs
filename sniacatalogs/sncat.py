@@ -60,10 +60,14 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
     SN_thresh = 100.0
     maxz = 1.2
 
-    self.badvalues = np.nan
-    # @astropy.utils.lazyproperty
+    @astropy.utils.lazyproperty
+    def mjdobs(self): 
+        return self.obs_metadata.mjd
 
-    self.mjdobs = self.obs_metadata.mjd
+    @astropy.utils.lazyproperty
+    def badvalues(self):
+        return np.nan
+
     @property
     def suppressHighzSN(self):
         return True
@@ -216,7 +220,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         for i, v in enumerate(vals):
             np.random.seed(_id[i])
             t0val = np.random.uniform(-hundredyear / 2.0 +
-                                      self.midSurveyTime
+                                      self.midSurveyTime,
                                       hundredyear / 2.0 +
                                       self.midSurveyTime)
             # if np.abs(v[-1] - self.obs_metadata.mjd) > self.SN_thresh:

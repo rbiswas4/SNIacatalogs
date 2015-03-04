@@ -40,37 +40,47 @@ class Universe(object):
         '''
         Distribution of SN model parameters given their hosts
         '''
+        print 'Got here'
         vals = np.zeros(shape=(self.numobjs, 4))
 
         for i, v in enumerate(vals):
+            np.random.seed(hostid[i])
             t0val = self.drawFromT0Dist() 
+            vals[i, 3] = t0val
             if t0val is self.badvalues:
                 continue
             cval = self.drawFromcDist()
             x1val = self.drawFromx1Dist()
-            x0val = self.drawFromx0Dist(x1val, cval, hostmu=hostmu[i],
-                                        **hostParams)
+            x0val = self.drawFromX0Dist(x1val, cval, hostmu=hostmu[i])
+
+            print cval, x1val, t0val
+            vals[i, 0] = cval
+            vals[i, 1] = x1val
+            vals[i, 2] = x0val 
+        
+        return vals
                     
             
     def drawFromx1Dist(self, **hostParams):
         """
         """
-        return np.normal(0. , 1.0) 
+        return np.random.normal(0. , 1.0) 
 
     def drawFromcDist(self, **hostParams):
         """
         """
-        return np.normal(0. , 0.1) 
+        return np.random.normal(0. , 0.1) 
     
     def drawFromX0Dist(self, x1val, cval, hostmu, **hostParams):
         """
         """
+        import snObject
 
         # First draw an absolute BessellB magnitude for SN
         mabs =  np.random.normal(-19.3, 0.3)
         mag = mabs + hostmu
 
-        sn = snObject()
+        sn = snObject.SNObject()
         sn.set(x1=x1val, c=cval)
         sn.source.set_peakmag(mag, band='bessellb', magsys='ab')
         x0val = sn.get('x0')
@@ -87,8 +97,8 @@ class Universe(object):
         # Will not use hostid for now, but this is there so that 
         # later on one could obtain z, hostmass etc. This is useful to obtain
         # z and host dependent SN rates
-
-        t0val = np.uniform(-hundredyear / 2.0 + self.midSurveyTime, 
+        hundredyear = 100. * 365.
+        t0val = np.random.uniform(-hundredyear / 2.0 + self.midSurveyTime, 
                            hundredyear / 2.0 + self.midSurveyTime)
 
         if self.suppressDimSN:
@@ -99,7 +109,7 @@ class Universe(object):
             # for testing purposes), while the variable that will be changed
             # is maxTimeSNVisible
 
-            if np.abs(t0val - self.mjd) > self.maxTimeSNVisible:
+            if np.abs(t0val - self.mjdobs) > self.maxTimeSNVisible:
                 t0val = self.badvalues
         return t0val
 
