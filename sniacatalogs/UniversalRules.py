@@ -3,10 +3,12 @@
 import numpy as np
 
 
-class Universe(object):
+class SNUniverse(object):
     """
-    The base class must have the following attributes:
+    Mixin Class providing methods for distributing SN model parameters
+    conditioned  on the parameters of the hostgalaxy from catsim Catalogs
 
+    The base class must have the following attributes:
     numobjs
     suppressHighzSN
     badvalues
@@ -15,7 +17,6 @@ class Universe(object):
     mjdobs
     maxTimeSNVisible
 
-    Mixin Class for sncat providing methods
     """
 
 
@@ -27,14 +28,18 @@ class Universe(object):
         suppressHighzSN = self.suppressHighzSN 
         numhosts = self.numobjs 
 
-        _sndec = hostdec
-        _snra = hostra
+        sndec = hostdec
+        snra = hostra
         snz = hostz
+
         snvra = np.zeros(numhosts)
         snvdec = np.zeros(numhosts)
         snvr = np.zeros(numhosts)
+
+        if self.suppressHighzSN:
+            snz = np.where(snz > self.maxz, np.nan, snz)
     
-        return _snra, _sndec, snz , snvra, snvdec, snvr 
+        return snra, sndec, snz , snvra, snvdec, snvr 
 
     def SNparamDistfromHost(self, hostz, hostid, hostmu):
         '''
