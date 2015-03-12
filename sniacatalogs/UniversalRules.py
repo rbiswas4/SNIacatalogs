@@ -82,7 +82,7 @@ class SNUniverse(object):
         import snObject
 
         # First draw an absolute BessellB magnitude for SN
-        mabs =  np.random.normal(-19.3, 0.3)
+        mabs = np.random.normal(-19.3, 0.3)
         mag = mabs + hostmu
 
         sn = snObject.SNObject()

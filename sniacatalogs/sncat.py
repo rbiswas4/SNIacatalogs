@@ -29,8 +29,9 @@ import sqlite3
 
 wavelenstep = 0.1
 
-
 cosmo = CosmologyWrapper()
+class mybandpass(Bandpass, PhotometryBase):
+    pass
 class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
     """
     Supernova Type Ia in the catalog are characterized by the  following
@@ -105,12 +106,14 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
     @astropy.utils.lazyproperty
     def lsstpbase(self):
         # import eups
-        bandPassList = self.obs_metadata.bandpass
+        bandPassNames = self.obs_metadata.bandpass
         # throughputsdir = eups.productDir('throughputs')
         # banddir = os.path.join(throughputsdir, 'baseline')
 
+        # pbase = PhotometryBase(Bandpass)
         pbase = PhotometryBase()
-        pbase.loadBandPassesFromFiles(bandPassList)
+        # pbase = mybandpass()
+        pbase.loadBandPassesFromFiles(bandPassNames=bandPassNames)
         pbase.setupPhiArray_dict()
 
         return pbase
@@ -156,7 +159,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
     @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
     def get_snfluxes(self):
 
-        SNmodel = SNObject()
+        SNobject = SNObject()
        
         c, x1, x0, t0, _z , _id, ra, dec = self.column_by_name('c'),\
                                  self.column_by_name('x1'),\
@@ -176,20 +179,27 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
                 # vals[i, :] = np.array([np.nan]*5)
                 # print 'bad SN'
                 # continue
-            SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
-            SNmodel.ra=ra[i]
-            SNmodel.dec=dec[i]
-            SNmodel.mwEBVfromMaps()
+            SNobject.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
+            SNobject.ra=ra[i]
+            SNobject.dec=dec[i]
+            # SNmodel.mwEBVfromMaps()
             # Get the `photUtils.SED` object from SNObject
-            sed = SNmodel.SNObjectSED(time=self.obs_metadata.mjd, 
-                    bandpassobject=self.lsstpbase.bandPassList)
-            sed.flambdaTofnu()
+            # sed = SNmodel.SNObjectSED(time=self.obs_metadata.mjd, 
+            #        bandpassobject=self.lsstpbase.bandPassList)
+            # sed.flambdaTofnu()
             # Calculate fluxes
-            vals[i, :6] = sed.manyFluxCalc(phiarray=self.lsstpbase.phiArray,
-                    wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
+            vals[i, :6] = SNobject.catsimBandFluxes(bandpassobject=self.lsstpbase.bandPassList,
+                                                 time=self.obs_metadata.mjd,
+                                            phiarray=self.lsstpbase.phiArray)
             # Calculate magnitudes
-            vals[i, 6:] = sed.manyMagCalc(phiarray=self.lsstpbase.phiArray,
-                   wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
+            vals[i, 6:] = SNobject.catsimBandMags(bandpassobject=self.lsstpbase.bandPassList,
+                                                 time=self.obs_metadata.mjd,
+                                            phiarray=self.lsstpbase.phiArray)
+            # vals[i, :6] = sed.manyFluxCalc(phiarray=self.lsstpbase.phiArray,
+            #        wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
+            # Calculate magnitudes
+            # vals[i, 6:] = sed.manyMagCalc(phiarray=self.lsstpbase.phiArray,
+            #      wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3],
                 vals[:, 4], vals[:, 5], vals[:, 6], vals[:, 7],

@@ -57,11 +57,12 @@ class SNObject (sncosmo.Model):
         
     Methods
     -------
+
+    Examples
+    --------
     """
     def __init__(self, ra=None, dec=None):
         """
-        Instantiate class
-
         Parameters
         ----------
 
@@ -100,18 +101,32 @@ class SNObject (sncosmo.Model):
             self.mwEBVfromMaps()
         return
 
+    def setcoords(self, ra, dec):
+        """
+        set the ra and dec coordinate of SNObject to the given values in degrees
 
+        Parameters
+        ----------
+
+        ra:
+
+        dec:
+        """
+
+        self.ra = ra * np.pi / 180.
+        self.dec = dec * np.pi / 180.
+
+        return
     def set_MWebv(self, value):
         """
         if mwebv value is known, this can be used to set the attribute
         ebvofMW of the SNObject class to the value (float).
 
         Parameters
-        -----------
-
-        value : float, mandatory
-                value of mw extinction parameter E(B-V) in mags to be used in
-                applying extinction to the SNObject spectrum
+        ----------
+        value: float, mandatory
+               value of mw extinction parameter E(B-V) in mags to be used in
+               applying extinction to the SNObject spectrum
 
         Returns
         -------
@@ -152,7 +167,8 @@ class SNObject (sncosmo.Model):
                                                     self.skycoord)[0]
         return
 
-    def SNObjectSED(self, time, wavelen=None, bandpassobject=None):
+    def SNObjectSED(self, time, wavelen=None, bandpassobject=None,
+                    applyExitinction=True):
         '''
         return a sims_photutils.sed  object from the SN model at the requested
         time and wavelengths (or bandpassobject) with extinction
@@ -170,21 +186,20 @@ class SNObject (sncosmo.Model):
         wavelen: `np.ndarray` of floats, optional, defaults to None
             array containing wavelengths in nm
         bandpassobject: `sims_photUtils.bandpass` object or list thereof,
-                         optional, defaults to `None`
-            if provided, overrides wavelen input and the SED is obtained at the
-            wavelength values native to bandpass object.
+            optional, defaults to `None`
+            if provided, overrides wavelen input and the SED is 
+            obtained at the wavelength values native to bandpass 
+            object.
 
 
         Returns
-        -------
-        `sims_photutils.sed` object containing the wavelengths and SED values
-        from the SN at time time
+        ------- in units of ergs/cm^2/sec/Ang
+        `sims_photutils.sed` object containing the wavelengths and SED
+        values from the SN at time time in units of ergs/cm^2/sec/Ang
 
 
         .. note: If both wavelen and bandpassobject are `None` then exception,
                  will be raised.
-
-
         Examples
         --------
         >>> sed = SN.SNObjectSED(time=0., wavelen=wavenm)
@@ -195,11 +210,13 @@ class SNObject (sncosmo.Model):
             raise ValueError('A non None input to either wavelen or\
                               bandpassobject must be provided')
 
+        #if bandpassobject present, it overrides wavelen
         if bandpassobject is not None:
             if isinstance(bandpassobject, list):
                 bp = bandpassobject[0]
             else:
                 bp = bandpassobject
+            # remember this is in nm
             wavelen =  bp.wavelen
         
         flambda = np.zeros(len(wavelen))
@@ -209,7 +226,6 @@ class SNObject (sncosmo.Model):
 
         # Set SED to 0 beyond the model phase range, will change this if
         # SNCosmo includes a more sensible decay later.
-
         if time > self.mintime() and time < self.maxtime():
 
 
@@ -220,54 +236,74 @@ class SNObject (sncosmo.Model):
 
             flambda = flambda * np.nan
 
+            # Convert to Ang
             wave = wavelen * 10.
-
             mask1 = wave > self.minwave()
             mask2 = wave < self.maxwave()
             mask = mask1 & mask2
-
             wave = wave[mask]
-
-
-            flambda[mask] = self.flux(time=time, wave=wave) * 10.
+            # flux density dE/dlambda returned from SNCosmo in 
+            # ergs/cm^2/sec/Ang, convert to ergs/cm^2/sec/nm
+            flambda[mask] = self.flux(time=time, wave=wave)
+            flambda[mask] = flambda * 10.
 
         SEDfromSNcosmo = Sed(wavelen=wavelen, flambda=flambda)
+
+        if not applyExitinction:
+            return SEDfromSNcosmo
 
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
         if self.ebvofMW is None:
-            raise ValueError('ebvofMW attribute cannot be None Type, and must\
-                    be set using either ra, dec or by hand useing set_MWebv \
-                    before this stage \n')
+            self.mwEBVfromMaps()
+            if self.ebvofMW is None:
+                raise ValueError('ebvofMW attribute cannot be None Type and must be set using either ra, dec or by\
+                              hand using set_MWebv before this stage \n')
 
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
         return SEDfromSNcosmo
         
-    def snObjectFlux(self, time, wave):
-        '''
-        returns the spectral flux density at the requested times and wavelengths
 
-        '''
-        newflux = np.empty(np.shape(wave), dtype=float)
-        newflux[:] = np.nan
-                    
-        mask1 = wave > self.minwave()
-        mask2 = wave < self.maxwave()
-        mask = mask1 & mask2
-
-        newflux[mask] = self.flux(time= time, wave=wave[mask])
-        # newflux = np.where( newflux > 0., newflux, 0.) 
-        return newflux
-
-     
-    def bandFluxes(self, bandpassobjects, time, phiarray=None):
+    def catsimBandMags(self, bandpassobject, time, phiarray=None):
         """
-        return a numpy array of magnitudes of the SN spectrum in the ab
+        return a numpy array of AB magnitudes in the bandpasses 
+
+        Parameters
+        ----------
+        bandpassobject: mandatory, list of bandpass objects
+                         a list of LSST catsim bandpass objects
+        time: mandatory, float
+              MJD at which this is evaluated
+        phiarray: 
+
+        Returns
+        -------
+        `np.ndarray` of mag values for each band in lsstbandpass. 
+
+        Examples
+        --------
+        """
+
+
+        SEDfromSNcosmo = self.SNObjectSED(time=time, 
+                                            bandpassobject=bandpassobject)
+
+        if phiarray is None:
+            phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobject)
+
+        wavelenstep = bandpassobject[0].wavelen_step
+        SEDfromSNcosmo.flambdaTofnu()
+        return SEDfromSNcosmo.manyMagCalc(phiarray, 
+                                           wavelen_step=wavelenstep)
+        
+    def catsimBandFluxes(self, bandpassobject, time, phiarray=None):
+        """
+        return a numpy array of fluxes of the SN spectrum in the ab
         magnitude system.
 
         Parameters
         ----------
-        bandpassobjects: mandatory, list of bandpass objects
+        bandpassobject: mandatory, list of bandpass objects
                          a list of LSST catsim bandpass objects
         time: mandatory, float
               MJD at which this is evaluated
@@ -276,51 +312,17 @@ class SNObject (sncosmo.Model):
         -------
         `np.ndarray` of mag values for each band in lsstbandpass. 
 
-        .. note:: Unphysical values of the flux density are reported as `np.nan`
+        Examples
+        --------
+
+        .. note:: Unphysical values of the flux density are reported as
+        `np.nan`
         """
-
-        # CODE to call function returning the SED that is not working
-        # Talk to Scott about it
-
-        # SEDfromSNcosmo = self.SNObjectSED(bandpassobjects, time)
-
-        # print '------------'
-        # print type(SEDfromSNcosmo), SEDfromSNcosmo.__class__
-        # print '------------'
-
-        # self.parameters contains a list of values of SNModel as defined 
-        # The parameters are z, t0, x1, c 
-        # in sncosmo.Model. These can be set using the method `SNObject.set( ) 
-        # inherited from sncosmo.Model
-
-        # z = self.parameters[0] 
-        #if self.parameters[0] > 1.2:
-        #    return [np.nan]*len(bandpassobjects)
-
-        filterwav = bandpassobjects[0].wavelen
-
-
-        # print 'TIME ', time
-        # print self.parameters
-        
-        # This is dE/dt/dA/dlambda 
-        # Since lambda is expressed in nm
-        sncosmofluxdensity = self.snObjectFlux(time=time, 
-                                               wave=filterwav*10.)*10.
-        SEDfromSNcosmo = Sed(wavelen=filterwav,
-                             flambda=sncosmofluxdensity)
-
-        # Apply LSST extinction
-        ax, bx = SEDfromSNcosmo.setupCCMab()
-        if self.ebvofMW is None:
-            raise ValueError('ebvofMW attribute cannot be None Type, and must\
-                    be set using either ra, dec or by hand useing set_MWebv \
-                    before this stage \n')
-        SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
-
+        SEDfromSNcosmo = self.SNObjectSED(time=time, 
+                                            bandpassobject=bandpassobject)
 
         if phiarray is None:
-            phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobjects)
+            phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobject)
 
         SEDfromSNcosmo.flambdaTofnu()
         
