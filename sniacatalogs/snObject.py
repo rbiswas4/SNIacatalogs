@@ -60,6 +60,11 @@ class SNObject (sncosmo.Model):
 
     Examples
     --------
+    >>> SNObject  = SNObject(ra=30., dec=60.)
+    >>> SNObject._ra
+    >>> 0.5235987755982988
+    >>> SNObject._dec
+    >>> 1.0471975511965976
     """
     def __init__(self, ra=None, dec=None):
         """
@@ -73,7 +78,7 @@ class SNObject (sncosmo.Model):
 
         """
         dust = sncosmo.CCM89Dust()
-        sncosmo.Model.__init__(self, source="salt2-extended",
+        sncosmo.Model.__init__(self, source="salt2-extended", name='salt2-extended',
                        effects=[dust, dust], effect_names=['host', 'mw'],
                        effect_frames=['rest', 'obs'])
 
@@ -121,8 +126,10 @@ class SNObject (sncosmo.Model):
         --------
         >>> t = SNObject()
         >>> t.setCoords(ra=30., dec=90.)
-        >>> t.ra
-        >>> t.dec
+        >>> t._ra
+        >>> 0.5235987755982988
+        >>> t._dec
+        >>> 1.0471975511965976
         """
 
         self._ra = ra * np.pi / 180.
@@ -143,6 +150,12 @@ class SNObject (sncosmo.Model):
         Returns
         -------
         None
+
+        Examples
+        --------
+        >>> t = SNObject()
+        >>> t.set_MWebv(0.)
+        >>> 0.
 
         .. note:: For a large set of SN, one may use fast `np.ndarray` valued 
                   functions to obtain an array of such values, and then set 
@@ -165,6 +178,14 @@ class SNObject (sncosmo.Model):
         -------
         None
 
+        Examples
+        --------
+        >>> t = SNObject()
+        >>> t.setCoords(ra=30., dec=60.) 
+        >>> t.mwEBVfromMaps()
+        >>> t.ebvofMW
+        >>> 0.977767825127
+
         .. note:: This function must be run after the class has attributes ra 
                   and dec set. In case it is run before this, the mwebv value 
                   will be set to None.
@@ -172,6 +193,7 @@ class SNObject (sncosmo.Model):
         """
 
         if self._ra is None or self._dec is None:
+            raise ValueError('Cannot Calculate EBV from dust maps if ra or dec is `None`')
             return
         # else set skycoord
         self.skycoord = np.array([[self._ra], [self._dec]])
@@ -205,9 +227,9 @@ class SNObject (sncosmo.Model):
 
 
         Returns
-        ------- in units of ergs/cm^2/sec/Ang
+        ------- 
         `sims_photutils.sed` object containing the wavelengths and SED
-        values from the SN at time time in units of ergs/cm^2/sec/Ang
+        values from the SN at time time in units of ergs/cm^2/sec/nm
 
 
         .. note: If both wavelen and bandpassobject are `None` then exception,
