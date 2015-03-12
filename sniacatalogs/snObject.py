@@ -101,16 +101,28 @@ class SNObject (sncosmo.Model):
             self.mwEBVfromMaps()
         return
 
-    def setcoords(self, ra, dec):
+    def setCoords(self, ra, dec):
         """
-        set the ra and dec coordinate of SNObject to the given values in degrees
+        set the ra and dec coordinate of SNObject to values in radians
+        corresponding to the given values in degrees
 
         Parameters
         ----------
+        ra: float, mandatory
+            the ra in degrees
+        dec: float, mandatory
+            dec in degrees
 
-        ra:
+        Returns
+        -------
+        None
 
-        dec:
+        Examples
+        --------
+        >>> t = SNObject()
+        >>> t.setCoords(ra=30., dec=90.)
+        >>> t.ra
+        >>> t.dec
         """
 
         self.ra = ra * np.pi / 180.
@@ -255,9 +267,9 @@ class SNObject (sncosmo.Model):
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
         if self.ebvofMW is None:
-            self.mwEBVfromMaps()
-            if self.ebvofMW is None:
-                raise ValueError('ebvofMW attribute cannot be None Type and must be set using either ra, dec or by\
+            # self.mwEBVfromMaps()
+            # if self.ebvofMW is None:
+            raise ValueError('ebvofMW attribute cannot be None Type and must be set using either ra, dec or by\
                               hand using set_MWebv before this stage \n')
 
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)

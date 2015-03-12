@@ -180,9 +180,10 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
                 # print 'bad SN'
                 # continue
             SNobject.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
-            SNobject.ra=ra[i]
-            SNobject.dec=dec[i]
-            # SNmodel.mwEBVfromMaps()
+            # SNobject.ra=ra[i]
+            # SNobject.dec=dec[i]
+            SNobject.setCoords(ra=ra[i], dec=dec[i])
+            SNmodel.mwEBVfromMaps()
             # Get the `photUtils.SED` object from SNObject
             # sed = SNmodel.SNObjectSED(time=self.obs_metadata.mjd, 
             #        bandpassobject=self.lsstpbase.bandPassList)
