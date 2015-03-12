@@ -183,7 +183,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
             # SNobject.ra=ra[i]
             # SNobject.dec=dec[i]
             SNobject.setCoords(ra=ra[i], dec=dec[i])
-            SNmodel.mwEBVfromMaps()
+            SNobject.mwEBVfromMaps()
             # Get the `photUtils.SED` object from SNObject
             # sed = SNmodel.SNObjectSED(time=self.obs_metadata.mjd, 
             #        bandpassobject=self.lsstpbase.bandPassList)
