@@ -78,7 +78,7 @@ class SNObject (sncosmo.Model):
 
         """
         dust = sncosmo.CCM89Dust()
-        sncosmo.Model.__init__(self, source="salt2-extended", name='salt2-extended',
+        sncosmo.Model.__init__(self, source="salt2-extended",
                        effects=[dust, dust], effect_names=['host', 'mw'],
                        effect_frames=['rest', 'obs'])
 
@@ -105,7 +105,32 @@ class SNObject (sncosmo.Model):
         if self._ra is not None and self._dec is not None:
             self.mwEBVfromMaps()
         return
+    def summary(self):
+        '''
+        summarizes the current state of the SNObject class.
 
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Summary State in string format
+        '''
+        state = '  SNObject Summary      \n'
+
+        state += 'Model = ' + '\n'
+        state += 'z = '+ str(self.get('z')) + '\n'
+        state += 'c = '+ str(self.get('c')) + '\n' 
+        state += 'x1 = '+ str(self.get('x1')) + '\n' 
+        state += 'x0 = '+ str(self.get('x0')) + '\n' 
+        state += 't0 = '+ str(self.get('t0')) + '\n'
+        state += 'ra = '+ str(self._ra) + ' in radians \n'
+        state += 'dec = '+ str(self._dec) + ' in radians \n'
+        state += 'MW E(B-V) = ' + str(self.ebvofMW) + '\n'
+        state += '+++++++++++++++++++++++\n'
+
+        return state
     def setCoords(self, ra, dec):
         """
         set the ra and dec coordinate of SNObject to values in radians
