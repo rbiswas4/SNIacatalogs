@@ -85,19 +85,19 @@ class SNObject (sncosmo.Model):
         self.set(mwebv=0.)
 
         # ra and dec passed as parameters are in degrees
-        self.ra = ra
-        self.dec = dec
+        self._ra = ra
+        self._dec = dec
 
         # ra and dec if passed as non Nne variables are converted into 
         # radians
-        if self.dec is not None:
-            self.dec = dec * np.pi / 180.0 
-        if self.ra is not None:
-            self.ra = ra * np.pi / 180.0
+        if self._dec is not None:
+            self._dec = dec * np.pi / 180.0 
+        if self._ra is not None:
+            self._ra = ra * np.pi / 180.0
 
         self.lsstmwebv = EBVbase()
         self.ebvofMW = None
-        if self.ra is not None and self.dec is not None:
+        if self._ra is not None and self._dec is not None:
             self.mwEBVfromMaps()
         return
 
@@ -125,8 +125,8 @@ class SNObject (sncosmo.Model):
         >>> t.dec
         """
 
-        self.ra = ra * np.pi / 180.
-        self.dec = dec * np.pi / 180.
+        self._ra = ra * np.pi / 180.
+        self._dec = dec * np.pi / 180.
 
         return
     def set_MWebv(self, value):
@@ -171,10 +171,10 @@ class SNObject (sncosmo.Model):
 
         """
 
-        if self.ra is None or self.dec is None:
+        if self._ra is None or self._dec is None:
             return
         # else set skycoord
-        self.skycoord = np.array([[self.ra], [self.dec]])
+        self.skycoord = np.array([[self._ra], [self._dec]])
         self.ebvofMW  = self.lsstmwebv.calculateEbv(equatorialCoordinates=
                                                     self.skycoord)[0]
         return
