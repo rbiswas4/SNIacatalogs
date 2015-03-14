@@ -30,8 +30,6 @@ import sqlite3
 wavelenstep = 0.1
 
 cosmo = CosmologyWrapper()
-class mybandpass(Bandpass, PhotometryBase):
-    pass
 class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
     """
     Supernova Type Ia in the catalog are characterized by the  following
@@ -49,6 +47,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
 
     # t_0, c, x_1, x_0 are parameters characterizing a SALT based SN model
     # as defined in sncosmo 
+    
     column_outputs = ['snid', 'snra', 'sndec', 'z', 't0', 'c', 'x1',
                       'x0','flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z',
                       'flux_y' , 'mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z',
@@ -58,24 +57,35 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
             'flux_i': '%8e', 'flux_z': '%8e', 'flux_y': '%8e'}
 
     cannot_be_null = ['x0','z', 't0']
-    # surveyoffset = 570000.0
-    # SN_thresh = 100.0
-    # maxz = 1.2
 
     @astropy.utils.lazyproperty
     def mjdobs(self): 
+        '''
+        The time of observation for the catalog
+        '''
         return self.obs_metadata.mjd
 
     @astropy.utils.lazyproperty
     def badvalues(self):
+        '''
+        The representation of bad values in this catalog is numpy.nan
+        '''
         return np.nan
 
     @property
     def suppressDimSN(self):
+        '''
+        Boolean to decide whether to output observations of SN that are too dim
+        '''
         return True
 
     @property
     def suppressHighzSN(self):
+        '''
+        Boolean to decide whether to output information corresponding to SN 
+        at redshift above self.maxz 
+        '''
+
         return True
 
     @property
@@ -159,7 +169,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
     @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
     def get_snfluxes(self):
 
-        SNobject = SNObject()
+        # SNobject = SNObject()
        
         c, x1, x0, t0, _z , _id, ra, dec = self.column_by_name('c'),\
                                  self.column_by_name('x1'),\
