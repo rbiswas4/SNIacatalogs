@@ -61,7 +61,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
     @astropy.utils.lazyproperty
     def mjdobs(self): 
         '''
-        The time of observation for the catalog
+        The time of observation for the catalog, which is set to be equal
+        to obs_metadata.mjd
         '''
         return self.obs_metadata.mjd
 
@@ -76,6 +77,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
     def suppressDimSN(self):
         '''
         Boolean to decide whether to output observations of SN that are too dim
+        should be represented in the catalog or not.
         '''
         return True
 
@@ -115,7 +117,6 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
 
     @astropy.utils.lazyproperty
     def lsstpbase(self):
-        # import eups
         bandPassNames = self.obs_metadata.bandpass
         # throughputsdir = eups.productDir('throughputs')
         # banddir = os.path.join(throughputsdir, 'baseline')
