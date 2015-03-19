@@ -124,7 +124,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
         # pbase = PhotometryBase(Bandpass)
         pbase = PhotometryBase()
         # pbase = mybandpass()
-        pbase.loadBandPassesFromFiles(bandPassNames=bandPassNames)
+        pbase.loadBandpassesFromFiles(bandpassNames=bandPassNames)
         pbase.setupPhiArray_dict()
 
         return pbase
@@ -170,7 +170,6 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
     @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
     def get_snfluxes(self):
 
-        # SNobject = SNObject()
        
         c, x1, x0, t0, _z , _id, ra, dec = self.column_by_name('c'),\
                                  self.column_by_name('x1'),\
@@ -181,6 +180,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
                                  self.column_by_name('raJ2000'),\
                                  self.column_by_name('decJ2000')
 
+        SNobject = SNObject()
         # Set return array
         vals = np.zeros(shape=(self.numobjs, 12))
         for i, v in enumerate(vals):
@@ -200,11 +200,11 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
             #        bandpassobject=self.lsstpbase.bandPassList)
             # sed.flambdaTofnu()
             # Calculate fluxes
-            vals[i, :6] = SNobject.catsimBandFluxes(bandpassobject=self.lsstpbase.bandPassList,
+            vals[i, :6] = SNobject.catsimBandFluxes(bandpassobject=self.lsstpbase.bandpassDict,
                                                  time=self.obs_metadata.mjd,
                                             phiarray=self.lsstpbase.phiArray)
             # Calculate magnitudes
-            vals[i, 6:] = SNobject.catsimBandMags(bandpassobject=self.lsstpbase.bandPassList,
+            vals[i, 6:] = SNobject.catsimBandMags(bandpassobject=self.lsstpbase.bandpassDict,
                                                  time=self.obs_metadata.mjd,
                                             phiarray=self.lsstpbase.phiArray)
             # vals[i, :6] = sed.manyFluxCalc(phiarray=self.lsstpbase.phiArray,

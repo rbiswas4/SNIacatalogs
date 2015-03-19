@@ -19,7 +19,6 @@ from lsst.sims.photUtils.EBV import EBVbase
 import sncosmo
 
 
-wavelenstep = 0.1
 class SNObject (sncosmo.Model):
     """
     Extension of the SNCosmo `TimeSeriesModel` to include more parameters and
@@ -425,6 +424,12 @@ class SNObject (sncosmo.Model):
         if phiarray is None:
             phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobject)
 
+
+        if isinstance(bandpassobject, dict):
+            firstfilter=bandpassobject.keys()[0]
+            wavelenstep = bandpassobject[firstfilter].wavelen_step
+        else:
+            wavelenstep = bandpassobject.wavelen_step
         SEDfromSNcosmo.flambdaTofnu()
 
         return SEDfromSNcosmo.manyFluxCalc(phiarray, wavelen_step=wavelenstep,
