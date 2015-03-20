@@ -77,9 +77,27 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
     def suppressDimSN(self):
         '''
         Boolean to decide whether to output observations of SN that are too dim
-        should be represented in the catalog or not.
+        should be represented in the catalog or not. By default set to True
         '''
-        return True
+        # self._suppressDimSN = True
+        return self._suppressDimSN
+
+    @suppressDimSN.setter
+    def suppressDimSN(self, suppressDimSN=None):
+        '''
+        set the value of suppressDimSN of the catalog 
+
+        Parameters
+        ----------
+        value : Boolean, mandatory
+            Value to set suppressDimSN to 
+        '''
+        if suppressDimSN is None:
+            self._suppressDimSN = True
+        else:
+            self._suppressDimSN = suppressDimSN
+        return self._suppressDimSN
+        
 
     @property
     def suppressHighzSN(self):

@@ -45,7 +45,6 @@ class SNUniverse(object):
         '''
         Distribution of SN model parameters given their hosts
         '''
-        print 'Got here'
         vals = np.zeros(shape=(self.numobjs, 4))
 
         for i, v in enumerate(vals):

@@ -175,7 +175,6 @@ def getLCsFromDB(dbfile, dbtable, lc_root):
 
     Parameters
     ----------
-
     dbfile : string
         absolute path to the database file
 
