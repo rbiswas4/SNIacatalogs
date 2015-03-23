@@ -80,10 +80,13 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
         should be represented in the catalog or not. By default set to True
         '''
         # self._suppressDimSN = True
+        if not hasattr(self, '_suppressDimSN'):
+            suppressDimSN_default = True
+            self._suppressDimSN = suppressDimSN_default
         return self._suppressDimSN
 
     @suppressDimSN.setter
-    def suppressDimSN(self, suppressDimSN=None):
+    def suppressDimSN(self, suppressDimSN):
         '''
         set the value of suppressDimSN of the catalog 
 
@@ -92,10 +95,10 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
         value : Boolean, mandatory
             Value to set suppressDimSN to 
         '''
-        if suppressDimSN is None:
-            self._suppressDimSN = True
-        else:
-            self._suppressDimSN = suppressDimSN
+        # if suppressDimSN is None:
+        #    self._suppressDimSN = True
+        # else:
+        self._suppressDimSN = suppressDimSN
         return self._suppressDimSN
         
 
