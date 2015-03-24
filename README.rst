@@ -38,8 +38,10 @@ Example Demonstration
 ---------------------
 After setup, go to the examples directory under the package. Fire up ipython notebook at this location and open the file 
 - SNinCatSim.ipynb and evaluate the cells. The notebook should look like http://nbviewer.ipython.org/gist/anonymous/deb1821e8f69def6d7b5 if everything works as expected.
+
+  
 TODO: (Major things to be added)
-----
+================================
 These are really part of updates to SNCosmo simulation capabilities
 
 1. Add uncertainties (at some approximation, easy, harder with images)
