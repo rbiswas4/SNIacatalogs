@@ -23,14 +23,14 @@ import astropy
 import sncosmo
 
 from snObject import SNObject
+from UniversalRules import SNUniverse
 
 import sqlite3
 
 wavelenstep = 0.1
 
-
 cosmo = CosmologyWrapper()
-class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
+class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
     """
     Supernova Type Ia in the catalog are characterized by the  following
     attributes
@@ -47,6 +47,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 
     # t_0, c, x_1, x_0 are parameters characterizing a SALT based SN model
     # as defined in sncosmo 
+    
     column_outputs = ['snid', 'snra', 'sndec', 'z', 't0', 'c', 'x1',
                       'x0','flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z',
                       'flux_y' , 'mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z',
@@ -56,20 +57,58 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
             'flux_i': '%8e', 'flux_z': '%8e', 'flux_y': '%8e'}
 
     cannot_be_null = ['x0','z', 't0']
-    surveyoffset = 570000.0
-    SN_thresh = 100.0
-    maxz = 1.2
 
     @astropy.utils.lazyproperty
     def mjdobs(self): 
+        '''
+        The time of observation for the catalog, which is set to be equal
+        to obs_metadata.mjd
+        '''
         return self.obs_metadata.mjd
 
     @astropy.utils.lazyproperty
     def badvalues(self):
+        '''
+        The representation of bad values in this catalog is numpy.nan
+        '''
         return np.nan
 
     @property
+    def suppressDimSN(self):
+        '''
+        Boolean to decide whether to output observations of SN that are too dim
+        should be represented in the catalog or not. By default set to True
+        '''
+        # self._suppressDimSN = True
+        if not hasattr(self, '_suppressDimSN'):
+            suppressDimSN_default = True
+            self._suppressDimSN = suppressDimSN_default
+        return self._suppressDimSN
+
+    @suppressDimSN.setter
+    def suppressDimSN(self, suppressDimSN):
+        '''
+        set the value of suppressDimSN of the catalog 
+
+        Parameters
+        ----------
+        value : Boolean, mandatory
+            Value to set suppressDimSN to 
+        '''
+        # if suppressDimSN is None:
+        #    self._suppressDimSN = True
+        # else:
+        self._suppressDimSN = suppressDimSN
+        return self._suppressDimSN
+        
+
+    @property
     def suppressHighzSN(self):
+        '''
+        Boolean to decide whether to output information corresponding to SN 
+        at redshift above self.maxz 
+        '''
+
         return True
 
     @property
@@ -91,18 +130,6 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         '''
         return 100.
 
-    @property
-    def SN_thresh(self):
-        ''' 
-        superseded by maxTimeVisibilityforSN
-        '''
-        return 100.
-
-
-    @property
-    def suppressSNoutsideSurveyTime(self):
-        return False
-
     
     @property
     def maxz(self):
@@ -111,67 +138,18 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
 
     @astropy.utils.lazyproperty
     def lsstpbase(self):
-        # import eups
-        bandPassList = self.obs_metadata.bandpass
+        bandPassNames = self.obs_metadata.bandpass
         # throughputsdir = eups.productDir('throughputs')
         # banddir = os.path.join(throughputsdir, 'baseline')
 
+        # pbase = PhotometryBase(Bandpass)
         pbase = PhotometryBase()
-        pbase.loadBandPassesFromFiles(bandPassList)
+        # pbase = mybandpass()
+        pbase.loadBandpassesFromFiles(bandpassNames=bandPassNames)
         pbase.setupPhiArray_dict()
 
         return pbase
 
-
-#    def usedlsstbands(self, loadsncosmo=True, loadcatsim=True):
-#
-#        import eups
-#
-#        bandPassList = self.obs_metadata.bandpass
-#        throughputsdir = eups.productDir('throughputs')
-#        banddir = os.path.join(throughputsdir, 'baseline')
-#
-#        pbase = PhotometryBase()
-#        pbase.loadBandPassesFromFiles(bandPassList)
-#        pbase.setupPhiArray_dict()
-#
-#        lsstbands = []
-#        lsstbp = {}
-#
-#        for band in bandPassList:
-#            # setup sncosmo bandpasses
-#            bandfname = banddir + "/total_" + band + '.dat'
-#            if loadsncosmo:
-#                # Usually the next two lines can be merged,
-#                # but there is an astropy bug currently.
-#                numpyband = np.loadtxt(bandfname)
-#                sncosmoband = sncosmo.Bandpass(wave=numpyband[:, 0],
-#                                               trans=numpyband[:, 1],
-#                                               wave_unit=astropy.units.Unit('nm'),
-#                                               name='LSST'+band)
-#                sncosmo.registry.register(sncosmoband, force=True)
-#
-#            if loadcatsim:
-#                # Now load LSST bandpasses for catsim
-#                lsstbp[band] = Bandpass()
-#                lsstbp[band].readThroughput(bandfname,
-#                                            wavelen_step=wavelenstep)
-#                lsstbands.append(lsstbp[band])
-#
-#        plot = False
-#        if plot:
-#            filterfigs, filterax = plt.subplots()
-#            for band in bandPassList:
-#                b = sncosmo.get_bandpass('LSST' + band)
-#                filterax.plot(b.wave, b.trans, '-k', lw=2.0)
-#                filterax.set_xlabel(r'$\lambda$, ($\AA$)')
-#                filterax.set_ylabel(r'transmission')
-#            plt.show()
-#
-#        if loadcatsim:
-#            return lsstbands
-#        else:
-#            return None
 
     def get_snid(self):
         # Not necessarily unique if the same galaxy hosts two SN
@@ -191,78 +169,28 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
         `np.ndarray` of coordinara, dec, z, vra, vdec, and vr
 
         '''
-        _snra, _sndec, _z = self.column_by_name('raJ2000'), \
-            self.column_by_name('decJ2000'), \
-            self.column_by_name('redshift')
-        _sndec += np.zeros(self.numobjs)
-        _snra += np.zeros(self.numobjs)
-        _vra = np.zeros(self.numobjs)
-        _vdec = np.zeros(self.numobjs)
-        _vr = np.zeros(self.numobjs)
+        hostra , hostdec, hostz = self.column_by_name('raJ2000'),\
+                                  self.column_by_name('decJ2000'),\
+                                  self.column_by_name('redshift')
+        snra, sndec, snz, snvra, snvdec, snvr = self.SNCoordinatesFromHost(
+                                                    hostra, hostdec, hostz)
 
-        if self.suppressHighzSN:
-            _z = np.where(_z > self.maxz, np.nan, _z)
-        return ([_snra, _sndec, _z, _vra, _vdec, _vr])
+        return ([snra, sndec, snz, snvra, sndec, snvr])
 
     @compound('c', 'x1', 'x0', 't0')
     def get_snparams(self):
-        # RB:  Mon Mar  2 21:02:41 PST 2015
-        # Don't see why usedlsstbands is useful for this
-        # 
-        # lsstbands = self.usedlsstbands()
+        hostz, hostid, hostmu = self.column_by_name('redshift'),\
+                                self.column_by_name('snid'),\
+                                self.column_by_name('cosmologicalDistanceModulus')
 
-        SNmodel = SNObject()
-        hundredyear = 100*365.0
-        vals = np.zeros(shape=(self.numobjs, 4))
-        _z, _id, mu  = self.column_by_name('redshift'), self.column_by_name('snid'), self.column_by_name('cosmologicalDistanceModulus')
+        vals = self.SNparamDistfromHost( hostz, hostid, hostmu)
 
-        bad = np.nan
-        for i, v in enumerate(vals):
-            np.random.seed(_id[i])
-            t0val = np.random.uniform(-hundredyear / 2.0 +
-                                      self.midSurveyTime,
-                                      hundredyear / 2.0 +
-                                      self.midSurveyTime)
-            # if np.abs(v[-1] - self.obs_metadata.mjd) > self.SN_thresh:
-            #    v[-1] = bad
-            #    v[-1] = -1
-            #    v[0] = bad
-            #    v[1] = bad
-            #    v[2] = bad
-            #    continue
-
-            # if _z[i] > self.maxz:
-            #    v[-1] = bad
-            #    v[0] = bad
-            #    v[1] = bad
-            #    v[2] = bad
-            #    continue
-            if self.suppressSNoutsideSurveyTime:
-                if np.abs(t0val - self.obs_metadata.mjd) > self.SN_thresh:
-                    t0val = np.nan
-
-            cval = np.random.normal(0., 0.3)
-            x1val = np.random.normal(0., 3.0)
-            mabs = np.random.normal(-19.3, 0.3)
-            SNmodel.set(z=_z[i], c=cval, x1=x1val, t0=t0val)
-            # rather than use the SNCosmo function below which uses astropy to obtain
-            # distanceModulus, we will use photUtils CosmologyWrapper for consistency
-            # SNmodel.set_source_peakabsmag(mabs, 'bessellb', 'ab', cosmo=cosmo)
-            mag = mabs + mu[i]
-            SNmodel.source.set_peakmag(mag, band='bessellb', magsys='ab')
-            # We can now get x0
-            x0val = SNmodel.get('x0')
-            vals[i, 0] = cval
-            vals[i, 1] = x1val
-            vals[i, 2] = x0val
-            vals[i, 3] = t0val
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3]) 
 
     @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
     def get_snfluxes(self):
 
-        SNmodel = SNObject()
        
         c, x1, x0, t0, _z , _id, ra, dec = self.column_by_name('c'),\
                                  self.column_by_name('x1'),\
@@ -273,6 +201,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                                  self.column_by_name('raJ2000'),\
                                  self.column_by_name('decJ2000')
 
+        SNobject = SNObject()
         # Set return array
         vals = np.zeros(shape=(self.numobjs, 12))
         for i, v in enumerate(vals):
@@ -282,20 +211,28 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper):
                 # vals[i, :] = np.array([np.nan]*5)
                 # print 'bad SN'
                 # continue
-            SNmodel.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
-            SNmodel.ra=ra[i]
-            SNmodel.dec=dec[i]
-            SNmodel.mwEBVfromMaps()
+            SNobject.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
+            # SNobject.ra=ra[i]
+            # SNobject.dec=dec[i]
+            SNobject.setCoords(ra=ra[i], dec=dec[i])
+            SNobject.mwEBVfromMaps()
             # Get the `photUtils.SED` object from SNObject
-            sed = SNmodel.SNObjectSED(time=self.obs_metadata.mjd, 
-                    bandpassobject=self.lsstpbase.bandPassList)
-            sed.flambdaTofnu()
+            # sed = SNmodel.SNObjectSED(time=self.obs_metadata.mjd, 
+            #        bandpassobject=self.lsstpbase.bandPassList)
+            # sed.flambdaTofnu()
             # Calculate fluxes
-            vals[i, :6] = sed.manyFluxCalc(phiarray=self.lsstpbase.phiArray,
-                    wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
+            vals[i, :6] = SNobject.catsimBandFluxes(bandpassobject=self.lsstpbase.bandpassDict,
+                                                 time=self.obs_metadata.mjd,
+                                            phiarray=self.lsstpbase.phiArray)
             # Calculate magnitudes
-            vals[i, 6:] = sed.manyMagCalc(phiarray=self.lsstpbase.phiArray,
-                   wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
+            vals[i, 6:] = SNobject.catsimBandMags(bandpassobject=self.lsstpbase.bandpassDict,
+                                                 time=self.obs_metadata.mjd,
+                                            phiarray=self.lsstpbase.phiArray)
+            # vals[i, :6] = sed.manyFluxCalc(phiarray=self.lsstpbase.phiArray,
+            #        wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
+            # Calculate magnitudes
+            # vals[i, 6:] = sed.manyMagCalc(phiarray=self.lsstpbase.phiArray,
+            #      wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3],
                 vals[:, 4], vals[:, 5], vals[:, 6], vals[:, 7],

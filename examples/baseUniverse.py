@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-from UniversalRules import Universe
+from UniversalRules import SNUniverse
 import numpy as np
 
-class SNUniverse( Universe):
+class Universe(SNUniverse):
 
     def __init__(self):
 
-        self.numobjs = 1
+        self.numobjs = 2
         self.suppressHighzSN = True
         self.badvalues = np.nan
         self.midSurveyTime = 570000.
@@ -20,7 +20,7 @@ class SNUniverse( Universe):
 if __name__ == '__main__':
 
     # from UniversalRules import Universe
-    snu = SNUniverse()
+    snu = Universe()
 
     # class myU(erse, Universe):
     #    pass
@@ -38,4 +38,4 @@ if __name__ == '__main__':
     c = snu.drawFromcDist()
     t0 = snu.drawFromcDist()
     print snu.drawFromcDist()
-    print 'PARAMDIST', snu.SNparamDistfromHost(hostz=[1.0], hostid=[4], hostmu=[42.])
+    print 'PARAMDIST', snu.SNparamDistfromHost(hostz=[1.0, 0.7], hostid=[4, 121], hostmu=[42., 37])
