@@ -326,8 +326,9 @@ class SNObject (sncosmo.Model):
         if self.ebvofMW is None:
             # self.mwEBVfromMaps()
             # if self.ebvofMW is None:
-            raise ValueError('ebvofMW attribute cannot be None Type and must be set using either ra, dec or by\
-                              hand using set_MWebv before this stage \n')
+            raise ValueError('ebvofMW attribute cannot be None Type and must be\
+                             set by hand using set_MWebv before this stage, or\
+                             by using setcoords followed by mwEBVfromMaps\n')
 
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
         return SEDfromSNcosmo
