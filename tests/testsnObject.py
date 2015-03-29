@@ -121,9 +121,9 @@ class testSNObject(unittest.TestCase):
 
         # Load LSST sofware bandpass objects for magnitude calculation
         self.bandPassList = ['u', 'g', 'r', 'i', 'z', 'y']
-        photometry = PhotometryBase()
-        photometry.loadBandPassesFromFiles(self.bandPassList)
-        self.lsstbands = photometry.bandPassList
+        pbase = PhotometryBase()
+        pbase.loadBandpassesFromFiles(self.bandPassList)
+        self.lsstbands = pbase.bandpassDict
         self.times = numpy.arange(-20., 50., 1.0)
 
         # Load SNCosmo bandpass objects for comparison test
@@ -145,10 +145,10 @@ class testSNObject(unittest.TestCase):
         sncosmo = []
         for time in self.times:
 
-            bandMagsfromLSST = self.SNnoMW.bandMags(self.lsstbands, time=time)
+            bandMagsfromLSST = self.catsimBandMags(time=time, bandpassobject=lsstbands, phiarray=None).tolist()
             e = [time]
             # e  += bandMagsfromLSST.tolist()
-            lsst.append(bandMagsfromLSST.tolist())
+            lsst.append(bandMagsfromLSST)
 
             t = time*numpy.ones(len(self.bandPassList))
             t.tolist()
