@@ -55,15 +55,27 @@ class testSNObject(unittest.TestCase):
         x0, x1,c and the redshift of the supernova z
 
         Store objects:
-        self.SNmw : SN with said parameters, exincted in MW
+
+        # NO MW Extinction objects from catsim and SNCosmo
         self.SNnomw : SN with said parameters, unexincted in MW
         self.SNCosmo_nomw :
+
+        # objects with MW extinction
+        self.SNmw : SN with said parameters, exincted in MW
         self.SNCosmo_mw :
         """
         ra = 8.723553e-02 
         dec = 2.618648e-01
         mjdobs = 571203.
         # Setup SN object of different kinds we want to check
+        
+        
+        # Setup SNObject with no MW extinction
+        SNnoMW = SNObject()
+        SNnoMW.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
+        SNnoMW.set_MWebv(0.)
+        self.SNnoMW = SNnoMW
+
 
         # SNObject with ra, dec, whose extinction will be calculated
         # separately
@@ -115,13 +127,8 @@ class testSNObject(unittest.TestCase):
 
         SNCosmo_float.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
         self.SNCosmo_float = SNCosmo_float
-        # Setup SNObject with no MW extinction
-        SNnoMW = SNObject()
-        SNnoMW.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
-        SNnoMW.set_MWebv(0.)
-        self.SNnoMW = SNnoMW
-
-        # Load LSST sofware bandpass objects for magnitude calculation
+        
+                # Load LSST sofware bandpass objects for magnitude calculation
         self.bandPassList = ['u', 'g', 'r', 'i', 'z', 'y']
         pbase = PhotometryBase()
         pbase.loadBandpassesFromFiles(self.bandPassList)
@@ -150,7 +157,10 @@ class testSNObject(unittest.TestCase):
         sncosmo = []
         for time in self.times:
 
-            bandMagsfromLSST = self.SNmw.catsimBandMags(time=time, bandpassobject=self.lsstbands, phiarray=self.pbase.phiArray).tolist()
+            bandMagsfromLSST = self.SNnoMW.catsimBandMags(time=time,
+                                                                bandpassobject=self.lsstbands,
+                                                                phiarray=self.pbase.phiArray).\
+                                                                tolist()
             e = [time]
             # e  += bandMagsfromLSST.tolist()
             lsst.append(bandMagsfromLSST)
