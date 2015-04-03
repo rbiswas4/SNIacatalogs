@@ -135,8 +135,7 @@ class testSNObject(unittest.TestCase):
         pbase.setupPhiArray_dict()
         self.pbase = pbase
         self.lsstbands = pbase.bandpassDict
-        self.times = numpy.arange(-2., 5., 1.0)
-        # self.times = numpy.arange(-20., 50., 1.0)
+        self.times = numpy.arange(-20., 50., 1.0)
 
         # Load SNCosmo bandpass objects for comparison test
         thisshouldbeNone = tu.getlsstbandpassobjs(self.bandPassList,
