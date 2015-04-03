@@ -70,11 +70,6 @@ class testSNObject(unittest.TestCase):
         # Setup SN object of different kinds we want to check
         
         
-        # Setup SNObject with no MW extinction
-        SNnoMW = SNObject()
-        SNnoMW.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
-        SNnoMW.set_MWebv(0.)
-        self.SNnoMW = SNnoMW
 
 
         # SNObject with ra, dec, whose extinction will be calculated
@@ -87,14 +82,28 @@ class testSNObject(unittest.TestCase):
         # In order to compare SN light curves between SNCosmo and Catsim
         # we need to set them up separately
 
+
+        SNnoMW = SNObject()
+        SNnoMW.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
+        SNnoMW.set_MWebv(0.)
+        self.SNnoMW = SNnoMW
+        dust = sncosmo.OD94Dust()
+        SNCosmo_nomw = sncosmo.Model(source='salt2-extended',
+                                     effects=[dust, dust],
+                                     effect_names=['host', 'mw'],
+                                     effect_frames=['rest', 'obs'])
+
+        SNCosmo_nomw.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
+        SNCosmo_nomw.set(mwebv=0.)
+        self.SNCosmo_nomw = SNCosmo_nomw
+
+            ### SNCosmo Model object with MW extinction. Store in self.SNCosmo_mw
         # Object of SNObject class with MW extinction
         SN = SNObject(ra, dec)
-        SN.set(x0=1.847e-6, x1=2.66, c=0., z=0.96)
+        SN.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
+        SNnoMW.set_MWebv(0.)
         self.SNmw = SN
-
-        # SNCosmo Model object with MW extinction. Store in self.SNCosmo_mw
-        dust = sncosmo.OD94Dust()
-        # dust = sncosmo.CCM89Dust()
+        print SN.ebvofMW
 
         SNCosmo = sncosmo.Model(source='salt2-extended',
                                 effects=[dust, dust],
@@ -110,14 +119,6 @@ class testSNObject(unittest.TestCase):
         SNCosmo.set(mwebv=t_mwebv)
         self.SNCosmo_mw = SNCosmo
 
-        SNCosmo_nomw = sncosmo.Model(source='salt2-extended',
-                                     effects=[dust, dust],
-                                     effect_names=['host', 'mw'],
-                                     effect_frames=['rest', 'obs'])
-
-        SNCosmo_nomw.set(x0=1.847e-6, x1=0.1, c=0., z=0.2)
-        SNCosmo_nomw.set(mwebv=0.)
-        self.SNCosmo_nomw = SNCosmo_nomw
 
         # WHAT THE HELL is SNCosmo_float?
         SNCosmo_float = sncosmo.Model(source='salt2-extended',
@@ -135,7 +136,8 @@ class testSNObject(unittest.TestCase):
         pbase.setupPhiArray_dict()
         self.pbase = pbase
         self.lsstbands = pbase.bandpassDict
-        self.times = numpy.arange(-20., 50., 1.0)
+        #self.times = numpy.arange(-20., 50., 1.0)
+        self.times = numpy.array([0.])
 
         # Load SNCosmo bandpass objects for comparison test
         thisshouldbeNone = tu.getlsstbandpassobjs(self.bandPassList,
@@ -175,6 +177,39 @@ class testSNObject(unittest.TestCase):
             sncosmo.append(y.tolist())
             numpy.testing.assert_allclose(numpy.array(sncosmo),
                                           numpy.array(lsst))
+    def testSNObjectwMWmags_SNCosmo(self):
+        """
+        magnitude calculation for SNObject without extinction:
+        Compare the lsst band magnitudes computed using SNCosmo and the LSST
+        software stack. This is done by using the SNObject method bandMags and
+        compared with the SNCosmo.Model method bandmags with an SNObject whose
+        mwebv attribute is set to zero.
+
+        The stored variables are self.SNnomw and self.SNCosmo_nomw
+        """
+        lsst = []
+        sncosmo = []
+        for time in self.times:
+
+            bandMagsfromLSST = self.SNmw.catsimBandMags(time=time,
+                                                                bandpassobject=self.lsstbands,
+                                                                phiarray=self.pbase.phiArray).\
+                                                                tolist()
+            e = [time]
+            # e  += bandMagsfromLSST.tolist()
+            lsst.append(bandMagsfromLSST)
+
+            t = time*numpy.ones(len(self.bandPassList))
+            t.tolist()
+            z = [time]
+
+            y = self.SNCosmo_mw.bandmag(band=self.sncosmobands,
+                                          time=t, magsys='ab')
+            # z += y.tolist()
+            sncosmo.append(y.tolist())
+            numpy.testing.assert_allclose(numpy.array(sncosmo),
+                                          numpy.array(lsst))
+
 
 ###     def testSNmwebv(self):
 ###         """
