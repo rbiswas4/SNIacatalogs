@@ -13,7 +13,7 @@ after applying MW extinction:
 import numpy as np
 import os
 
-from lsst.sims.photUtils.Photometry import PhotometryStars, Sed, Bandpass
+from lsst.sims.photUtils.Photometry import  Sed
 from lsst.sims.photUtils.EBV import EBVbase
 
 import sncosmo
@@ -135,9 +135,10 @@ class SNObject (sncosmo.Model):
         state += 'ra = '+ str(self._ra) + ' in radians \n'
         state += 'dec = '+ str(self._dec) + ' in radians \n'
         state += 'MW E(B-V) = ' + str(self.ebvofMW) + '\n'
-        state += '+++++++++++++++++++++++\n'
 
         return state
+
+
     def setCoords(self, ra, dec):
         """
         set the ra and dec coordinate of SNObject to values in radians
@@ -227,7 +228,6 @@ class SNObject (sncosmo.Model):
         if self._ra is None or self._dec is None:
             raise ValueError('Cannot Calculate EBV from dust maps if ra or dec is `None`')
             return
-        # else set skycoord
         self.skycoord = np.array([[self._ra], [self._dec]])
         self.ebvofMW  = self.lsstmwebv.calculateEbv(equatorialCoordinates=
                                                     self.skycoord)[0]
@@ -324,8 +324,6 @@ class SNObject (sncosmo.Model):
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
         if self.ebvofMW is None:
-            # self.mwEBVfromMaps()
-            # if self.ebvofMW is None:
             raise ValueError('ebvofMW attribute cannot be None Type and must be\
                              set by hand using set_MWebv before this stage, or\
                              by using setcoords followed by mwEBVfromMaps\n')

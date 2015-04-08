@@ -22,7 +22,6 @@ import sncosmo
 
 import eups
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
-# from lsst.sims.catalogs.measures.instance import compound
 from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.generation.db import ObservationMetaData
 
