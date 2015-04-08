@@ -84,16 +84,11 @@ class testSNIaCatalog(unittest.TestCase):
                                           mjd=myMJD)
             catalog = SNIaCatalog(db_obj=galDB, obs_metadata=myObsMD)
             fname = "testData/SNIaCat_" + str(i) + ".txt"
-            print fname, myObsMD.mjd
             catalog.write_catalog(fname)
 
     @classmethod
     def tearDownClass(cls):
         pass
-        # delete the test db
-        # if os.path.exists('testData/sncat.db'):
-        #    print 'deleting previous database'
-        #    os.unlink('testData/sncat.db')
 
     def testICatOutput(self):
         """
@@ -111,7 +106,12 @@ class testSNIaCatalog(unittest.TestCase):
         """
         connection = sqlite3.connect('testData/sncat.db')
         curs = connection.cursor()
-        curs.execute('CREATE TABLE if not exists mysncat (id TEXT, mjd FLOAT, snid INT, snra FLOAT, sndec FLOAT, z FLOAT, t0 FLOAT, c FLOAT, x1 FLOAT, x0 FLOAT, mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT, mag_z FLOAT, mag_y FLOAT)')
+        curs.execute('CREATE TABLE if not exists mysncat (id TEXT, mjd FLOAT,\
+                     snid INT, snra FLOAT, sndec FLOAT, z FLOAT, t0 FLOAT,\
+                     c FLOAT, x1 FLOAT, x0 FLOAT, flux_u FLOAT, flux_g FLOAT,\
+                     flux_r FLOAT, flux_i FLOAT, flux_z FLOAG, flux_y FLOAT,\
+                     mag_u FLOAT, mag_g FLOAT, mag_r FLOAT, mag_i FLOAT,\
+                     mag_z FLOAT, mag_y FLOAT)')
 
         for i, myMJD in enumerate(self.mjds):
             fname = "testData/SNIaCat_" + str(i) + ".txt"
