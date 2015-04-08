@@ -109,7 +109,6 @@ class testSNObject(unittest.TestCase):
         self.SNCosmo_mw = SNCosmo
 
 
-        # WHAT THE HELL is SNCosmo_float?
         CCMdust = sncosmo.CCM89Dust()
         SNCosmo_float = sncosmo.Model(source='salt2-extended',
                                       effects=[CCMdust, CCMdust],
@@ -128,7 +127,6 @@ class testSNObject(unittest.TestCase):
         self.pbase = pbase
         self.lsstbands = pbase.bandpassDict
         self.times = numpy.arange(-20., 50., 1.0)
-        # self.times = numpy.array([0.])
 
         # Load SNCosmo bandpass objects for comparison test
         thisshouldbeNone = tu.getlsstbandpassobjs(self.bandPassList,
@@ -160,10 +158,8 @@ class testSNObject(unittest.TestCase):
             t.tolist()
             z = [time]
 
-            # self.SNCosmo_nomw.set(mwebv=0.0)
             y = self.SNCosmo_nomw.bandmag(band=self.sncosmobands,
                                           time=t, magsys='ab')
-            # z += y.tolist()
             sncosmo.append(y.tolist())
             numpy.testing.assert_allclose(numpy.array(sncosmo),
                                           numpy.array(lsst))
@@ -195,7 +191,6 @@ class testSNObject(unittest.TestCase):
 
             y = self.SNCosmo_mw.bandmag(band=self.sncosmobands,
                                           time=t, magsys='ab')
-            # z += y.tolist()
             sncosmo.append(y.tolist())
             numpy.testing.assert_allclose(numpy.array(sncosmo),
                                           numpy.array(lsst))
@@ -209,14 +204,11 @@ class testSNObject(unittest.TestCase):
  
          l = []
          for time in self.times:
-             # for time in numpy.arange(-20., 50., 1.0):
              x = self.SNmw.catsimBandMags(time=time, bandpassobject=self.lsstbands,
                                           phiarray=self.pbase.phiArray)
 
-             # y = self.SNCosmo_float.bandmag(band=self.sncosmobands, time=time, magsys='ab')
              e = [time]
              e += x.tolist()
-             # e += y.tolist()
              l.append(e)
          header = "time(mjd) u g r i z y"
          lc = numpy.array(l)
