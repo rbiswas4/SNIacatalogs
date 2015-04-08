@@ -5,8 +5,8 @@ import sys
 import os
 import numpy as np
 import matplotlib as mpl
-mpl.use('Agg')
 import matplotlib.pyplot as plt
+mpl.use('Agg')
 
 import lsst.sims.catUtils.baseCatalogModels as bcm
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
@@ -15,7 +15,6 @@ from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.generation.db import ObservationMetaData
 
 from lsst.sims.photUtils import Sed
-import lsst.sims.photUtils.Bandpass as Bandpass
 from lsst.sims.photUtils.Photometry import PhotometryBase as PhotometryBase
 from lsst.sims.photUtils.CosmologyObject import CosmologyWrapper 
 
@@ -138,13 +137,10 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
 
     @astropy.utils.lazyproperty
     def lsstpbase(self):
-        bandPassNames = self.obs_metadata.bandpass
-        # throughputsdir = eups.productDir('throughputs')
-        # banddir = os.path.join(throughputsdir, 'baseline')
 
-        # pbase = PhotometryBase(Bandpass)
+
+        bandPassNames = self.obs_metadata.bandpass
         pbase = PhotometryBase()
-        # pbase = mybandpass()
         pbase.loadBandpassesFromFiles(bandpassNames=bandPassNames)
         pbase.setupPhiArray_dict()
 
@@ -202,37 +198,22 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
                                  self.column_by_name('decJ2000')
 
         SNobject = SNObject()
-        # Set return array
+        # Initialize return array
         vals = np.zeros(shape=(self.numobjs, 12))
         for i, v in enumerate(vals):
             arr = [_z[i], c[i], x1[i], t0[i], x0[i]]
             testnan = lambda x: x is np.nan
-            # if any(map(testnan, arr)):
-                # vals[i, :] = np.array([np.nan]*5)
-                # print 'bad SN'
-                # continue
             SNobject.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i]) 
-            # SNobject.ra=ra[i]
-            # SNobject.dec=dec[i]
             SNobject.setCoords(ra=ra[i], dec=dec[i])
             SNobject.mwEBVfromMaps()
-            # Get the `photUtils.SED` object from SNObject
-            # sed = SNmodel.SNObjectSED(time=self.obs_metadata.mjd, 
-            #        bandpassobject=self.lsstpbase.bandPassList)
-            # sed.flambdaTofnu()
             # Calculate fluxes
             vals[i, :6] = SNobject.catsimBandFluxes(bandpassobject=self.lsstpbase.bandpassDict,
                                                  time=self.obs_metadata.mjd,
                                             phiarray=self.lsstpbase.phiArray)
             # Calculate magnitudes
             vals[i, 6:] = SNobject.catsimBandMags(bandpassobject=self.lsstpbase.bandpassDict,
-                                                 time=self.obs_metadata.mjd,
+                                                time=self.obs_metadata.mjd,
                                             phiarray=self.lsstpbase.phiArray)
-            # vals[i, :6] = sed.manyFluxCalc(phiarray=self.lsstpbase.phiArray,
-            #        wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
-            # Calculate magnitudes
-            # vals[i, 6:] = sed.manyMagCalc(phiarray=self.lsstpbase.phiArray,
-            #      wavelen_step=self.lsstpbase.bandPassList[0].wavelen_step)
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3],
                 vals[:, 4], vals[:, 5], vals[:, 6], vals[:, 7],

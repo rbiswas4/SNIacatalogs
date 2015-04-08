@@ -32,7 +32,7 @@ dustmaproot = eups.productDir('sims_dustmaps')
 map_dir = os.path.join(dustmaproot, 'DustMaps')
 
 
-def _file2lst(fname, i, mjd):
+def _file2list(fname, i, mjd):
     d = numpy.loadtxt(fname, delimiter=',')
     l = list()
     for i, row in enumerate(d):
@@ -114,7 +114,7 @@ class testSNIaCatalog(unittest.TestCase):
 
         for i, myMJD in enumerate(self.mjds):
             fname = "testData/SNIaCat_" + str(i) + ".txt"
-            l = _file2lst(fname, i, mjd=myMJD)
+            l = _file2list(fname, i, mjd=myMJD)
             recs = sq.array2dbrecords(l)
             exec_str = sq.insertfromdata(tablename='mysncat', records=recs,
                                          multiple=True)

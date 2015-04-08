@@ -48,18 +48,6 @@ class SNUniverse(object):
         vals = np.zeros(shape=(self.numobjs, 4))
 
         for i, v in enumerate(vals):
-            # np.random.seed(hostid[i])
-            # t0val = self.drawFromT0Dist() 
-            # vals[i, 3] = t0val
-            # if t0val is self.badvalues:
-            #    continue
-            # cval = self.drawFromcDist()
-            # x1val = self.drawFromx1Dist()
-            # x0val = self.drawFromX0Dist(x1val, cval, hostmu=hostmu[i])
-
-            # vals[i, 0] = cval
-            # vals[i, 1] = x1val
-            # vals[i, 2] = x0val 
             vals[i, :] = self.drawSNParams(hostid[i], hostmu[i])
         
         return vals

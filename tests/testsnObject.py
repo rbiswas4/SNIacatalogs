@@ -181,7 +181,6 @@ class testSNObject(unittest.TestCase):
                                                                 phiarray=self.pbase.phiArray).\
                                                                 tolist()
             e = [time]
-            # e  += bandMagsfromLSST.tolist()
             lsst.append(bandMagsfromLSST)
 
             t = time*numpy.ones(len(self.bandPassList))
