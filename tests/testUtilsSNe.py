@@ -65,33 +65,110 @@ def getlsstbandpassobjs(loadsncosmo=True, loadcatsim=True, plot=False):
     else:
         return None
 
-# 
-#                             SQLLITE UTILS 
+#
+#                             SQLLITE UTILS
 #
 
 def array2dbrecords(data):
     """
     takes an iterable such as an array, structured array or list and converts it into a a list of tuples suitable
-    for insertion into a sqlite 3 database. 
+    for insertion into a sqlite 3 database.
     args:
         data: mandatory,
             list or input iterable
     returns:
         suitable list of tuples
-        
+
     """
     l = list()
     for row in data:
         l.append(tuple(row))
     return l
 
+def samplePatchOnSphere(phi, theta, delta, size):
+    '''
+    Uniformly distributes samples on a spherical patch between phi \pm delta,
+    and theta \pm delta.
+    Parameters
+    ----------
+    phi: float, mandatory
+        center of the spherical patch
+    theta: float, mandatory
+
+    delta: float, mandatory
+
+    size: int, mandatory
+        number of samples
+
+    '''
+    u = np.random.uniform(size=size)
+    v = np.random.uniform(size=size)
+
+    phivals = delta * (2. * u - 1) + phi
+
+    # thetavals
+    thetamax = theta + delta
+    thetamin = theta - delta
+    a = np.cos(thetamax) - np.cos(thetamin)
+    thetavals = np.arccos(v* a + np.cos(thetamin))
+    return phivals, thetavals
+
+
+def sample_obsmetadata(obsmetadata, size=1):
+    '''
+    Sample a square patch on the sphere overlapping obsmetadata
+    field of view by picking the area enclosed in
+    obsmetadata.unrefractedRA \pm obsmetadata.boundLength
+    obsmetadata.unrefractedDec \pm obsmetadata.boundLength
+
+    Parameters
+    ----------
+    obsmetadata: instance of
+        `sims.catalogs.generation.db.ObservationMetaData`
+
+    size: integer, optional, defaults to 1
+        number of samples
+
+
+    Returns
+    -------
+
+    tuple of ravals, decvalues
+    '''
+    mydict = obsmetadata.summary
+    phi = mydict['unrefractedRA']
+    theta = mydict['unrefractedDec']
+    equalrange = mydict['boundLength']
+    ravals, thetavals = samplePatchOnSphere(phi=phi, theta=theta, delta=equalrange, size=size)
+    return ravals, thetavals
+
+
+def cleanDB(dbname, verbose=True):
+    '''
+    Deletes the database dbname from the disk.
+    Parameters
+    ----------
+    dbname: string, mandatory
+        name (abs path) of the database to be deleted
+    verbose: Bool, optional, defaults to True
+
+    '''
+
+    if os.path.exists(dbname):
+        if verbose:
+            print "deleting database ", dbname
+        os.unlink(dbname)
+    else:
+        if verbose:
+            print 'database ', dbname, ' does not exist'
+
 
 def insertfromdata(tablename, records, multiple=True):
     """
-    construct string to insert multiple records into sqlite3 database 
+    construct string to insert multiple records into sqlite3 database
     args:
         tablename: str, mandatory
-            Name of table in the database. 
+            Name of table in the database.
         records: set of records
         multiple:
     returns:
