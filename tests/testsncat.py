@@ -106,7 +106,6 @@ class testSNIaCatalog(unittest.TestCase):
         testWriteToSQLite:
         testLCFromSQLite:
     """
-    mjds = [570123.15 + 3.*i for i in range(2)]
 
     @classmethod
     def setUpClass(cls):
@@ -114,7 +113,9 @@ class testSNIaCatalog(unittest.TestCase):
         sq.cleanDB('testData/sncat.db')
         sq.cleanDB('testData/galcat.db')
 
-        mjds = [570123.15 + 3.*i for i in range(2)]
+        numEpochs = 2
+        mjds = [570123.15 + 3.*i for i in range(numEpochs)]
+        # mjds = cls.mjds
         obsMetaDataforCat = ObservationMetaData(boundType='circle',
                                           boundLength=0.015,
                                           unrefractedRA=5.0,
@@ -146,6 +147,12 @@ class testSNIaCatalog(unittest.TestCase):
     def tearDownClass(cls):
         sq.cleanDB('testData/sncat.db')
         sq.cleanDB('testData/galcat.db')
+
+        for i, mjd in enumerate(mjds):
+            fname = 'testData/SNIaCat_' + str(i) + '.txt'
+            if os.path.isfile(fname):
+                os.remove(fname)
+
 
     def testICatOutput(self):
         """
