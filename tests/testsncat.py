@@ -43,8 +43,9 @@ def _file2list(fname, i, mjd):
 
 def _createFakeGalaxyDB(dbname, ObsMetaData, size=10000, seed=1):
     '''
-    Create a local sqlite galaxy database with id, raJ2000, decJ2000 and
-    redshift 
+    Create a local sqlite galaxy database having filename dbname with variables
+    id, raJ2000, decJ2000 and redshift, having number of rows =size, and having
+    overlap with ObsMetaData.
     '''
     sq.cleanDB(dbname)
     conn = sqlite3.connect(dbname)
@@ -71,15 +72,18 @@ def _createFakeGalaxyDB(dbname, ObsMetaData, size=10000, seed=1):
     conn.close()
                                             
 class myGalaxyCatalog(CatalogDBObject):
-    ''' like lsst.sims.catalogs.generation.utils.testUtils.myTestGals'''
+    '''
+    Create a like CatalogDBObject connecting to a local sqlite database
+    '''
     
     objid = 'mytestgals'
     tableid = 'gals'
     idColKey = 'id'
     appendint = 10000
-    dbAddress = 'sqlite:///galcat.db'
+    dbAddress = 'sqlite:///testData/galcat.db'
     raColName = 'raJ2000'
     decColName = 'decJ2000'
+
     # columns required to convert the ra, dec values in degrees 
     # to radians again
     columns = [('id', 'id', int),
@@ -91,11 +95,6 @@ class myGalaxyCatalog(CatalogDBObject):
 class testSNIaCatalog(unittest.TestCase):
     """
     Unit tests to test the functionality of the SNIaCatalog class.
-
-    Requires:
-    ---------
-        connection to LSST database
-
 
     Tests:
     ------
@@ -113,7 +112,7 @@ class testSNIaCatalog(unittest.TestCase):
     def setUpClass(cls):
         # delete previous SN database if present
         sq.cleanDB('testData/sncat.db')
-        sq.cleanDB('galcat.db')
+        sq.cleanDB('testData/galcat.db')
 
         mjds = [570123.15 + 3.*i for i in range(2)]
 
@@ -124,7 +123,7 @@ class testSNIaCatalog(unittest.TestCase):
                                           bandpassName=
                                           ['u', 'g', 'r', 'i', 'z', 'y'],
                                           mjd=mjds[0])
-        _createFakeGalaxyDB(dbname='galcat.db',
+        _createFakeGalaxyDB(dbname='testData/galcat.db',
                             ObsMetaData=obsMetaDataforCat,
                             size=10000,
                             seed=1)
