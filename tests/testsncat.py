@@ -13,7 +13,6 @@ import lsst.utils.tests as utilsTests
 
 from snObject import SNObject
 from sncat import SNIaCatalog
-import utils_for_test as tu
 
 from astropy.units import Unit
 from astropy.coordinates import SkyCoord
@@ -42,6 +41,53 @@ def _file2list(fname, i, mjd):
     return l
 
 
+def _createFakeGalaxyDB(dbname, ObsMetaData, size=10000, seed=1):
+    '''
+    Create a local sqlite galaxy database with id, raJ2000, decJ2000 and
+    redshift 
+    '''
+    sq.cleanDB(dbname)
+    conn = sqlite3.connect(dbname)
+    curs = conn.cursor()
+    curs.execute('CREATE TABLE if not exists gals (id INT, raJ2000 FLOAT,\
+                  decJ2000 FLOAT, redshift FLOAT)')
+
+    numpy.random.seed(seed)
+    samps = sq.sample_obsmetadata(ObsMetaData, size=size)
+
+    for count in range(size):
+        id = 1000000 + count
+
+        # Main Database should have values in degrees
+        ra = numpy.degrees(samps[0][count]) 
+        dec = numpy.degrees(samps[1][count])
+        redshift = numpy.random.uniform()
+        row = tuple([id, ra, dec, redshift])
+        exec_str = sq.insertfromdata(tablename='gals', records=row,
+                                     multiple=False)
+        curs.execute(exec_str, row)
+
+    conn.commit()
+    conn.close()
+                                            
+class myGalaxyCatalog(CatalogDBObject):
+    ''' like lsst.sims.catalogs.generation.utils.testUtils.myTestGals'''
+    
+    objid = 'mytestgals'
+    tableid = 'gals'
+    idColKey = 'id'
+    appendint = 10000
+    dbAddress = 'sqlite:///galcat.db'
+    raColName = 'raJ2000'
+    decColName = 'decJ2000'
+    # columns required to convert the ra, dec values in degrees 
+    # to radians again
+    columns = [('id', 'id', int),
+               ('raJ2000','raJ2000 * PI()/ 180. '), 
+               ('decJ2000','decJ2000 * PI()/ 180.'),
+               ('redshift', 'redshift')]
+
+
 class testSNIaCatalog(unittest.TestCase):
     """
     Unit tests to test the functionality of the SNIaCatalog class.
@@ -65,13 +111,26 @@ class testSNIaCatalog(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # delete previous test db if present
-        if os.path.exists('testData/sncat.db'):
-            print 'deleting previous database'
-            os.unlink('testData/sncat.db')
+        # delete previous SN database if present
+        sq.cleanDB('testData/sncat.db')
+        sq.cleanDB('galcat.db')
 
         mjds = [570123.15 + 3.*i for i in range(2)]
-        galDB = CatalogDBObject.from_objid('galaxyTiled')
+
+        obsMetaDataforCat = ObservationMetaData(boundType='circle',
+                                          boundLength=0.015,
+                                          unrefractedRA=5.0,
+                                          unrefractedDec=15.0,
+                                          bandpassName=
+                                          ['u', 'g', 'r', 'i', 'z', 'y'],
+                                          mjd=mjds[0])
+        _createFakeGalaxyDB(dbname='galcat.db',
+                            ObsMetaData=obsMetaDataforCat,
+                            size=10000,
+                            seed=1)
+
+        # local catalogDBObject
+        gdb = myGalaxyCatalog()
 
         for i, myMJD in enumerate(mjds):
             myObsMD = ObservationMetaData(boundType='circle',
@@ -81,7 +140,7 @@ class testSNIaCatalog(unittest.TestCase):
                                           bandpassName=
                                           ['u', 'g', 'r', 'i', 'z', 'y'],
                                           mjd=myMJD)
-            catalog = SNIaCatalog(db_obj=galDB, obs_metadata=myObsMD)
+            catalog = SNIaCatalog(db_obj=gdb, obs_metadata=myObsMD)
             fname = "testData/SNIaCat_" + str(i) + ".txt"
             catalog.write_catalog(fname)
 
@@ -91,7 +150,8 @@ class testSNIaCatalog(unittest.TestCase):
 
     def testICatOutput(self):
         """
-        Check that the output of the instance catalog SNIaCatalog
+        Check that the output of the instance catalog SNIaCatalog matches 
+        previous one
 
         """
         stddata = numpy.loadtxt('testData/SNIaCat_0_std.txt', delimiter=',')
