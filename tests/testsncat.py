@@ -115,7 +115,6 @@ class testSNIaCatalog(unittest.TestCase):
         sq.cleanDB('testData/galcat.db')
 
         mjds = [570123.15 + 3.*i for i in range(2)]
-
         obsMetaDataforCat = ObservationMetaData(boundType='circle',
                                           boundLength=0.015,
                                           unrefractedRA=5.0,
@@ -123,11 +122,11 @@ class testSNIaCatalog(unittest.TestCase):
                                           bandpassName=
                                           ['u', 'g', 'r', 'i', 'z', 'y'],
                                           mjd=mjds[0])
+
         _createFakeGalaxyDB(dbname='testData/galcat.db',
                             ObsMetaData=obsMetaDataforCat,
                             size=10000,
                             seed=1)
-
         # local catalogDBObject
         gdb = myGalaxyCatalog()
 
@@ -145,7 +144,8 @@ class testSNIaCatalog(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        sq.cleanDB('testData/sncat.db')
+        sq.cleanDB('testData/galcat.db')
 
     def testICatOutput(self):
         """
