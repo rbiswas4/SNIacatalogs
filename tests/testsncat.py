@@ -114,8 +114,8 @@ class testSNIaCatalog(unittest.TestCase):
         sq.cleanDB('testData/galcat.db')
 
         numEpochs = 2
-        mjds = [570123.15 + 3.*i for i in range(numEpochs)]
-        # mjds = cls.mjds
+        cls.mjds = [570123.15 + 3.*i for i in range(numEpochs)]
+        mjds = cls.mjds
         obsMetaDataforCat = ObservationMetaData(boundType='circle',
                                           boundLength=0.015,
                                           unrefractedRA=5.0,
@@ -148,7 +148,7 @@ class testSNIaCatalog(unittest.TestCase):
         sq.cleanDB('testData/sncat.db')
         sq.cleanDB('testData/galcat.db')
 
-        for i, mjd in enumerate(mjds):
+        for i, mjd in enumerate(cls.mjds):
             fname = 'testData/SNIaCat_' + str(i) + '.txt'
             if os.path.isfile(fname):
                 os.remove(fname)
