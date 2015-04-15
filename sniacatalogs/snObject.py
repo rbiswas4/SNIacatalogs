@@ -314,7 +314,7 @@ class SNObject (sncosmo.Model):
             # flux density dE/dlambda returned from SNCosmo in
             # ergs/cm^2/sec/Ang, convert to ergs/cm^2/sec/nm
             flambda[mask] = self.flux(time=time, wave=wave)
-            flambda[mask] = flambda * 10.
+            flambda[mask] = flambda[mask] * 10.
 
         SEDfromSNcosmo = Sed(wavelen=wavelen, flambda=flambda)
 
