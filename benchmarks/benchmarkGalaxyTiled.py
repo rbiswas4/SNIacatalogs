@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
 import numpy as np
+import os
 import timeit
 
-import lsst.sims.catUtils.baseCatalogModels as bcm
 from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
 from lsst.sims.catalogs.generation.db import ObservationMetaData
-# from sniacatalogs import sncat
+import lsst.sims.catUtils.baseCatalogModels as bcm
 
 
+fname = 'results.dat'
 galDB = CatalogDBObject.from_objid('galaxyTiled')
 
 # Instance catalog class
@@ -32,10 +33,12 @@ myObsMD = ObservationMetaData(boundType='circle',
 
 blarray = 1.75/200. * np.array(range(100, 199))
 blarray = blarray [::5]
-blarray = np.array([0.0015, 0.015])
-blarray
+# blarray = np.array([0.0015, 0.015, 0.02])
+# blarray
 
 results = []
+if os.path.exists(fname):
+    os.remove(fname)
 for bl in blarray:
     myObsMD = ObservationMetaData(boundType='circle',
                                   boundLength=bl,
@@ -49,6 +52,12 @@ for bl in blarray:
     res  = timer.repeat(repeat=3, number=1 )
     lines = sum(1 for _ in open('gals.dat'))
     it = [bl] + res + [lines]
+    print it
+    with open('results.dat', 'a') as f:
+        strwrite = ' '.join(map(str, it)) + '\n'
+        f.write(strwrite)
+       
+
     results.append(it)
     print bl,  res[0]
     
@@ -57,8 +66,8 @@ for bl in blarray:
 
 # get_ipython().magic(u'matplotlib inline')
 import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set()
+# import seaborn as sns
+# sns.set()
 
 
 
