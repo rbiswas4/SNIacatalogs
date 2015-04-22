@@ -10,7 +10,7 @@ from lsst.sims.catalogs.generation.db import ObservationMetaData
 import lsst.sims.catUtils.baseCatalogModels as bcm
 
 
-fname = 'results.dat'
+fname = 'galaxiesNoFlux.dat'
 galDB = CatalogDBObject.from_objid('galaxyTiled')
 
 # Instance catalog class
@@ -31,7 +31,7 @@ myObsMD = ObservationMetaData(boundType='circle',
                                   mjd=myMJD)
 
 
-blarray = 1.75/200. * np.array(range(100, 199))
+blarray = 1.75/200. * np.array(range(1, 199))
 blarray = blarray [::5]
 # blarray = np.array([0.0015, 0.015, 0.02])
 # blarray
@@ -53,7 +53,7 @@ for bl in blarray:
     lines = sum(1 for _ in open('gals.dat'))
     it = [bl] + res + [lines]
     print it
-    with open('results.dat', 'a') as f:
+    with open(fname, 'a') as f:
         strwrite = ' '.join(map(str, it)) + '\n'
         f.write(strwrite)
        
@@ -61,7 +61,48 @@ for bl in blarray:
     results.append(it)
     print bl,  res[0]
     
+fname = 'galaxiesWFlux.dat'
+# galDB = CatalogDBObject.from_objid('galaxyTiled')
 
+# Instance catalog class
+class galCopyMags(InstanceCatalog):
+    column_outputs = ['id', 'raJ2000', 'decJ2000', 'redshift', 'u_ab', 'g_ab', 'r_ab', 'i_ab', 'z_ab', 'y_ab']
+    override_formats = {'raJ2000': '%8e', 'decJ2000': '%8e'}
+
+
+# In[5]:
+
+
+blarray = 1.75/200. * np.array(range(1, 199))
+blarray = blarray [::5]
+# blarray = np.array([0.0015, 0.015, 0.02])
+# blarray
+
+results = []
+if os.path.exists(fname):
+    os.remove(fname)
+for bl in blarray:
+    myObsMD = ObservationMetaData(boundType='circle',
+                                  boundLength=bl,
+                                  unrefractedRA=5.0,
+                                  unrefractedDec=15.0,
+                                  site='LSST',
+                                  bandpassName=['u', 'g', 'r', 'i', 'z', 'y'],
+                                  mjd=myMJD)
+    galMags = galCopyMags(db_obj=galDB, obs_metadata=myObsMD)
+    timer = timeit.Timer('galMags.write_catalog("galMags.dat")', setup='from __main__ import galMags' )
+    res  = timer.repeat(repeat=3, number=1 )
+    lines = sum(1 for _ in open('galMags.dat'))
+    it = [bl] + res + [lines]
+    print it
+    with open(fname, 'a') as f:
+        strwrite = ' '.join(map(str, it)) + '\n'
+        f.write(strwrite)
+       
+
+    results.append(it)
+    print bl,  res[0]
+ 
 
 
 # get_ipython().magic(u'matplotlib inline')
