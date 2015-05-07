@@ -96,7 +96,8 @@ def obsMetaDataList(startdate=570180, cadence=3.0, numepochs=20):
     return obsMetaDataList
 
 
-def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList):
+def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList,
+                     midSurveyTime=57000., averageRate=36500.):
     '''
     Write a set of instance catalogs to a sqlite3 database file called dbfile,
     deleting the file if it already exists. This is done in 2 steps: first the
@@ -122,6 +123,10 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList):
     galdb : `~CatalogDBObject.from_objid` galaxy catalog database
     obsMetaDataList : list of
         `~lsst.sims.catalogs.generation.db.ObservationMetaData` variables
+    midSurveyTime: float, optional defaults to 57000.
+        Set the midSurveyTime of the SN Catalog
+    averageRate: float, optional defaults to 36500.
+        The SN goes of with a probability of 1/averageRate every day in a galaxy
 
 
     Returns
@@ -148,8 +153,8 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList):
         myObsMD = obsmetadata
         catalog = sncat.SNIaCatalog(db_obj=galdb,
                               obs_metadata=myObsMD)
-        catalog.averageRate = 3650.0
-        catalog.midSurveyTime = 49350.
+        catalog.averageRate = averageRate
+        catalog.midSurveyTime = midSurveyTime
         print "====================================="
         print i, type(catalog.bandpass), catalog.obs_metadata.mjd
         print "====================================="
