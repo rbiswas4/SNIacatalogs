@@ -119,8 +119,28 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
         .. note: Changing this should not change the statistical
         properties of the survey, but will change the exact SN we find.
         '''
-        return 570000.0
+        if not hasattr(self, '_midSurveyTime'):
+            midSurveyTime_default = 570000.0
+            self._midSurveyTime = midSurveyTime_default
+        return self._midSurveyTime
 
+
+    @midSurveyTime.setter
+    def midSurveyTime(self, mymidSurveyTime):
+        '''
+        set the value of suppressDimSN of the catalog 
+
+        Parameters
+        ----------
+        value : Boolean, mandatory
+            Value to set suppressDimSN to 
+        '''
+        # if suppressDimSN is None:
+        #    self._suppressDimSN = True
+        # else:
+        self._midSurveyTime = mymidSurveyTime
+        return self._midSurveyTime
+     
     @property
     def maxTimeSNVisible(self):
         '''

@@ -19,6 +19,19 @@ class SNUniverse(object):
 
     """
 
+    @property
+    def averageRate(self):
+        if not hasattr(self, '_averageRate'):
+            hundredyear = 100. * 365.
+            self._averageRate = hundredyear
+        return self._averageRate
+
+    @averageRate.setter
+    def averageRate(self, value):
+        self._averageRate = value
+        return self._averageRate
+            
+
 
     def SNCoordinatesFromHost(self, hostra, hostdec, hostz):
         '''
@@ -112,7 +125,7 @@ class SNUniverse(object):
         # Will not use hostid for now, but this is there so that 
         # later on one could obtain z, hostmass etc. This is useful to obtain
         # z and host dependent SN rates
-        hundredyear = 100. * 365.
+        hundredyear = self.averageRate
         t0val = np.random.uniform(-hundredyear / 2.0 + self.midSurveyTime, 
                            hundredyear / 2.0 + self.midSurveyTime)
 
