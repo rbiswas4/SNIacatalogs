@@ -148,11 +148,14 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList):
         myObsMD = obsmetadata
         catalog = sncat.SNIaCatalog(db_obj=galdb,
                               obs_metadata=myObsMD)
+        catalog.averageRate = 3650.0
+        catalog.midSurveyTime = 49350.
         print "====================================="
         print i, type(catalog.bandpass), catalog.obs_metadata.mjd
         print "====================================="
         # fname = "data/SNIaCat_" + str(i) + ".txt"
         fname = ascii_root + str(i) + ".txt"
+        print catalog.averageRate, catalog.midSurveyTime
         catalog.write_catalog(fname)
         l = _file2lst(fname, i, mjd=catalog.obs_metadata.mjd)
         recs = array2dbrecords(l)
