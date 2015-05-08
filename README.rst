@@ -26,16 +26,16 @@ Usage and Setup:
   `${HOME}/.local/lib/python2.7/site-packages/mypaths.pth`
 - LSST Simulation Stack: You will need to use the following development versions  of packages in the LSST simulation stack. We will be good with the master
   branch of these package repositories. 
-   - sims_catalogs_generation  
-   - sims_photutils
-   - sims_catalogs_measures    
-   - sims_utils
-   - sims_catutils             
-   - sims_coordutils
-   - sims_data
-   - sims_maf
-   - sims_catalogs_generation
-   - sims_catalogs_measures
+  - sims_catalogs_generation  
+  - sims_photutils
+  - sims_catalogs_measures    
+  - sims_utils
+  - sims_catutils             
+  - sims_coordutils
+  - sims_data
+  - sims_maf
+  - sims_catalogs_generation
+  - sims_catalogs_measures
 - I am also assuming that you have a anaconda python installed. Some example ipython notebooks can require sqlite3, pandas, seaborn (the last one can be commented out)
 - Setup sniacatalogs: Clone the package on your computer, and from SNIaCatalogs directory:
 
