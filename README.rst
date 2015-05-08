@@ -26,6 +26,7 @@ Usage and Setup:
   `${HOME}/.local/lib/python2.7/site-packages/mypaths.pth`
 - LSST Simulation Stack: You will need to use the following development versions  of packages in the LSST simulation stack. We will be good with the master
   branch of these package repositories. 
+
   - sims_catalogs_generation  
   - sims_photutils
   - sims_catalogs_measures    
