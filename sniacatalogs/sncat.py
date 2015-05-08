@@ -48,12 +48,18 @@ class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
     # as defined in sncosmo 
     
     column_outputs = ['snid', 'snra', 'sndec', 'z', 't0', 'c', 'x1',
-                      'x0','flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z',
-                      'flux_y' , 'mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z',
-                      'mag_y']
+                      'x0'] 
+    
+    # You can add parameters like fluxes and magnitudes by adding the following
+    # variables to the list
+    # 'flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y' , 
+    # 'mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y']
+
     override_formats = {'snra': '%8e', 'sndec': '%8e', 'c': '%8e',
-            'x0': '%8e', 'flux_u': '%8e', 'flux_g': '%8e', 'flux_r': '%8e',
-            'flux_i': '%8e', 'flux_z': '%8e', 'flux_y': '%8e'}
+            'x0': '%8e'} 
+    # You can also change the overrides by 
+    # 'flux_u': '%8e', 'flux_g': '%8e', 'flux_r': '%8e',
+    # 'flux_i': '%8e', 'flux_z': '%8e', 'flux_y': '%8e'}
 
     cannot_be_null = ['x0','z', 't0']
 
