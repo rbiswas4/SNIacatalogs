@@ -163,10 +163,11 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList,
         print catalog.averageRate, catalog.midSurveyTime
         catalog.write_catalog(fname)
         l = _file2lst(fname, i, mjd=catalog.obs_metadata.mjd)
-        recs = array2dbrecords(l)
-        exec_str = insertfromdata(tablename=dbtable, records=recs,
+        if len(l) > 0:
+            recs = array2dbrecords(l)
+            exec_str = insertfromdata(tablename=dbtable, records=recs,
                                      multiple=True)
-        curs.executemany(exec_str, recs)
+            curs.executemany(exec_str, recs)
     connection.commit()
     connection.close()
 
