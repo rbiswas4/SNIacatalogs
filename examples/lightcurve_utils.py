@@ -11,8 +11,10 @@ def _file2lst(fname, i, mjd):
     """
     creates a lst of observations from a Catalog written out
     """
-    d = np.loadtxt(fname, delimiter=',')
+    d = np.loadtxt(fname, delimiter=',', ndmin=2)
     l = list()
+    if len(d) == 0:
+        return l
     for i, row in enumerate(d):
         obsid = 'obshist' + str(i)
         lst = [obsid] + [mjd] + row.tolist()
@@ -163,6 +165,7 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList,
         print catalog.averageRate, catalog.midSurveyTime
         catalog.write_catalog(fname)
         l = _file2lst(fname, i, mjd=catalog.obs_metadata.mjd)
+        # print l
         if len(l) > 0:
             recs = array2dbrecords(l)
             exec_str = insertfromdata(tablename=dbtable, records=recs,
