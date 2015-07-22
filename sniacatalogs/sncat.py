@@ -6,7 +6,7 @@ import os
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-mpl.use('Agg')
+# mpl.use('Agg')
 
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
 from lsst.sims.catalogs.measures.instance import compound
