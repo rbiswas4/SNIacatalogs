@@ -99,7 +99,7 @@ def obsMetaDataList(startdate=570180, cadence=3.0, numepochs=20):
 
 
 def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList,
-                     midSurveyTime=57000., averageRate=36500.):
+                     midSurveyTime=5700., averageRate=36500.):
     '''
     Write a set of instance catalogs to a sqlite3 database file called dbfile,
     deleting the file if it already exists. This is done in 2 steps: first the
@@ -112,7 +112,7 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList,
     Parameters
     ----------
     dbfile : string
-        absolute path to the database file
+        absolute path to the database file to write to
     dbtable : string
         table name in the database file
     ascii_root : str
@@ -158,7 +158,7 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList,
         catalog.averageRate = averageRate
         catalog.midSurveyTime = midSurveyTime
         print "====================================="
-        print i, type(catalog.bandpass), catalog.obs_metadata.mjd
+        print i,  catalog.obs_metadata.mjd
         print "====================================="
         # fname = "data/SNIaCat_" + str(i) + ".txt"
         fname = ascii_root + str(i) + ".txt"
