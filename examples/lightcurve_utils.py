@@ -11,8 +11,10 @@ def _file2lst(fname, i, mjd):
     """
     creates a lst of observations from a Catalog written out
     """
-    d = np.loadtxt(fname, delimiter=',')
+    d = np.loadtxt(fname, delimiter=',', ndmin=2)
     l = list()
+    if len(d) == 0:
+        return l
     for i, row in enumerate(d):
         obsid = 'obshist' + str(i)
         lst = [obsid] + [mjd] + row.tolist()
@@ -97,7 +99,8 @@ def obsMetaDataList(startdate=570180, cadence=3.0, numepochs=20):
 
 
 def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList,
-                     midSurveyTime=57000., averageRate=36500.):
+                     column_outputs,
+                     midSurveyTime=5700., averageRate=36500.):
     '''
     Write a set of instance catalogs to a sqlite3 database file called dbfile,
     deleting the file if it already exists. This is done in 2 steps: first the
@@ -110,7 +113,7 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList,
     Parameters
     ----------
     dbfile : string
-        absolute path to the database file
+        absolute path to the database file to write to
     dbtable : string
         table name in the database file
     ascii_root : str
@@ -151,22 +154,24 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList,
     # for i, myMJD in enumerate(myMJDS):
     for i, obsmetadata in enumerate(obsMetaDataList):
         myObsMD = obsmetadata
-        catalog = sncat.SNIaCatalog(db_obj=galdb,
+        catalog = sncat.SNIaCatalog(db_obj=galdb, column_outputs=column_outputs,
                               obs_metadata=myObsMD)
         catalog.averageRate = averageRate
         catalog.midSurveyTime = midSurveyTime
         print "====================================="
-        print i, type(catalog.bandpass), catalog.obs_metadata.mjd
+        print i,  catalog.obs_metadata.mjd
         print "====================================="
         # fname = "data/SNIaCat_" + str(i) + ".txt"
         fname = ascii_root + str(i) + ".txt"
         print catalog.averageRate, catalog.midSurveyTime
         catalog.write_catalog(fname)
         l = _file2lst(fname, i, mjd=catalog.obs_metadata.mjd)
-        recs = array2dbrecords(l)
-        exec_str = insertfromdata(tablename=dbtable, records=recs,
+        # print l
+        if len(l) > 0:
+            recs = array2dbrecords(l)
+            exec_str = insertfromdata(tablename=dbtable, records=recs,
                                      multiple=True)
-        curs.executemany(exec_str, recs)
+            curs.executemany(exec_str, recs)
     connection.commit()
     connection.close()
 

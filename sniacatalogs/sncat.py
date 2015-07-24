@@ -6,17 +6,19 @@ import os
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-mpl.use('Agg')
+# mpl.use('Agg')
 
-import lsst.sims.catUtils.baseCatalogModels as bcm
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
 from lsst.sims.catalogs.measures.instance import compound
 from lsst.sims.catalogs.generation.db import CatalogDBObject
-from lsst.sims.catalogs.generation.db import ObservationMetaData
+# from lsst.sims.catalogs.generation.db import ObservationMetaData
+from lsst.sims.utils import ObservationMetaData
 
 from lsst.sims.photUtils import Sed
 from lsst.sims.photUtils.Photometry import PhotometryBase as PhotometryBase
-from lsst.sims.photUtils.CosmologyObject import CosmologyWrapper 
+# from lsst.sims.photUtils.CosmologyObject import CosmologyWrapper 
+# from lsst.sims.photUtils.CosmologyObject import CosmologyWrapper 
+from lsst.sims.catUtils.mixins import CosmologyMixin
 
 import astropy
 import sncosmo
@@ -28,8 +30,8 @@ import sqlite3
 
 wavelenstep = 0.1
 
-cosmo = CosmologyWrapper()
-class SNIaCatalog (InstanceCatalog, CosmologyWrapper, SNUniverse):
+cosmo = CosmologyMixin()
+class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
     """
     Supernova Type Ia in the catalog are characterized by the  following
     attributes
