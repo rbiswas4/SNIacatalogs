@@ -99,6 +99,7 @@ def obsMetaDataList(startdate=570180, cadence=3.0, numepochs=20):
 
 
 def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList,
+                     column_outputs,
                      midSurveyTime=5700., averageRate=36500.):
     '''
     Write a set of instance catalogs to a sqlite3 database file called dbfile,
@@ -153,7 +154,7 @@ def writeCatalogtoDB(dbfile, dbtable, ascii_root, galdb, obsMetaDataList,
     # for i, myMJD in enumerate(myMJDS):
     for i, obsmetadata in enumerate(obsMetaDataList):
         myObsMD = obsmetadata
-        catalog = sncat.SNIaCatalog(db_obj=galdb,
+        catalog = sncat.SNIaCatalog(db_obj=galdb, column_outputs=column_outputs,
                               obs_metadata=myObsMD)
         catalog.averageRate = averageRate
         catalog.midSurveyTime = midSurveyTime
