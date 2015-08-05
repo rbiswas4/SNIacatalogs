@@ -212,7 +212,36 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
 
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3]) 
 
-    @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y')
+    def get_SNsed(self):
+        """
+        returns a list of SN seds in `lsst.sims.photUtils.Sed` observed within
+        the spatio-temporal range specified by obs_metadata
+
+        """
+        c, x1, x0, t0, _z, ra, dec = self.column_by_name('c'),\
+                                 self.column_by_name('x1'),\
+                                 self.column_by_name('x0'),\
+                                 self.column_by_name('t0'),\
+                                 self.column_by_name('redshift'),\
+                                 self.column_by_name('raJ2000'),\
+                                 self.column_by_name('decJ2000')
+         
+        SNobject = SNObject()
+
+        sedlist = []
+        for i in range(self.numobjs):
+            SNobject.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i])
+            SNobject.setCoords(ra=ra[i], dec=dec[i])
+            SNobject.mwEBVfromMaps()
+            sed = SNobject.SNObjectSED(time=self.obs_metadata.mjd,
+                                   bandpassobject=self.lsstpbase.bandpassDict,
+                                   applyExitinction=True)
+            sedlist.append(sed)
+
+        return sedlist
+
+        
+    @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y', 'sed')
     def get_snfluxes(self):
 
        
