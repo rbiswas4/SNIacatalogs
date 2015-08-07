@@ -241,7 +241,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
         return sedlist
 
         
-    @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y', 'sed')
+    @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y', 'adu_u', 'adu_g',
+              'adu_r', 'adu_i', 'adu_z', 'adu_y')
     def get_snfluxes(self):
 
        
@@ -256,7 +257,7 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
 
         SNobject = SNObject()
         # Initialize return array
-        vals = np.zeros(shape=(self.numobjs, 12))
+        vals = np.zeros(shape=(self.numobjs, 18))
         for i, v in enumerate(vals):
             arr = [_z[i], c[i], x1[i], t0[i], x0[i]]
             testnan = lambda x: x is np.nan
@@ -272,6 +273,11 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
                                                 time=self.obs_metadata.mjd,
                                             phiarray=self.lsstpbase.phiArray)
 
+            vals[i, 11:] = SNobject.catsimBandMags(bandpassobject=self.lsstpbase.bandpassDict,
+                                                time=self.obs_metadata.mjd,
+                                            phiarray=self.lsstpbase.phiArray)
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3],
                 vals[:, 4], vals[:, 5], vals[:, 6], vals[:, 7],
-                vals[:, 8], vals[:, 9], vals[:, 10], vals[:, 11])
+                vals[:, 8], vals[:, 9], vals[:, 10], vals[:, 11], 
+                vals[:, 12], vals[:, 13], vals[:, 14], vals[:, 15],
+                vals[:, 16], vals[:, 17])
