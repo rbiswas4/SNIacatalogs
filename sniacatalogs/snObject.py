@@ -332,6 +332,29 @@ class SNObject (sncosmo.Model):
         return SEDfromSNcosmo
 
 
+    def catsimADU(self, bandpassobject, time, phiarray=None,
+                  photParams=None,
+                  observedBandPassInds=None):
+        """
+        """
+        SEDfromSNcosmo = self.SNObjectSED(time=time, 
+                                          bandpassobject=bandpassobject)
+
+        if phiarray is None:
+            phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobject)
+
+        import lsst.sims.photUtils.PhotometricParameters as PhotometricParameters
+        pp = PhotometricParameters(exptime=30.)
+        
+        adus = np.zeros(len(bandpassobject.keys()))
+        for i, filt in enumerate(bandpassobject.keys()):
+            bandpass = bandpassobject[filt]
+            adus[i] = SEDfromSNCosmo.calcADU(bandpass, photParams=pp)
+
+
+        return adus
+
+
     def catsimBandMags(self, bandpassobject, time, phiarray=None,
                        observedBandPassInds=None):
         """
@@ -370,6 +393,10 @@ class SNObject (sncosmo.Model):
         if phiarray is None:
             phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobject)
 
+        
+        for bandpassname in bandpassobject.keys():
+            bandpass = bandpassobject[bandpassname]
+            SEDfromSNcosmo.calcADU(bandpass, photParams)
         if isinstance(bandpassobject, dict):
             firstfilter=bandpassobject.keys()[0]
             wavelenstep = bandpassobject[firstfilter].wavelen_step
