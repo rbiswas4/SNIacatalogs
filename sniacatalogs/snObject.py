@@ -343,13 +343,13 @@ class SNObject (sncosmo.Model):
         if phiarray is None:
             phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobject)
 
-        import lsst.sims.photUtils.PhotometricParameters as PhotometricParameters
-        pp = PhotometricParameters(exptime=30.)
+        # import lsst.sims.photUtils.PhotometricParameters as PhotometricParameters
+        #pp = PhotometricParameters(exptime=30.)
         
         adus = np.zeros(len(bandpassobject.keys()))
         for i, filt in enumerate(bandpassobject.keys()):
             bandpass = bandpassobject[filt]
-            adus[i] = SEDfromSNCosmo.calcADU(bandpass, photParams=pp)
+            adus[i] = SEDfromSNcosmo.calcADU(bandpass, photParams=photParams)
 
 
         return adus
@@ -394,9 +394,6 @@ class SNObject (sncosmo.Model):
             phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobject)
 
         
-        for bandpassname in bandpassobject.keys():
-            bandpass = bandpassobject[bandpassname]
-            SEDfromSNcosmo.calcADU(bandpass, photParams)
         if isinstance(bandpassobject, dict):
             firstfilter=bandpassobject.keys()[0]
             wavelenstep = bandpassobject[firstfilter].wavelen_step
