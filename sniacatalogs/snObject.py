@@ -332,25 +332,33 @@ class SNObject (sncosmo.Model):
         return SEDfromSNcosmo
 
 
-    def catsimADU(self, bandpassobject, time, phiarray=None,
+    def catsimADU(self, time, bandpassDict, 
                   photParams=None,
                   observedBandPassInds=None):
         """
+        time: float, mandatory
+            MJD of the observation
+
+        bandpassDict: mandatory,
+            Dictionary of instances of `sims.photUtils.Bandpass` for
+            filters
+
+        photParams: Instance of `sims.photUtils.PhotometricParameters`, optional,
+                    defaults to None
+                    Describes the observational parameters used in specifying the
+                    photometry of the ovservation
+        observedBandPassInd: None
+            Not used now
         """
         SEDfromSNcosmo = self.SNObjectSED(time=time, 
-                                          bandpassobject=bandpassobject)
-
-        if phiarray is None:
-            phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobject)
-
-        # import lsst.sims.photUtils.PhotometricParameters as PhotometricParameters
-        #pp = PhotometricParameters(exptime=30.)
+                                          bandpassobject=bandpassDict)
         
-        adus = np.zeros(len(bandpassobject.keys()))
-        for i, filt in enumerate(bandpassobject.keys()):
-            bandpass = bandpassobject[filt]
-            adus[i] = SEDfromSNcosmo.calcADU(bandpass, photParams=photParams)
+        bandpassNames = bandpassDict.keys()
+        adus = np.zeros(len(bandpassNames))
 
+        for i, filt in enumerate(bandpassNames):
+            bandpass = bandpassDict[filt]
+            adus[i] = SEDfromSNcosmo.calcADU(bandpass, photParams=photParams)
 
         return adus
 
