@@ -6,12 +6,10 @@ import os
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-# mpl.use('Agg')
 
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
 from lsst.sims.catalogs.measures.instance import compound
 from lsst.sims.catalogs.generation.db import CatalogDBObject
-# from lsst.sims.catalogs.generation.db import ObservationMetaData
 from lsst.sims.utils import ObservationMetaData
 
 from lsst.sims.photUtils import Sed
@@ -32,8 +30,8 @@ wavelenstep = 0.1
 cosmo = CosmologyMixin()
 class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
     """
-    Supernova Type Ia in the catalog are characterized by the  following
-    attributes
+    `lsst.sims.catalogs.measures.instance.InstanceCatalog` class with SN
+    characterized by the  following attributes
 
     Attributes
     ----------

@@ -65,7 +65,7 @@ class SNObject (sncosmo.Model):
     >>> SNObject._dec
     >>> 1.0471975511965976
     """
-    def __init__(self, ra=None, dec=None):
+    def __init__(self, ra=None, dec=None, source='salt2-extended'):
         """
         Parameters
         ----------
@@ -77,15 +77,16 @@ class SNObject (sncosmo.Model):
 
         """
         dust = sncosmo.CCM89Dust()
-        sncosmo.Model.__init__(self, source="salt2-extended",
+        sncosmo.Model.__init__(self, source=source,
                        effects=[dust, dust], effect_names=['host', 'mw'],
                        effect_frames=['rest', 'obs'])
 
         # Current implementation of Model has a default value of mwebv = 0.
         # ie. no extinction, but this is not part of the API, so should not
         # depend on it, set explicitly in order to unextincted SED from
-        # SNCosmo. We will use catsim extinction from photUtils.
+        # SNCosmo. We will use catsim extinction from `lsst.sims.photUtils`.
 
+        self.ModelSource = source
         self.set(mwebv=0.)
 
         # ra and dec passed as parameters are in degrees
@@ -104,6 +105,27 @@ class SNObject (sncosmo.Model):
         if self._ra is not None and self._dec is not None:
             self.mwEBVfromMaps()
         return
+
+    @property
+    def SNstate(self):
+        """
+        dictionary summrizing the state of the SN object
+        """
+        statedict = dict()
+
+        # SNCosmo Parameters
+        statedict['ModelSource'] = self.source
+        for param_name in self.param_names:
+            statedict[param_name] = self.get(param_name)
+
+        # New Attributes
+        statedict['lsstmwebv'] = self.lsstmwebv
+        statedict['_ra'] = self._ra
+        statedict['_dec'] = self._dec
+        statedict['MWE(B-V)'] = self.ebvofMW
+
+        return statedict
+
     def summary(self):
         '''
         summarizes the current state of the SNObject class in a returned
