@@ -16,8 +16,7 @@ from lsst.sims.utils import ObservationMetaData
 
 from lsst.sims.photUtils import Sed
 from lsst.sims.photUtils.Photometry import PhotometryBase as PhotometryBase
-# from lsst.sims.photUtils.CosmologyObject import CosmologyWrapper 
-# from lsst.sims.photUtils.CosmologyObject import CosmologyWrapper 
+import lsst.sims.photUtils.PhotometricParameters as PhotometricParameters
 from lsst.sims.catUtils.mixins import CosmologyMixin
 
 import astropy
@@ -162,6 +161,10 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
     def maxz(self):
         return 1.2
 
+    @astropy.utils.lazyproperty
+    def photometricparameters(self, expTime=30.):
+        lsstPhotometricParameters = PhotometricParameters(exptime=expTime)
+        return lsstPhotometricParameters
 
     @astropy.utils.lazyproperty
     def lsstpbase(self):
@@ -273,9 +276,12 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
                                                 time=self.obs_metadata.mjd,
                                             phiarray=self.lsstpbase.phiArray)
 
-            vals[i, 11:] = SNobject.catsimBandMags(bandpassobject=self.lsstpbase.bandpassDict,
-                                                time=self.obs_metadata.mjd,
-                                            phiarray=self.lsstpbase.phiArray)
+            # vals[i, 11:] = SNobject.catsimBandMags(bandpassobject=self.lsstpbase.bandpassDict,
+            #                                    time=self.obs_metadata.mjd,
+            #                                phiarray=self.lsstpbase.phiArray)
+            vals[i, 11:] = SNobject.catsimADU(time=self.obs_metadata,
+                                              bandpassDict=self.lsstpbase.bandpassDict,
+                                              photParams=self.photometricparameters)
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3],
                 vals[:, 4], vals[:, 5], vals[:, 6], vals[:, 7],
                 vals[:, 8], vals[:, 9], vals[:, 10], vals[:, 11], 
