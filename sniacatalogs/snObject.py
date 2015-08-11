@@ -133,8 +133,15 @@ class SNObject (sncosmo.Model):
 
         Parameters
         ----------
-        snState:
+        snState: Dictionary summarizing the state of SNObject
 
+        Returns
+        -------
+        Instane of SNObject class with attributes set by snstate
+
+        Example
+        -------
+        
         """
 
 
@@ -174,6 +181,7 @@ class SNObject (sncosmo.Model):
         # Set the SNcosmo parameters
         cls.set(**sncosmoParams)
         return cls
+
 
     def summary(self):
         '''
