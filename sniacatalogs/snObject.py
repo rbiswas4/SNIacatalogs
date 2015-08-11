@@ -147,19 +147,19 @@ class SNObject (sncosmo.Model):
         SNobjectKeys = snState.keys()
         SNobjectOnlyKeys = dict()
         sncosmoParams = dict()
+
         for key in SNobjectKeys:
-            # print key
             if key in sncosmoModel.param_names:
-                # print 'is a sncosmoParam'
                 sncosmoParams[key] =snState[key]
             else:
-                #print 'is not'
                  SNobjectOnlyKeys[key] = snState[key]
 
+        # Now create the class
         cls = SNObject(source=SNobjectOnlyKeys['ModelSource']) 
 
+        # Set the SNObject coordinate properties
+        # Have to be careful to not convert `None` type objects to degrees
         setdec, setra = False, False
-
         if SNobjectOnlyKeys['_ra'] is not None:
             ra = np.degrees(SNobjectOnlyKeys['_ra'])
             setra = True
@@ -168,8 +168,11 @@ class SNObject (sncosmo.Model):
             setdec = True
         if setdec and setra :
             cls.setCoords(ra, dec)
+
+        # Set the ebvofMW by hand
+        cls.ebvofMW = SNobjectOnlyKeys['MWE(B-V)']
+        # Set the SNcosmo parameters
         cls.set(**sncosmoParams)
-        print 'Cannot do this yet!'
         return cls
 
     def summary(self):
