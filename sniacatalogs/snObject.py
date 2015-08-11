@@ -65,7 +65,7 @@ class SNObject (sncosmo.Model):
     >>> SNObject._dec
     >>> 1.0471975511965976
     """
-    def __init__(self, ra=None, dec=None):
+    def __init__(self, ra=None, dec=None, source='salt2-extended'):
         """
         Parameters
         ----------
@@ -77,15 +77,16 @@ class SNObject (sncosmo.Model):
 
         """
         dust = sncosmo.CCM89Dust()
-        sncosmo.Model.__init__(self, source="salt2-extended",
+        sncosmo.Model.__init__(self, source=source,
                        effects=[dust, dust], effect_names=['host', 'mw'],
                        effect_frames=['rest', 'obs'])
 
         # Current implementation of Model has a default value of mwebv = 0.
         # ie. no extinction, but this is not part of the API, so should not
         # depend on it, set explicitly in order to unextincted SED from
-        # SNCosmo. We will use catsim extinction from photUtils.
+        # SNCosmo. We will use catsim extinction from `lsst.sims.photUtils`.
 
+        self.ModelSource = source
         self.set(mwebv=0.)
 
         # ra and dec passed as parameters are in degrees
@@ -104,6 +105,84 @@ class SNObject (sncosmo.Model):
         if self._ra is not None and self._dec is not None:
             self.mwEBVfromMaps()
         return
+
+    @property
+    def SNstate(self):
+        """
+        dictionary summrizing the state of the SN object
+        """
+        statedict = dict()
+
+        # SNCosmo Parameters
+        statedict['ModelSource'] = self.source
+        for param_name in self.param_names:
+            statedict[param_name] = self.get(param_name)
+
+        # New Attributes
+        statedict['lsstmwebv'] = self.lsstmwebv
+        statedict['_ra'] = self._ra
+        statedict['_dec'] = self._dec
+        statedict['MWE(B-V)'] = self.ebvofMW
+
+        return statedict
+    
+    @classmethod
+    def fromSNState(cls, snState):
+        """
+        creates an instance of SNObject with a state described by snstate.
+
+        Parameters
+        ----------
+        snState: Dictionary summarizing the state of SNObject
+
+        Returns
+        -------
+        Instane of SNObject class with attributes set by snstate
+
+        Example
+        -------
+        
+        """
+
+
+        # Separate into SNCosmo parameters and SNObject parameters
+        dust = sncosmo.CCM89Dust()
+        sncosmoModel = sncosmo.Model(source='salt2', 
+                                     effects=[dust, dust],
+                                     effect_names=['host', 'mw'],
+                                     effect_frames=['rest', 'obs'])
+        SNobjectKeys = snState.keys()
+        SNobjectOnlyKeys = dict()
+        sncosmoParams = dict()
+
+        for key in SNobjectKeys:
+            if key in sncosmoModel.param_names:
+                sncosmoParams[key] =snState[key]
+            else:
+                 SNobjectOnlyKeys[key] = snState[key]
+
+        # Now create the class
+        cls = SNObject(source=SNobjectOnlyKeys['ModelSource']) 
+
+        # Set the SNObject coordinate properties
+        # Have to be careful to not convert `None` type objects to degrees
+        setdec, setra = False, False
+        if SNobjectOnlyKeys['_ra'] is not None:
+            ra = np.degrees(SNobjectOnlyKeys['_ra'])
+            setra = True
+        if SNobjectOnlyKeys['_dec'] is not None:
+            dec = np.degrees(SNobjectOnlyKeys['_dec']) 
+            setdec = True
+        if setdec and setra :
+            cls.setCoords(ra, dec)
+
+        # Set the ebvofMW by hand
+        cls.ebvofMW = SNobjectOnlyKeys['MWE(B-V)']
+        # Set the SNcosmo parameters
+        cls.set(**sncosmoParams)
+        return cls
+
+
     def summary(self):
         '''
         summarizes the current state of the SNObject class in a returned
