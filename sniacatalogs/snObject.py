@@ -125,6 +125,52 @@ class SNObject (sncosmo.Model):
         statedict['MWE(B-V)'] = self.ebvofMW
 
         return statedict
+    
+    @classmethod
+    def fromSNState(cls, snState):
+        """
+        creates an instance of SNObject with a state described by snstate.
+
+        Parameters
+        ----------
+        snState:
+
+        """
+
+
+        # Separate into SNCosmo parameters and SNObject parameters
+        dust = sncosmo.CCM89Dust()
+        sncosmoModel = sncosmo.Model(source='salt2', 
+                                     effects=[dust, dust],
+                                     effect_names=['host', 'mw'],
+                                     effect_frames=['rest', 'obs'])
+        SNobjectKeys = snState.keys()
+        SNobjectOnlyKeys = dict()
+        sncosmoParams = dict()
+        for key in SNobjectKeys:
+            # print key
+            if key in sncosmoModel.param_names:
+                # print 'is a sncosmoParam'
+                sncosmoParams[key] =snState[key]
+            else:
+                #print 'is not'
+                 SNobjectOnlyKeys[key] = snState[key]
+
+        cls = SNObject(source=SNobjectOnlyKeys['ModelSource']) 
+
+        setdec, setra = False, False
+
+        if SNobjectOnlyKeys['_ra'] is not None:
+            ra = np.degrees(SNobjectOnlyKeys['_ra'])
+            setra = True
+        if SNobjectOnlyKeys['_dec'] is not None:
+            dec = np.degrees(SNobjectOnlyKeys['_dec']) 
+            setdec = True
+        if setdec and setra :
+            cls.setCoords(ra, dec)
+        cls.set(**sncosmoParams)
+        print 'Cannot do this yet!'
+        return cls
 
     def summary(self):
         '''
