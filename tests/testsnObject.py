@@ -7,7 +7,7 @@ import numpy
 import unittest
 import matplotlib.pyplot as plt
 
-from lsst.sims.photUtils.Photometry import PhotometryStars, Sed, Bandpass
+from lsst.sims.photUtils.Photometry import Sed, Bandpass
 from lsst.sims.photUtils.Photometry import PhotometryBase
 import lsst.utils.tests as utilsTests
 
@@ -63,6 +63,7 @@ class testSNObject(unittest.TestCase):
         self.SNmw : SN with said parameters, exincted in MW
         self.SNCosmo_mw :
         """
+
         ra = 204.
         dec = -30.
         mjdobs = 571203.
@@ -107,7 +108,6 @@ class testSNObject(unittest.TestCase):
         SNCosmo.set(mwebv=t_mwebv)
         self.SNCosmo_mw = SNCosmo
 
-
         CCMdust = sncosmo.CCM89Dust()
         SNCosmo_float = sncosmo.Model(source='salt2-extended',
                                       effects=[CCMdust, CCMdust],
@@ -118,7 +118,7 @@ class testSNObject(unittest.TestCase):
         SNCosmo_float.set(mwebv=t_mwebv)
         self.SNCosmo_float = SNCosmo_float
         
-                # Load LSST sofware bandpass objects for magnitude calculation
+            # Load LSST sofware bandpass objects for magnitude calculation
         self.bandPassList = ['u', 'g', 'r', 'i', 'z', 'y']
         pbase = PhotometryBase()
         pbase.loadBandpassesFromFiles(self.bandPassList)
@@ -129,7 +129,9 @@ class testSNObject(unittest.TestCase):
 
         # Load SNCosmo bandpass objects for comparison test
         thisshouldbeNone = tu.getlsstbandpassobjs(self.bandPassList,
-                                                  loadcatsim=False, plot=False)
+                                                  loadcatsim=False,
+                                                  plot=False)
+
         self.sncosmobands = ['LSST' + band for band in self.bandPassList]
 
     def testSNObjectnoMWmags_SNCosmo(self):

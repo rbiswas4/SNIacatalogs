@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 from cStringIO import StringIO
-import sys
-import os
+# import sys
+# import os
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+# import matplotlib as mpl
+# import matplotlib.pyplot as plt
 
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
 from lsst.sims.catalogs.measures.instance import compound
@@ -13,8 +13,8 @@ from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.utils import ObservationMetaData
 
 from lsst.sims.photUtils import Sed
-from lsst.sims.photUtils.Photometry import PhotometryBase as PhotometryBase
-import lsst.sims.photUtils.PhotometricParameters as PhotometricParameters
+# from lsst.sims.photUtils.Photometry import PhotometryBase as PhotometryBase
+# import lsst.sims.photUtils.PhotometricParameters as PhotometricParameters
 from lsst.sims.catUtils.mixins import CosmologyMixin
 
 import astropy
@@ -45,7 +45,6 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
 
     # t_0, c, x_1, x_0 are parameters characterizing a SALT based SN model
     # as defined in sncosmo 
-    
     column_outputs = ['snid', 'snra', 'sndec', 'z', 't0', 'c', 'x1',
                       'x0'] 
     

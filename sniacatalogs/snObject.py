@@ -3,7 +3,7 @@ Class describing the SN object itself. The SN object derives from
 SNCosmo.Model and provides a sed of SNIa based on the SALT2 model-like
  model often called 'salt2-extended'. This model is extended to longer
  wavelength ranges compared to models in Guy10 or Betoule14, at the cost of
- larger model varianc. SNObject has additional attributes such as ra, dec. and
+ larger model variance. SNObject has additional attributes such as ra, dec. and
 additional methods to calculate band magnitudes using the LSST software stack
 after applying MW extinction:
  -  calc_mags which use the magnitude calculations in LSST stack
@@ -53,7 +53,6 @@ class SNObject (sncosmo.Model):
         Therefore, the value must be set explicitly to 0. to get unextincted
         quantities.
 
-
     Methods
     -------
 
@@ -69,17 +68,16 @@ class SNObject (sncosmo.Model):
         """
         Parameters
         ----------
-
         ra : float
             ra of the SN in degrees
         dec : float
             dec of the SN in degrees
-
         """
+
         dust = sncosmo.CCM89Dust()
-        sncosmo.Model.__init__(self, source=source,
-                       effects=[dust, dust], effect_names=['host', 'mw'],
-                       effect_frames=['rest', 'obs'])
+        sncosmo.Model.__init__(self, source=source, effects=[dust, dust],
+                               effect_names=['host', 'mw'], 
+                               effect_frames=['rest', 'obs'])
 
         # Current implementation of Model has a default value of mwebv = 0.
         # ie. no extinction, but this is not part of the API, so should not
@@ -93,13 +91,17 @@ class SNObject (sncosmo.Model):
         self._ra = ra
         self._dec = dec
 
-        # ra and dec if passed as non Nne variables are converted into
-        # radians
+        # ra and dec if passed are assumed to be in degrees and converted into
+        # radians.
+        # NB: More lines of code to support the possibility that ra, dec are 
+        # not provided at instantiation, and default to None
         if self._dec is not None:
-            self._dec = dec * np.pi / 180.0
+            self._dec = np.radians(dec)
         if self._ra is not None:
-            self._ra = ra * np.pi / 180.0
+            self._ra = np.radians(ra)
 
+        # For realistic values of ra, dec, the E(B-V) is calculated directly
+        # from DustMaps
         self.lsstmwebv = EBVbase()
         self.ebvofMW = None
         if self._ra is not None and self._dec is not None:
@@ -143,8 +145,6 @@ class SNObject (sncosmo.Model):
         -------
         
         """
-
-
         # Separate into SNCosmo parameters and SNObject parameters
         dust = sncosmo.CCM89Dust()
         sncosmoModel = sncosmo.Model(source='salt2', 
