@@ -139,7 +139,7 @@ class SNObject (sncosmo.Model):
 
         Returns
         -------
-        Instane of SNObject class with attributes set by snstate
+        Instance of SNObject class with attributes set by snstate
 
         Example
         -------
@@ -520,10 +520,10 @@ class SNObject (sncosmo.Model):
 
         Examples
         --------
-        >>> from lsst.sims.photUtils.Photometry import PhotometryBase
-        >>> pbase = PhotometryBase()
-        >>> pbase.loadBandpassesFromFiles()
-        >>> pbase.setupPhiArray_dict() 
+        # >>> from lsst.sims.photUtils.Photometry import PhotometryBase
+        # >>> pbase = PhotometryBase()
+        # >>> pbase.loadBandpassesFromFiles()
+        # >>> pbase.setupPhiArray_dict() 
 
         .. note:: Unphysical values of the flux density are reported as
         `np.nan`
