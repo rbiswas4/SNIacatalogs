@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
 from cStringIO import StringIO
-# import sys
-# import os
 import numpy as np
-# import matplotlib as mpl
-# import matplotlib.pyplot as plt
 
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
 from lsst.sims.catalogs.measures.instance import compound
@@ -13,9 +9,8 @@ from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.utils import ObservationMetaData
 
 from lsst.sims.photUtils import Sed
-# from lsst.sims.photUtils.Photometry import PhotometryBase as PhotometryBase
-# import lsst.sims.photUtils.PhotometricParameters as PhotometricParameters
 from lsst.sims.catUtils.mixins import CosmologyMixin
+# import lsst.sims.photUtils.PhotometricParameters as PhotometricParameters
 
 import astropy
 import sncosmo
@@ -43,8 +38,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
     and parameters of the supernova model that predict the SED.
     """
 
-    # t_0, c, x_1, x_0 are parameters characterizing a SALT based SN model
-    # as defined in sncosmo 
+    # t_0, c, x_1, x_0 are parameters characterizing a SALT
+    # based SN model as defined in sncosmo 
     column_outputs = ['snid', 'snra', 'sndec', 'z', 't0', 'c', 'x1',
                       'x0'] 
     
@@ -241,10 +236,10 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
         return sedlist
 
         
-    @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y','mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y', 'adu_u', 'adu_g',
-              'adu_r', 'adu_i', 'adu_z', 'adu_y')
+    @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y',
+              'mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y',
+              'adu_u', 'adu_g', 'adu_r', 'adu_i', 'adu_z', 'adu_y')
     def get_snfluxes(self):
-
        
         c, x1, x0, t0, _z , _id, ra, dec = self.column_by_name('c'),\
                                  self.column_by_name('x1'),\

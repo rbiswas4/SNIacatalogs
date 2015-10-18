@@ -12,7 +12,6 @@ after applying MW extinction:
 """
 import numpy as np
 import os
-
 from lsst.sims.photUtils.Photometry import  Sed
 from lsst.sims.photUtils.EBV import EBVbase
 
@@ -43,10 +42,10 @@ class SNObject (sncosmo.Model):
     dec : float or None
         dec of the SN in radians
 
-    skycoord: `np.ndarray' of size 2 or None
+    skycoord : `np.ndarray' of size 2 or None
         np.array([[ra], [dec]]), which are in radians
 
-    ebvofMW: float or None
+    ebvofMW : float or None
         mwebv value calculated from the self.skycoord if not None, or set to
         a value using self.set_MWebv. If neither of these are done, this value
         will be None, leading to exceptions in extinction calculation.
@@ -73,7 +72,7 @@ class SNObject (sncosmo.Model):
         dec : float
             dec of the SN in degrees
         """
-
+ 
         dust = sncosmo.CCM89Dust()
         sncosmo.Model.__init__(self, source=source, effects=[dust, dust],
                                effect_names=['host', 'mw'], 
@@ -87,47 +86,79 @@ class SNObject (sncosmo.Model):
         self.ModelSource = source
         self.set(mwebv=0.)
 
-        # ra and dec passed as parameters are in degrees
-        self._ra = ra
-        self._dec = dec
 
         # ra and dec if passed are assumed to be in degrees and converted into
         # radians.
+        self._ra = ra
+        self._dec = dec
+
         # NB: More lines of code to support the possibility that ra, dec are 
         # not provided at instantiation, and default to None
-        if self._dec is not None:
-            self._dec = np.radians(dec)
-        if self._ra is not None:
-            self._ra = np.radians(ra)
+        self._hascoords = True
+        if self._dec is None:
+            self._hascoords = False
+        if self._ra is None:
+            self._hascoords = False
 
-        # For realistic values of ra, dec, the E(B-V) is calculated directly
+        # Satisfied that coordinates provided are floats
+        if self._hascoords:
+            self.setCoords(ra, dec)
+
+        # For values of ra, dec, the E(B-V) is calculated directly
         # from DustMaps
         self.lsstmwebv = EBVbase()
         self.ebvofMW = None
-        if self._ra is not None and self._dec is not None:
+        if self._hascoords:
             self.mwEBVfromMaps()
         return
 
     @property
     def SNstate(self):
         """
-        dictionary summrizing the state of the SN object
+        Dictionary summarizing the property of the state. Can be used to
+        serialize to disk
+
+        Returns : Dictionary with values of parameters of the model. 
         """
         statedict = dict()
 
         # SNCosmo Parameters
-        statedict['ModelSource'] = self.source
+        statedict['ModelSource'] = self.source.name
         for param_name in self.param_names:
             statedict[param_name] = self.get(param_name)
 
         # New Attributes
-        statedict['lsstmwebv'] = self.lsstmwebv
+        # statedict['lsstmwebv'] = self.lsstmwebv
         statedict['_ra'] = self._ra
         statedict['_dec'] = self._dec
         statedict['MWE(B-V)'] = self.ebvofMW
 
         return statedict
-    
+
+    @staticmethod
+    def sncosmoParamDict(SNstate, SNCosmoModel):
+        """
+        return a dictionary that contains the parameters of SNCosmoModel
+        that are contained in SNstate
+
+        Parameters
+        ----------
+        SNstate : `SNObject.SNstate`, mandatory
+            Dictionary defining the state of a SNObject
+        SNCosmoModel : A `sncosmo.Model` instance, mandatory
+
+        Returns
+        -------
+        sncosmoParams: Dictionary of sncosmo parameters
+
+        """
+        sncosmoParams = dict()
+        for param in SNstate.keys():
+            if param in SNCosmoModel.param_names:
+                sncosmoParams[param] = SNstate[param]
+        return sncosmoParams
+
+
     @classmethod
     def fromSNState(cls, snState):
         """
@@ -147,42 +178,53 @@ class SNObject (sncosmo.Model):
         """
         # Separate into SNCosmo parameters and SNObject parameters
         dust = sncosmo.CCM89Dust()
-        sncosmoModel = sncosmo.Model(source='salt2', 
+        sncosmoModel = sncosmo.Model(source=snState['ModelSource'],
                                      effects=[dust, dust],
                                      effect_names=['host', 'mw'],
                                      effect_frames=['rest', 'obs'])
-        SNobjectKeys = snState.keys()
-        SNobjectOnlyKeys = dict()
-        sncosmoParams = dict()
 
-        for key in SNobjectKeys:
-            if key in sncosmoModel.param_names:
-                sncosmoParams[key] =snState[key]
-            else:
-                 SNobjectOnlyKeys[key] = snState[key]
+        SNobjectKeys = snState.keys()
+        sncosmoParams = cls.sncosmoParamDict(snState, sncosmoModel)
 
         # Now create the class
-        cls = SNObject(source=SNobjectOnlyKeys['ModelSource']) 
+        cls = SNObject(source=snState['ModelSource'])
 
         # Set the SNObject coordinate properties
         # Have to be careful to not convert `None` type objects to degrees
         setdec, setra = False, False
-        if SNobjectOnlyKeys['_ra'] is not None:
-            ra = np.degrees(SNobjectOnlyKeys['_ra'])
+        if snState['_ra'] is not None:
+            ra = np.degrees(snState['_ra'])
             setra = True
-        if SNobjectOnlyKeys['_dec'] is not None:
-            dec = np.degrees(SNobjectOnlyKeys['_dec']) 
+        if snState['_dec'] is not None:
+            dec = np.degrees(snState['_dec'])
             setdec = True
-        if setdec and setra :
+        if setdec and setra:
             cls.setCoords(ra, dec)
 
-        # Set the ebvofMW by hand
-        cls.ebvofMW = SNobjectOnlyKeys['MWE(B-V)']
         # Set the SNcosmo parameters
         cls.set(**sncosmoParams)
+
+        # Set the ebvofMW by hand
+        cls.ebvofMW = snState['MWE(B-V)']
+
         return cls
 
+    def equivalentSNCosmoModel(self): 
+        """
+        returns an SNCosmo Model which is equivalent to SNObject
+        """
+        snState = self.SNstate
+        dust = sncosmo.CCM89Dust()
+        sncosmoModel = sncosmo.Model(source=snState['ModelSource'],
+                                     effects=[dust, dust],
+                                     effect_names=['host', 'mw'],
+                                     effect_frames=['rest', 'obs'])
 
+        sncosmoParams = self.sncosmoParamDict(snState, sncosmoModel)
+        sncosmoParams['mwebv'] = snState['MWE(B-V)']
+        sncosmoModel.set(**sncosmoParams)
+        return sncosmoModel
+        
     def summary(self):
         '''
         summarizes the current state of the SNObject class in a returned
@@ -200,8 +242,6 @@ class SNObject (sncosmo.Model):
         --------
         >>> t = SNObject()
         >>> print t.summary()
-
-
         '''
         state = '  SNObject Summary      \n'
 
@@ -244,10 +284,17 @@ class SNObject (sncosmo.Model):
         >>> 1.0471975511965976
         """
 
-        self._ra = ra * np.pi / 180.
-        self._dec = dec * np.pi / 180.
+        if ra is None or dec is None:
+            raise ValueError('Why try to set coordinates without full'
+                             'coordiantes?\n')
+        self._ra = np.radians(ra)
+        self._dec = np.radians(dec)
+        self.skycoord = np.array([[self._ra], [self._dec]])
+
+        self._hascoords = True
 
         return
+
     def set_MWebv(self, value):
         """
         if mwebv value is known, this can be used to set the attribute
@@ -304,21 +351,24 @@ class SNObject (sncosmo.Model):
 
         """
 
-        if self._ra is None or self._dec is None:
-            raise ValueError('Cannot Calculate EBV from dust maps if ra or dec is `None`')
-            return
-        self.skycoord = np.array([[self._ra], [self._dec]])
-        self.ebvofMW  = self.lsstmwebv.calculateEbv(equatorialCoordinates=
-                                                    self.skycoord)[0]
+        if not self._hascoords:
+            raise ValueError('Cannot Calculate EBV from dust maps if ra or dec'
+                             'is `None`')
+        self.ebvofMW = self.lsstmwebv.calculateEbv(
+                equatorialCoordinates=self.skycoord)[0]
         return
 
-    def SNObjectSED(self, time, wavelen=None, bandpassobject=None,
+    def SNObjectSED(self, time, wavelen=None, bandpass=None,
                     applyExitinction=True):
         '''
-        return a `sims_photutils.sed`  object from the SN model at the
-        requested time and wavelengths (or wavelengths of a bandpassobject)
-        with extinction from MW according to the SED extinction methods. If
-        the sed is requested at times outside the validity range of the
+        return a `lsst.sims.photUtils.sed` object from the SN model at the
+        requested time and wavelengths with or without extinction from MW
+        according to the SED extinction methods. The wavelengths may be
+        obtained from a `lsst.sims.Bandpass` object or a `lsst.sims.BandpassDict`
+        object instead. (Currently, these have the same wavelengths). See notes
+        for details on handling of exceptions.
+
+        If the sed is requested at times outside the validity range of the
         model, the flux density is returned as 0. If the time is within the
         range of validity of the model, but the wavelength range requested
         is outside the range, then the returned fluxes are np.nan outside
@@ -330,10 +380,11 @@ class SNObject (sncosmo.Model):
             time of observation
         wavelen: `np.ndarray` of floats, optional, defaults to None
             array containing wavelengths in nm
-        bandpassobject: `sims_photUtils.bandpass` object or dict thereof,
-            optional, defaults to `None`. Using the dict assumes that the
-            wavelength sampling and range is the same for all elements of
-            the dict.
+        bandpassobject: `lsst.sims.photUtils.Bandpass` object or 
+            `lsst.sims.photUtils.BandpassDict`, optional, defaults to `None`.
+            Using the dict assumes that the wavelength sampling and range
+            is the same for all elements of the dict.
+
             if provided, overrides wavelen input and the SED is
             obtained at the wavelength values native to bandpass
             object.
@@ -350,20 +401,19 @@ class SNObject (sncosmo.Model):
         Examples
         --------
         >>> sed = SN.SNObjectSED(time=0., wavelen=wavenm)
-        >>> # Usual Sed methods and attributes can be accessed
         '''
 
-        if wavelen is None and bandpassobject is None:
+        if wavelen is None and bandpass is None:
             raise ValueError('A non None input to either wavelen or\
                               bandpassobject must be provided')
 
-        #if bandpassobject present, it overrides wavelen
-        if bandpassobject is not None:
-            if isinstance(bandpassobject, dict):
-                firstfilter = bandpassobject.keys()[0]
-                bp = bandpassobject[firstfilter]
+        # if bandpassobject present, it overrides wavelen
+        if bandpass is not None:
+            if isinstance(bandpass, dict):
+                firstfilter = bandpass.keys()[0]
+                bp = bandpass[firstfilter]
             else:
-                bp = bandpassobject
+                bp = bandpass
             # remember this is in nm
             wavelen =  bp.wavelen
 
@@ -385,15 +435,17 @@ class SNObject (sncosmo.Model):
             flambda = flambda * np.nan
 
             # Convert to Ang
-            wave = wavelen * 10.
+            wave = wavelen * 10.0
             mask1 = wave > self.minwave()
             mask2 = wave < self.maxwave()
             mask = mask1 & mask2
             wave = wave[mask]
+
             # flux density dE/dlambda returned from SNCosmo in
             # ergs/cm^2/sec/Ang, convert to ergs/cm^2/sec/nm
+
             flambda[mask] = self.flux(time=time, wave=wave)
-            flambda[mask] = flambda[mask] * 10.
+            flambda[mask] = flambda[mask] * 10.0
 
         SEDfromSNcosmo = Sed(wavelen=wavelen, flambda=flambda)
 
@@ -402,14 +454,61 @@ class SNObject (sncosmo.Model):
 
         # Apply LSST extinction
         ax, bx = SEDfromSNcosmo.setupCCMab()
+
         if self.ebvofMW is None:
-            raise ValueError('ebvofMW attribute cannot be None Type and must be\
-                             set by hand using set_MWebv before this stage, or\
-                             by using setcoords followed by mwEBVfromMaps\n')
+            raise ValueError('ebvofMW attribute cannot be None Type and must be'
+                             'set by hand using set_MWebv before this stage, or'
+                             'by using setcoords followed by mwEBVfromMaps\n')
 
         SEDfromSNcosmo.addCCMDust(a_x=ax, b_x=bx, ebv=self.ebvofMW)
         return SEDfromSNcosmo
 
+    def catsimBandFluxes(self, time, bandpassobject):
+        """
+        return the flux in the bandpass in units of the flux
+        the AB magnitude reference spectrum would have in the
+        same band.
+
+        Parameters
+        ----------
+        time: mandatory, float
+            MJD at which band fluxes are evaluated
+        bandpassobject: mandatory, `lsst.sims.photUtils.BandPass` object
+            A particular bandpass which is an instantiation of one of
+            (u, g, r, i, z, y)
+        Returns
+        -------
+        float
+
+        Examples
+        --------
+        .. note: If there is an unphysical value of sed in
+        the wavelength range, it produces a flux of  `np.nan`
+        """
+        SEDfromSNcosmo = self.SNObjectSED(time=time,
+                                          bandpass=bandpassobject)
+        return SEDfromSNcosmo.calcFlux(bandpass=bandpassobject) / 3631.0
+
+    def catsimBandMags(self, bandpassobject, time):
+        """
+        return the magnitude in the bandpass in the AB magnitude system
+
+        Parameters
+        ----------
+        bandpassobject : mandatory,`sims.photUtils.BandPass` instances
+            LSST Catsim bandpass instance for the bandpass
+        time : mandatory, float
+              MJD at which this is evaluated
+        Returns
+        -------
+            float
+        Examples
+        --------
+        
+        """
+        fluxRatio = self.catsimBandFluxes(bandpassobject=bandpassobject,
+                                          time=time)
+        return -2.5 * np.log10(fluxRatio)
 
     def catsimADU(self, time, bandpassDict, 
                   photParams=None,
@@ -440,107 +539,3 @@ class SNObject (sncosmo.Model):
             adus[i] = SEDfromSNcosmo.calcADU(bandpass, photParams=photParams)
 
         return adus
-
-
-    def catsimBandMags(self, bandpassobject, time, phiarray=None,
-                       observedBandPassInds=None):
-        """
-        return a numpy array of AB magnitudes in the bandpasses
-
-        Parameters
-        ----------
-        bandpassobject: mandatory, bandpass objects or ordered dict thereof
-            LSST Catsim bandpass object or ordered dict of bandpass objects
-            in which the fluxes are calculated
-
-        time: mandatory, float
-              MJD at which this is evaluated
-
-        phiarray: Optional, `sims.photometry.phiarray` object, defaults to None
-            if present, is used in speeding up the flux calculation, if not,
-            phiarray is calculated in this routine.
-
-        observedBandPassInds: Optional, list of ints, defaults to None
-            list of indices corresponding to the obserevd filters in the ordered
-            dict bandpassobject. If present, fluxes are only returned for these
-            bands.
-        Returns
-        -------
-        `np.ndarray` of mag values for each band in lsstbandpass.
-
-        Examples
-        --------
-        >>> t = SNObject()
-        """
-
-
-        SEDfromSNcosmo = self.SNObjectSED(time=time,
-                                          bandpassobject=bandpassobject)
-
-        if phiarray is None:
-            phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobject)
-
-        
-        if isinstance(bandpassobject, dict):
-            firstfilter=bandpassobject.keys()[0]
-            wavelenstep = bandpassobject[firstfilter].wavelen_step
-        else:
-            wavelenstep = bandpassobject.wavelen_step
-        SEDfromSNcosmo.flambdaTofnu()
-        return SEDfromSNcosmo.manyMagCalc(phiarray,
-                                          wavelen_step=wavelenstep, 
-                                          observedBandPassInd=observedBandPassInds)
-
-    def catsimBandFluxes(self, bandpassobject, time, phiarray=None,
-                         observedBandPassInds=None):
-        """
-        return a numpy array of fluxes of the SN spectrum in the ab
-        magnitude system
-
-        Parameters
-        ----------
-        bandpassobject: mandatory, LSST catsim bandpass object or dict thereof
-            LSST Catsim bandpass object or ordered dict of bandpass objects
-            in which the fluxes are calculated
-
-        time: mandatory, float
-              MJD at which this is evaluated
-
-        phiarray: Optional, `sims.photometry.phiarray` object, defaults to None
-            if present, is used in speeding up the flux calculation, if not,
-            phiarray is calculated in this routine.
-
-        observedBandPassInds: Optional, list of ints, defaults to None
-            list of indices corresponding to the obserevd filters in the ordered
-            dict bandpassobject. If present, fluxes are only returned for these
-            bands.
-        Returns
-        -------
-        `np.ndarray` of mag values for each observed band in lsstbandpass.
-
-        Examples
-        --------
-        # >>> from lsst.sims.photUtils.Photometry import PhotometryBase
-        # >>> pbase = PhotometryBase()
-        # >>> pbase.loadBandpassesFromFiles()
-        # >>> pbase.setupPhiArray_dict() 
-
-        .. note:: Unphysical values of the flux density are reported as
-        `np.nan`
-        """
-        SEDfromSNcosmo = self.SNObjectSED(time=time,
-                                          bandpassobject=bandpassobject)
-
-        if phiarray is None:
-            phiarray, dlambda = SEDfromSNcosmo.setupPhiArray(bandpassobject)
-
-
-        if isinstance(bandpassobject, dict):
-            firstfilter=bandpassobject.keys()[0]
-            wavelenstep = bandpassobject[firstfilter].wavelen_step
-        else:
-            wavelenstep = bandpassobject.wavelen_step
-        SEDfromSNcosmo.flambdaTofnu()
-
-        return SEDfromSNcosmo.manyFluxCalc(phiarray, wavelen_step=wavelenstep,
-                                           observedBandPassInd=observedBandPassInds)
