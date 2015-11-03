@@ -14,6 +14,7 @@ import numpy as np
 import os
 from lsst.sims.photUtils.Photometry import  Sed
 from lsst.sims.photUtils.EBV import EBVbase
+from lsst.sims.photUtils.BandpassDict import BandpassDict
 
 import sncosmo
 
@@ -359,7 +360,7 @@ class SNObject (sncosmo.Model):
         return
 
     def SNObjectSED(self, time, wavelen=None, bandpass=None,
-                    applyExitinction=True):
+                    applyExtinction=True):
         '''
         return a `lsst.sims.photUtils.sed` object from the SN model at the
         requested time and wavelengths with or without extinction from MW
@@ -380,7 +381,7 @@ class SNObject (sncosmo.Model):
             time of observation
         wavelen: `np.ndarray` of floats, optional, defaults to None
             array containing wavelengths in nm
-        bandpassobject: `lsst.sims.photUtils.Bandpass` object or 
+        bandpass: `lsst.sims.photUtils.Bandpass` object or 
             `lsst.sims.photUtils.BandpassDict`, optional, defaults to `None`.
             Using the dict assumes that the wavelength sampling and range
             is the same for all elements of the dict.
@@ -409,7 +410,7 @@ class SNObject (sncosmo.Model):
 
         # if bandpassobject present, it overrides wavelen
         if bandpass is not None:
-            if isinstance(bandpass, dict):
+            if isinstance(bandpass, BandpassDict):
                 firstfilter = bandpass.keys()[0]
                 bp = bandpass[firstfilter]
             else:
@@ -424,7 +425,7 @@ class SNObject (sncosmo.Model):
 
         # Set SED to 0 beyond the model phase range, will change this if
         # SNCosmo includes a more sensible decay later.
-        if time > self.mintime() and time < self.maxtime():
+        if (time > self.mintime()) & (time < self.maxtime()):
 
 
             # If SNCosmo is requested a SED value beyond the model range
@@ -449,7 +450,7 @@ class SNObject (sncosmo.Model):
 
         SEDfromSNcosmo = Sed(wavelen=wavelen, flambda=flambda)
 
-        if not applyExitinction:
+        if not applyExtinction:
             return SEDfromSNcosmo
 
         # Apply LSST extinction
@@ -488,6 +489,69 @@ class SNObject (sncosmo.Model):
         SEDfromSNcosmo = self.SNObjectSED(time=time,
                                           bandpass=bandpassobject)
         return SEDfromSNcosmo.calcFlux(bandpass=bandpassobject) / 3631.0
+
+    def catsimManyBandFluxes(self, time, bandpassDict,
+                             observedBandPassInd=None):
+        """
+        return the flux in the bandpass in units of the flux
+        the AB magnitude reference spectrum would have in the
+        same band.
+
+        Parameters
+        ----------
+        time: mandatory, float
+            MJD at which band fluxes are evaluated
+        bandpassDict: mandatory, `lsst.sims.photUtils.BandpassDict` instance
+        observedBandPassInd : optional, list of integers, defaults to None
+            integer correspdonding to index of the bandpasses used in the
+            observation in the ordered dict bandpassDict
+        Returns
+        -------
+        `~numpy.ndarray` of length =len(observedBandPassInd)
+
+        Examples
+        --------
+        .. note: If there is an unphysical value of sed in
+        the wavelength range, it produces a flux of  `np.nan`
+        """
+        SEDfromSNcosmo = self.SNObjectSED(time=time,
+                                          bandpass=bandpassDict['u'])
+        wavelen_step = np.diff(SEDfromSNcosmo.wavelen)[0]
+        SEDfromSNcosmo.flambdaTofnu()
+        f = SEDfromSNcosmo.manyFluxCalc(bandpassDict.phiArray,
+                                        wavelen_step=wavelen_step,
+                                        observedBandpassInd=observedBandPassInd)
+        return f / 3631.
+
+    def catsimManyBandMags(self, time, bandpassDict,
+                           observedBandPassInd=None):
+        """
+        return the flux in the bandpass in units of the flux
+        the AB magnitude reference spectrum would have in the
+        same band.
+
+        Parameters
+        ----------
+        time: mandatory, float
+            MJD at which band fluxes are evaluated
+        bandpassDict: mandatory, `lsst.sims.photUtils.BandpassDict` instance
+        observedBandPassInd : optional, list of integers, defaults to None
+            integer correspdonding to index of the bandpasses used in the
+            observation in the ordered dict bandpassDict
+        Returns
+        -------
+        `~numpy.ndarray` of length =len(observedBandPassInd)
+
+        Examples
+        --------
+        .. note: If there is an unphysical value of sed in
+        the wavelength range, it produces a flux of  `np.nan`
+        """
+        f = self.catsimManyBandFluxes(time,
+                                      bandpassDict,
+                                      observedBandPassInd)
+
+        return -2.5 * np.log10(f)
 
     def catsimBandMags(self, bandpassobject, time):
         """
@@ -529,7 +593,7 @@ class SNObject (sncosmo.Model):
             Not used now
         """
         SEDfromSNcosmo = self.SNObjectSED(time=time, 
-                                          bandpassobject=bandpassDict)
+                                          bandpass=bandpassDict)
         
         bandpassNames = bandpassDict.keys()
         adus = np.zeros(len(bandpassNames))

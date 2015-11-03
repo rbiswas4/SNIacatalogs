@@ -9,7 +9,9 @@ from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.utils import ObservationMetaData
 
 from lsst.sims.photUtils import Sed
+from lsst.sims.photUtils import BandpassDict
 from lsst.sims.catUtils.mixins import CosmologyMixin
+from lsst.sims.catUtils.mixins import PhotometryBase
 # import lsst.sims.photUtils.PhotometricParameters as PhotometricParameters
 
 import astropy
@@ -154,19 +156,23 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
         return 1.2
 
     @astropy.utils.lazyproperty
-    def photometricparameters(self, expTime=30.):
-        lsstPhotometricParameters = PhotometricParameters(exptime=expTime)
+    def photometricparameters(self, expTime=15., nexp=2):
+        lsstPhotometricParameters = PhotometricParameters(exptime=expTime,
+                                                          nexp=nexp)
         return lsstPhotometricParameters
 
     @astropy.utils.lazyproperty
-    def lsstpbase(self):
+    def lsstBandpassDict(self):
+        return BandpassDict.loadTotalBandpassesFromFiles()
 
-
+    @astropy.utils.lazyproperty
+    def observedIndices(self):
         bandPassNames = self.obs_metadata.bandpass
-        pbase = PhotometryBase()
-        pbase.loadBandpassesFromFiles(bandpassNames=bandPassNames)
-        pbase.setupPhiArray_dict()
+        return [self.lsstBandpassDict.keys().index(x) for x in bandPassNames] 
 
+    @astropy.utils.lazyproperty
+    def lsstpbase(self):
+        pbase = PhotometryBase()
         return pbase
 
 
@@ -229,8 +235,8 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
             SNobject.setCoords(ra=ra[i], dec=dec[i])
             SNobject.mwEBVfromMaps()
             sed = SNobject.SNObjectSED(time=self.obs_metadata.mjd,
-                                   bandpassobject=self.lsstpbase.bandpassDict,
-                                   applyExitinction=True)
+                                       bandpass=lsstBandpassDict,
+                                       applyExitinction=True)
             sedlist.append(sed)
 
         return sedlist
@@ -260,19 +266,16 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
             SNobject.setCoords(ra=ra[i], dec=dec[i])
             SNobject.mwEBVfromMaps()
             # Calculate fluxes
-            vals[i, :6] = SNobject.catsimBandFluxes(bandpassobject=self.lsstpbase.bandpassDict,
-                                                 time=self.obs_metadata.mjd,
-                                            phiarray=self.lsstpbase.phiArray)
+            vals[i, :6] = SNobject.catsimManyBandFluxes(time=self.mjdobs,
+                                bandpassDict=self.lsstBandpassDict,
+                                observedBandPassInd=self.observedIndices)
             # Calculate magnitudes
-            vals[i, 6:] = SNobject.catsimBandMags(bandpassobject=self.lsstpbase.bandpassDict,
-                                                time=self.obs_metadata.mjd,
-                                            phiarray=self.lsstpbase.phiArray)
+            vals[i, 6:] = SNobject.catsimManyBandMags(time=self.mjdobs,
+                                bandpassDict=self.lsstBandpassDict,
+                                observedBandPassInd=self.observedIndices)
 
-            # vals[i, 11:] = SNobject.catsimBandMags(bandpassobject=self.lsstpbase.bandpassDict,
-            #                                    time=self.obs_metadata.mjd,
-            #                                phiarray=self.lsstpbase.phiArray)
             vals[i, 11:] = SNobject.catsimADU(time=self.obs_metadata,
-                                              bandpassDict=self.lsstpbase.bandpassDict,
+                                              bandpassDict=self.lsstBandpassDict,
                                               photParams=self.photometricparameters)
         return (vals[:, 0], vals[:, 1], vals[:, 2], vals[:, 3],
                 vals[:, 4], vals[:, 5], vals[:, 6], vals[:, 7],

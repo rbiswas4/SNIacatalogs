@@ -119,7 +119,6 @@ class SNUniverse(object):
         '''
         Distribution function of the time of peak of SN
 
-
         '''
 
         # Will not use hostid for now, but this is there so that 
