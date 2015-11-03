@@ -75,6 +75,7 @@ class SNUniverse(object):
 
         hostmu: float, mandatory
         """
+        hostid = hostid % 4294967295
         np.random.seed(hostid)
         t0val = self.drawFromT0Dist() 
         if t0val is self.badvalues:
@@ -118,7 +119,6 @@ class SNUniverse(object):
     def drawFromT0Dist(self, **hostParams):
         '''
         Distribution function of the time of peak of SN
-
 
         '''
 
