@@ -239,6 +239,48 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
 
         return sedlist
 
+    def get_time(self):
+        
+        return np.repeat(self.mjdobs, self.numobjs)
+
+    def get_band(self):
+        bandname = self.obs_metadata.bandpass
+        return np.repeat(bandname, self.numobjs)
+
+    @compound('flux', 'mag')
+    def get_snbrightness(self):
+
+        c, x1, x0, t0, _z , _id, ra, dec = self.column_by_name('c'),\
+            self.column_by_name('x1'),\
+            self.column_by_name('x0'),\
+            self.column_by_name('t0'),\
+            self.column_by_name('redshift'),\
+            self.column_by_name('snid'),\
+            self.column_by_name('raJ2000'),\
+            self.column_by_name('decJ2000')
+
+        SNobject = SNObject()
+        # Initialize return array
+        vals = np.zeros(shape=(self.numobjs, 2))
+        # vals = np.zeros(self.numobjs)
+        for i, v in enumerate(vals):
+            arr = [_z[i], c[i], x1[i], t0[i], x0[i]]
+            testnan = lambda x: x is np.nan
+            SNobject.set(z=_z[i], c=c[i], x1=x1[i], t0=t0[i], x0=x0[i])
+            SNobject.setCoords(ra=ra[i], dec=dec[i])
+            SNobject.mwEBVfromMaps()
+            # Calculate fluxes
+            bandname = self.obs_metadata.bandpass
+            bandpass = self.lsstBandpassDict[bandname]
+            flux = SNobject.catsimBandFluxes(time=self.mjdobs,
+                                             bandpassobject=bandpass)
+            mag = SNobject.catsimBandMags(time=self.mjdobs,
+                                          bandpassobject=bandpass)
+            vals[i, 0] = flux
+            vals[i, 1] = mag
+        return (vals[:, 0], vals[:, 1])
+
+
     @compound('flux_u', 'flux_g', 'flux_r', 'flux_i', 'flux_z', 'flux_y',
               'mag_u', 'mag_g', 'mag_r', 'mag_i', 'mag_z', 'mag_y',
               'adu_u', 'adu_g', 'adu_r', 'adu_i', 'adu_z', 'adu_y')
@@ -265,11 +307,13 @@ class SNIaCatalog (InstanceCatalog, CosmologyMixin, SNUniverse):
             # Calculate fluxes
             vals[i, :6] = SNobject.catsimManyBandFluxes(time=self.mjdobs,
                                                         bandpassDict=self.lsstBandpassDict,
-                                                        observedBandPassInd=self.observedIndices)
+                                                        observedBandPassInd=None)
+            print (SNobject.summary())
+            print vals[i, :6] 
             # Calculate magnitudes
             vals[i, 6:12] = SNobject.catsimManyBandMags(time=self.mjdobs,
                                                       bandpassDict=self.lsstBandpassDict,
-                                                      observedBandPassInd=self.observedIndices)
+                                                      observedBandPassInd=None)
 
             vals[i, 12:] = SNobject.catsimADU(time=self.obs_metadata,
                                               bandpassDict=self.lsstBandpassDict,
