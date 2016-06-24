@@ -1,3 +1,8 @@
+*****************************************************
+This project is now absorbed into lsst/sims_catUtils: 
+*****************************************************
+
+https://github.com/lsst/sims_catUtils
 Code to add SNIa to LSST galaxy catalogs:
 =========================================
 
